@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+
+<launch>
+    
+    
+    <arg name="robot" default="sparkle"/>
+    <arg name="strAng" default="0"/>
+    <arg name="constVel" default="1.0"/>
+    <param name="/$(arg robot)/constVel" value="$(arg constVel)"/>
+    <param name="/$(arg robot)/strAngle" value="$(arg strAng)"/>
+        
+    <group ns="$(arg robot)">
+        <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen"/>
+    </group>
+</launch>

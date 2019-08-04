@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+    <robot>
+        <gazebo>
+        <plugin name="cmdvel_controller" filename="libsparkle_model.so">
+            <robotNamespace>/$(arg roboname)</robotNamespace>
+        </plugin>
+        </gazebo>
+        <gazebo>
+        <plugin name="odom_publisher" filename="libsparkle_odom.so">
+            <robotNamespace>/$(arg roboname)</robotNamespace>
+        </plugin>
+        </gazebo>
+        <!--gazebo>
+        <plugin name="tf_broadcaster" filename="libsparkle_tf.so">
+            <robotNamespace>/$(arg roboname)</robotNamespace>
+        </plugin>
+        </gazebo-->
+
+</robot>

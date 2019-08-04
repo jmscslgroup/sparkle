@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+
+<launch>
+
+    <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+    <arg name="robot" default="sparkle"/>
+    <arg name="model" default="$(find sparkle)/urdf/sparkle.xacro roboname:='$(arg robot)'"/>
+    <arg name="X" default="0"/>
+    <arg name="Y" default="0"/>
+    <arg name="Z" default="0"/>
+    <arg name="roll" default="0"/>
+    <arg name="pitch" default="0"/>
+    <arg name="yaw" default="0"/>
+
+    <param name="/$(arg robot)/windx" value="0.0"/>
+    <param name="/$(arg robot)/windy" value="0.0"/>
+    <param name="/$(arg robot)/psi_init" value="$(arg yaw)"/>
+    <param name="/$(arg robot)/childFrameId" value="$(arg robot)"/>
+    <!-- push robot_description to factor:wspawn robot in gazebo -->
+
+    
+    
+    <group ns="$(arg robot)">
+        <param name="tf_prefix" value="$(arg robot)"/>
+        <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+        <node name="urdf_spawner_$(arg robot)" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-x $(arg X) -y $(arg Y) -z $(arg Z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -unpause -urdf -model $(arg robot) -param robot_description" output="screen" />
+        <!-- establish this vehicle's place in the global frame for tf transforms -->
+        <node pkg="tf" type="static_transform_publisher" name="global_frame_tf_$(arg robot)" 
+    args="0 0 0 0 0 0 /world $(arg robot)/odom 100"/>
+    
+        <node pkg="sparkle" type="transform_sparkle" name="transform_sparkle_$(arg robot)" output="screen"/>
+
+        <!--node pkg="hoffmansubsystem" type="hoffmansubsystem_node" name="hoffmansubsystem_node"  output="screen" required="true"/-->
+        <node pkg="threedof" type="threedof_node" name="threedof_node_$(arg robot)">
+        </node>
+        <!--node pkg="sparklev2" type="sparklev2_node" name="sparklev2_node_$(arg robot)"  output="screen" required="true"/-->
+        
+
+        <node name="odom2path_$(arg robot)" pkg="sparkle" type="odom2path.py" respawn="true" output="screen"/>
+        <!--node pkg="rostopic" type="rostopic" name="velocity_command" args="pub -r 60 /catvehicle/cmd_vel geometry_msgs/Twist '{linear:  {x: -param $(arg robot)/constVel, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0, z: 0.0}}' " output="screen"/-->
+    </group>
+
+
+</launch>
+
+
