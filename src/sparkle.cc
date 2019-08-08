@@ -84,25 +84,25 @@ namespace gazebo
                 this->world = _parent->GetWorld();
                 this->boundingBox = this->model->BoundingBox();
                 
-                ROS_INFO_STREAM("Sparkle: Bounding box of model: x is "<< this->boundingBox.XLength()<<" y is "<<this->boundingBox.YLength());
+                ROS_INFO_STREAM("Sparkle.cc: Bounding box of model: x is "<< this->boundingBox.XLength()<<" y is "<<this->boundingBox.YLength());
                 if(_sdf->HasElement("robotNamespace"))
                 {
                     this->robotNamespace = _sdf->GetElement("robotNamespace")->Get<string>();
-                    ROS_INFO_STREAM("Sparkle: Robot namespace is "<<this->robotNamespace);
+                    ROS_INFO_STREAM("Sparkle.cc: Robot namespace is "<<this->robotNamespace);
                 }
                 else
                 {
-                    ROS_INFO_STREAM("Sparkle: Robot Namespace not found. Setting robotnamespace to 'catvehicle'");
+                    ROS_INFO_STREAM("Sparkle.cc: Robot Namespace not found. Setting robotnamespace to 'catvehicle'");
                 }
 
                 if(_sdf->HasElement("setVelTopic"))
                 {
                     this->setVelTopic = _sdf->GetElement("setVelTopic")->Get<string>();
-                    ROS_INFO_STREAM("Sparkle: setVelTopic is set to "<<this->setVelTopic);
+                    ROS_INFO_STREAM("Sparkle.cc: setVelTopic is set to "<<this->setVelTopic);
                 }
                 else
                 {
-                    ROS_INFO_STREAM("Sparkle: setVelTopic not found. Make sure you do not prefix setVelTopic with / or robotNamespace. Setting setVelTopic to 'setvel'.");
+                    ROS_INFO_STREAM("Sparkle.cc: setVelTopic not found. Make sure you do not prefix setVelTopic with / or robotNamespace. Setting setVelTopic to 'setvel'.");
                     this->setVelTopic  = "setvel";
                 }
                 
@@ -115,7 +115,7 @@ namespace gazebo
                     ros::init(argc, argv, plugin_name);
                 }
                 plugin_name = plugin_name + "_node";
-                this->rosNode.reset(new ros::NodeHandle("sparklePlugin")); //Create a ROS Node.
+                this->rosNode.reset(new ros::NodeHandle(plugin_name)); //Create a ROS Node.
                 this->soVel = ros::SubscribeOptions::create<nav_msgs::Odometry>(this->robotNamespace + "/" + this->setVelTopic, 1, boost::bind(&Sparkle::OnROSMsg, this, _1), ros::VoidPtr(), &this->rosQueue); //Create a named topic and subscribe to it
                 
                 this->rosSubVel = this->rosNode->subscribe(this->soVel);
@@ -133,7 +133,6 @@ namespace gazebo
 
                 this->v = sqrt(pow(this->velx,2) +  pow(this->vely, 2));
 
-                //ROS_INFO_STREAM("Sparkle: I got the velocity message to be imparted to "<<this->robotNamespace << " is "<< this->velx);
                 this->model->SetLinearVel(ignition::math::Vector3d((this->v)*cos(this->angularz), (this->v)*sin(this->angularz), 0.0));
                 this->model->SetAngularVel(ignition::math::Vector3d(0, 0, this->vAngZ ));
             }
