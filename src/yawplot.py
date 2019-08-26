@@ -115,15 +115,15 @@ class odom2path:
 
         if (self.odom_fetch is True) and (self.model_fetch is True):
 
-            # Limits data to 20 items
-            Time = self.odom_time[-2000:]
-            Yaw = self.odom_yaw[-2000:]
+            # Limits data to xx items
+            Time = self.odom_time[-500:]
+            Yaw = self.odom_yaw[-500:]
 
-            Yaw_model = self.model_yaw[-2000:]
-            Time_model = self.model_time[-2000:]
+            Yaw_model = self.model_yaw[-500:]
+            Time_model = self.model_time[-500:]
 
-            Yaw_gazebo = self.gazebo_yaw[-2000:]
-            Time_gazebo = self.gazebo_time[-2000:]
+            Yaw_gazebo = self.gazebo_yaw[-500:]
+            Time_gazebo = self.gazebo_time[-500:]
 
             #rospy.loginfo("Odom2path: Plotting next data ")
             self.ax.clear()
