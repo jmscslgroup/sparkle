@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
     <robot>
-        <gazebo>
+        <!--gazebo>
         <plugin name="cmdvel_controller_$(arg roboname)" filename="libsparkle_model.so">
             <robotNamespace>/$(arg roboname)</robotNamespace>
+            <controlMethod>pose</controlMethod>
         </plugin>
-        </gazebo>
+        </gazebo-->
         <gazebo>
         <plugin name="odom_publisher_$(arg roboname)" filename="libsparkle_odom.so">
             <robotNamespace>/$(arg roboname)</robotNamespace>
