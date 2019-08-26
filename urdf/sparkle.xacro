@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
 <robot name="$(arg roboname)" xmlns:xacro="http://www.ros.org/wiki/xacro">
- <xacro:property name="car_length" value="61.728100"/>
+ <!--xacro:property name="car_length" value="61.728100"/>
  <xacro:property name="car_width" value="157.523697"/>
  <xacro:property name="car_height" value="44.270203"/>
  <xacro:property name="scale_factor" value="0.0254"/>
  <xacro:property name="meshlab_factor" value="0.1"/>
- <xacro:property name="car_mass" value="10"/>
+ <xacro:property name="car_mass" value="1773.47881606"/>
+<xacro:property name="car_volume" value="433402.531250"/-->
+
+ <xacro:property name="car_length" value="4.00111"/>
+ <xacro:property name="car_width" value="2.13607648"/>
+ <xacro:property name="car_height" value="1.7"/>  <!-- This not Exact-->
+ <xacro:property name="scale_factor" value="0.7"/>
+ <xacro:property name="meshlab_factor" value="0.1"/>
+ <xacro:property name="car_mass" value="1773.47881606"/>
 <xacro:property name="car_volume" value="433402.531250"/>
 
 
@@ -23,31 +31,32 @@
 
 <link name="base_link">
       <collision name="collision">
-        <origin xyz="0 0 0" rpy="0 0 1.57079632679"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 1.57079632679"/>
         <geometry>
           <!--box size="${car_length*scale_factor} ${car_width*scale_factor} ${car_height*scale_factor}"/-->
           <mesh scale="0.0254 0.0254 0.0254" filename="package://sparkle/meshes/hatchback.obj"/>
         </geometry>
       </collision>
       <visual name="visual">
-        <origin xyz="0 0 0" rpy="0 0 1.57079632679"/>
+        <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 1.57079632679"/>
         <geometry>
           <mesh scale="0.0254 0.0254 0.0254" filename="package://sparkle/meshes/hatchback.obj"/>
         </geometry>
       </visual>
       <inertial>
                 <mass value="${car_mass}" />
-                <origin xyz="0 0 0" rpy="0 0 1.57079632679"/>
-                   <inertia
+                <!--origin xyz="0 0 ${car_height/2}" rpy="0 0 1.57079632679"/-->
+                <origin xyz="0.15 0.0 ${car_height*0.4}" rpy="0.0 0.0 0.0"/>
+                   <!--inertia
                 ixx="${base_mass_ixx}"  ixy="${base_mass_ixy}" ixz="${base_mass_ixz}"
                 iyx="${base_mass_iyx}" iyy="${base_mass_iyy}" iyz="${base_mass_iyz}"
-                izx="${base_mass_izx}" izy="${base_mass_izy}" izz="${base_mass_izz}"/>
+                izx="${base_mass_izx}" izy="${base_mass_izy}" izz="${base_mass_izz}"/-->
 
-                <!--inertia ixx="${(1/6)*car_mass*( (car_width*scale_factor)*(car_width*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" ixy="0" ixz="0"
+                <inertia ixx="${(1/6)*car_mass*( (car_width*scale_factor)*(car_width*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" ixy="0" ixz="0"
                 iyy="${(1/6)*car_mass*( (car_length*scale_factor)*(car_length*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" iyz="0"
                 izz="${(1/6)*car_mass*( (car_length*scale_factor)*(car_length*scale_factor)  +   (car_width*scale_factor)*(car_width*scale_factor) )  }" />
                 
-                  <inertia ixx="${(1/6)*car_mass*( (car_width*scale_factor)*(car_width*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" ixy="0" ixz="0"
+                  <!--inertia ixx="${(1/6)*car_mass*( (car_width*scale_factor)*(car_width*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" ixy="0" ixz="0"
                 iyy="${(1/6)*car_mass*( (car_length*scale_factor)*(car_length*scale_factor)  +   (car_height*scale_factor)*(car_height*scale_factor) )  }" iyz="0"
                 izz="${(1/6)*car_mass*( (car_length*scale_factor)*(car_length*scale_factor)  +   (car_width*scale_factor)*(car_width*scale_factor) )  }" /-->
                 
