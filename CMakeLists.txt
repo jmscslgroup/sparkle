@@ -82,14 +82,11 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(sparkle_model SHARED src/sparkle.cc)
 add_library(sparkle_odom SHARED src/odom.cc)
-add_library(sparkle_tf SHARED src/tf.cc)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(sparkle_model ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(sparkle_odom ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(sparkle_tf ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
