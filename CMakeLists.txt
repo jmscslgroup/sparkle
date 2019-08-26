@@ -102,6 +102,9 @@ target_link_libraries(sparkle_tf ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost
 add_executable( cmd_sparkle src/cmd_sparkle.cc )
 target_link_libraries( cmd_sparkle ${catkin_LIBRARIES} )
 
+add_executable( model_state src/model_state.cc )
+target_link_libraries( model_state ${catkin_LIBRARIES} )
+
 add_executable( transform_sparkle src/transform.cpp )
 target_link_libraries( transform_sparkle ${catkin_LIBRARIES} )
 
