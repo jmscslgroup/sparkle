@@ -12,6 +12,8 @@
         
     <group ns="$(arg robot)">
         <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen"/>
-        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen"/>
+        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
+            <param name="enableTwist" value="false"/>
+        </node>
     </group>
 </launch>
