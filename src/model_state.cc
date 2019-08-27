@@ -25,16 +25,6 @@
 
 using namespace std;
 
-geometry_msgs::Point pose;
-geometry_msgs::Quaternion orientation;
-geometry_msgs::Twist twist;
-gazebo_msgs::ModelState modelState;
-
-
-bool newMessage = false;
-
-//ros::ServiceClient client;
-
 geometry_msgs::Quaternion rpyToQuaternion(double roll, double pitch, double yaw)
 {
     double cy = cos(yaw * 0.5);
@@ -59,126 +49,133 @@ geometry_msgs::Quaternion rpyToQuaternion(double roll, double pitch, double yaw)
     return quat;
 }
 
-
-class PubSub
+class SetModelPose
 {
     private:
-        unique_ptr<ros::NodeHandle> node;
-        ros::ServiceClient client;
-        ros::Subscriber sub;
-        ros::Publisher pub;
+        ros::NodeHandle* rosnode; //Create ROS Node Handle
+        ros::Subscriber sub; // Subscriber for subscribing to topic that produces Odometry information to be set.
+        ros::Publisher pub; // This will always be /gazebo/set_model_state
+        
+        // Check if subscriber has been created
+        bool isSubscribed;
+        
+        // False if no message has receive, true if any message on `sub` has
+        // been received, until `pub` publishes, and then it becomes false again
+        bool newMessage;
+        
+        // A flag to enable sending twist along with poses.
+        bool enableTwist;
+        // Get the namespace (value in the group tag)
+        string ns;
+        
+        // Get the node name
+        string nodename;
+        
+        // Variables to store messages
+        geometry_msgs::Point pose;
+        geometry_msgs::Quaternion orientation;
+        geometry_msgs::Twist twist;
+        gazebo_msgs::ModelState modelState;
 
     public:
-        PubSub()
+        SetModelPose()
         {
-            this->node.reset(new ros::NodeHandle(""));
+            this->rosnode = new ros::NodeHandle(""); 
+            this->newMessage = false;
+            this->enableTwist = false;
+            this->isSubscribed = false;
+            
+            this->ns = ros::this_node::getNamespace();
+            this->ns = this->ns.substr(1, this->ns.length()-1);
+            
+            this->nodename = ros::this_node::getName();
+            
+            this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);          
+            // Initialize the message variable
+            this->pose.x = this->pose.y = this->pose.z = 0.0;
+            this->orientation.x = this->orientation.y =  this->orientation.z = this->orientation.w = 0.0;
+            memset(&(this->modelState), 0, sizeof(this->modelState));
+            memset(&(this->modelState), 0, sizeof(this->modelState));
         }
+        
+        
+        void createSubscriber(string odomVelTopic = "setvel")
+        {
+            this->sub = this->rosnode->subscribe(odomVelTopic, 1, &SetModelPose::setVelCallBack, this);
+            this->isSubscribed = true;
+        }
+        
 
     public:
-        void setVelCallBack(const nav_msgs::OdometryConstPtr & _msg);
+    
+        bool subscribed()
+        {
+            return this->isSubscribed;
+        }
+        void setVelCallBack(const nav_msgs::OdometryConstPtr& _msg)
+        {
+            this->pose.x = _msg->pose.pose.position.x;
+            this->pose.y = _msg->pose.pose.position.y;
+            this->pose.z = _msg->pose.pose.position.z;
+
+            this->orientation = rpyToQuaternion(_msg->pose.pose.orientation.x,
+                                                        _msg->pose.pose.orientation.y,
+                                                        _msg->pose.pose.orientation.z);    
+            this->newMessage = true;
+
+            this->twist = _msg->twist.twist;
+            
+            this->modelState.model_name = this->ns;
+            this->modelState.pose.position = pose ;//getModelState.response.pose.position;
+            this->modelState.pose.orientation = orientation; //getModelState.response.pose.orientation;
+            
+            this->rosnode->param(this->nodename +"/"+"enableTwist", this->enableTwist, false);
+            
+            
+            if(this->enableTwist)
+            {
+                this->modelState.twist = this->twist;
+            }
+            this->modelState.reference_frame = "world";
+        }
+        
+    public:
+        void publishModelState(unsigned int rate)
+        {
+            ros::Rate loop_rate(rate);
+            while( ros::ok() )
+            {
+                if( this->newMessage )
+                {
+                    this->pub.publish(this->modelState);
+                    this->newMessage = false;
+                }
+                ros::spinOnce( );
+                loop_rate.sleep( );
+            }
+        }
 };
 
-void setVelCallBack(const nav_msgs::OdometryConstPtr & _msg)
-{
-
-    string ns = ros::this_node::getNamespace();
-    ns = ns.substr(1, ns.length()-1);
-    
-    pose.x = _msg->pose.pose.position.x;
-    pose.y = _msg->pose.pose.position.y;
-    pose.z = _msg->pose.pose.position.z;
-
-    orientation = rpyToQuaternion(_msg->pose.pose.orientation.x,
-                                                _msg->pose.pose.orientation.y,
-                                                _msg->pose.pose.orientation.z);    
-    newMessage = true;
-
-
-    #if 0
-    gazebo_msgs::GetModelState getModelState ;
-
-    getModelState.request.model_name = ns;
-   // getModelState.request.relative_entity_name = (std::string)"world" ;
-    
-    string serviceName = client.getService();
-    if(!client.call(getModelState))
-    {
-        ROS_ERROR_STREAM("Client Service "<< serviceName<<" Call Failed");
-    }
-    
-
-    ROS_INFO_STREAM("GETMODEL X:" << getModelState.response.pose.position.x);
-    ROS_INFO_STREAM("GETMODEL Seq:" << getModelState.response.header.seq);
-    ROS_INFO_STREAM("GETMODEL success result:" << getModelState.response.success);
-    ROS_INFO_STREAM("GETMODEL status message:" << getModelState.response.status_message);
-    #endif
-
-    twist = _msg->twist.twist;
-
-    ROS_INFO_STREAM("Namespace is "<<ns);
-    modelState.model_name = ns;
-    modelState.pose.position = pose ;//getModelState.response.pose.position;
-    modelState.pose.orientation = orientation; //getModelState.response.pose.orientation;
-   // modelState.twist = twist;
-    modelState.reference_frame = "world";
-}
 
 int main(int argc, char **argv)
 {
+
+    // Before you do anything, do the ros init
     ros::init(argc, argv, "SparkleSetPose");
     
-    ros::NodeHandle nodeHandle("");
+    std::string enableTwist;
     
- //   client = nodeHandle.serviceClient<gazebo_msgs::GetModelState>("/gazeo/get_model_state", true);
 
- //   ros::ServiceClient client = nodeHandle.serviceClient<gazebo_msgs::SetModelState>("/gazeo/set_model_state");
-
-    ros::Subscriber sub = nodeHandle.subscribe("setvel", 1, &setVelCallBack);
+    //Create an object of type `SetModelPose`
+    SetModelPose *sparkleModel = new SetModelPose();
     
-    ros::Publisher pub = nodeHandle.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);
-
-
-    // run at 50Hz?
-    ros::Rate loop_rate(100);
-    ROS_INFO_STREAM("1. New Message = "<<newMessage);
-
-    while( ros::ok() )
+    
+    sparkleModel->createSubscriber();
+    
+    if (sparkleModel->subscribed())
     {
-        ROS_INFO_STREAM("New Message = "<<newMessage);
-        if( newMessage )
-        {
-            pub.publish(modelState);
-            ROS_INFO_STREAM("Publishing");
-            newMessage = false;
-        }
-        ros::spinOnce( );
-        loop_rate.sleep( );
+        sparkleModel->publishModelState(100);
     }
-
-    #if 0
-    double velx  = 0.0; //Linear X velocity
-    double angularz = 0.0; //Angular Z steering Angle
-
-    ros::Publisher vel_pub = nodeHandle.advertise<geometry_msgs::Twist>("cmd_vel", 1);
-
-    ros::Rate loop_rate(60);
-    
-    geometry_msgs::Twist velMsg;
-
-    while(ros::ok())
-    {
-        nodeHandle.param("constVel", velx, 5.0);
-        nodeHandle.param("strAngle", angularz,  0.0);
-        velMsg.linear.x = velx;
-        velMsg.angular.z = angularz;
-        
-        vel_pub.publish(velMsg);
-        ros::spinOnce();
-        loop_rate.sleep();
-        
-    }
-    #endif
-
     return EXIT_SUCCESS;
     
 }
