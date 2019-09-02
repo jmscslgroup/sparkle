@@ -20,9 +20,7 @@
     <param name="/$(arg robot)/childFrameId" value="$(arg robot)/base_link"/>
     <param name="/$(arg robot)/headerFrameId" value="$(arg robot)/odom"/>
     <!-- push robot_description to factor:wspawn robot in gazebo -->
-
-    
-    
+ 
     <group ns="$(arg robot)">
         <param name="tf_prefix" value="$(arg robot)"/>
         <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
@@ -40,8 +38,7 @@
         
 
         <node name="odom2path_$(arg robot)" pkg="sparkle" type="odom2path.py" respawn="true" output="screen"/>
-        <node name="yawplot_$(arg robot)" pkg="sparkle" type="yawplot.py" respawn="true" output="screen"/>
-        <!--node pkg="rostopic" type="rostopic" name="velocity_command" args="pub -r 60 /catvehicle/cmd_vel geometry_msgs/Twist '{linear:  {x: -param $(arg robot)/constVel, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0, z: 0.0}}' " output="screen"/-->
+        <!--node name="yawplot_$(arg robot)" pkg="sparkle" type="yawplot.py" respawn="true" output="screen"/-->
     </group>
 
 
