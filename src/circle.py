@@ -39,7 +39,13 @@ class catlaunch:
         Y = []
         Yaw = []
 
-        self.name = []
+        self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',
+                'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
+                'metis', 'himalia', 'kalyke', 'carpo', 'arche', 'aitne','thyone',
+                'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
+                'epimetheus', 'hyperion', 'rhea', 'telesto',
+                'deimos', 'phobos', 'triton', 'proteus', 'nereid', 'larissa',
+                'galatea', 'despina']
 
         for i in range(0, num_of_vehicles):
             theta_i = theta*i
@@ -59,7 +65,6 @@ class catlaunch:
 
 
             Yaw.append(theta_i + (3.14159265359/2))
-            self.name.append(i)
 
         self.X = X
         self.Y = Y
@@ -82,26 +87,38 @@ class catlaunch:
         #Object to spawn catvehicle in the empty world
 
         cli_args = []
-        spawn_args = []
+        vel_args = []
         spawn_file = []
+        vel_file =  []
         self.launchspawn = []
+        self.launchvel = []
         launchfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/sparkle_spawn.launch']
-        humanlaunchfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/sparkle_spawn.launch']
+        velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
         for n in range(0, self.num_of_vehicles):
             print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'strAng:='+ str(self.th),'robot:='+ str(self.name[n])])
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=7.0','strAng:=0.0595','robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
+            vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchspawn.append(roslaunch.parent.ROSLaunchParent(uuid, spawn_file[n]))
-
+            self.launchvel.append(roslaunch.parent.ROSLaunchParent(uuid, vel_file[n]))
 
         launch.start()
         print('Empty world launched.')
-        time.sleep(3)
+        time.sleep(10)
+
+        self.gzclient = subprocess.Popen('gzclient', stdout=subprocess.PIPE, shell=True)
+        self.gzclient_pid = self.gzclient.pid
+
+        time.sleep(5)
+
 
         for n in range(0, self.num_of_vehicles):
             print('Vehicle' + str(n) + ' spawning')
             self.launchspawn[n].start()
+            time.sleep(10)
+            self.launchvel[n].start()
             time.sleep(2)
 
 
@@ -112,6 +129,14 @@ class catlaunch:
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
             self.launchspawn[n].shutdown()
+            self.launchvel[n].shutdown()
+
+        print('Now killing gzclient')
+        #kill the roscore
+        self.gzclient.terminate()
+        #Wait to prevent the creation of zombie processes.
+        self.gzclient.wait()
+
 
         print('Now killing roscore')
         #kill the child process of roscore
@@ -140,7 +165,7 @@ class catlaunch:
 
 
 def main(argv):
-    cl = catlaunch(260, 7)
+    cl = catlaunch(260, 22)
     print(cl.X)
 
     cl.spawn()
