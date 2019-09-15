@@ -31,8 +31,10 @@ class catlaunch:
         """Generate coordinate on x-axis to place `num_of_vehicles`"""
 
         r = circumference/(2*3.14159265359) #Calculate the radius of the circle
+        print('************Radius of the circle is {}'.format(r))
+        self.R = r
 
-        theta = (2*3.14159265359)/num_of_vehicles #calculate the minimum theta
+        theta = (2*3.14159265359)/num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
         self.th = theta
 
         X = []
@@ -97,7 +99,7 @@ class catlaunch:
         for n in range(0, self.num_of_vehicles):
             print(n)
             cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
-            vel_args.append(['constVel:=7.0','strAng:=0.0595','robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=4.0','strAng:=0.0595','X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -106,20 +108,20 @@ class catlaunch:
 
         launch.start()
         print('Empty world launched.')
-        time.sleep(10)
+        time.sleep(3)
 
         self.gzclient = subprocess.Popen('gzclient', stdout=subprocess.PIPE, shell=True)
         self.gzclient_pid = self.gzclient.pid
 
-        time.sleep(5)
+        time.sleep(2)
 
 
         for n in range(0, self.num_of_vehicles):
             print('Vehicle' + str(n) + ' spawning')
             self.launchspawn[n].start()
-            time.sleep(10)
+            time.sleep(6)
             self.launchvel[n].start()
-            time.sleep(2)
+            time.sleep(1)
 
 
     def signal_handler(self, sig, frame):
@@ -165,7 +167,7 @@ class catlaunch:
 
 
 def main(argv):
-    cl = catlaunch(260, 22)
+    cl = catlaunch(260, 5)
     print(cl.X)
 
     cl.spawn()
