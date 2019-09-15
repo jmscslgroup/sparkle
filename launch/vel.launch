@@ -7,11 +7,21 @@
     <arg name="robot" default="sparkle"/>
     <arg name="strAng" default="0"/>
     <arg name="constVel" default="1.0"/>
+    <arg name="X" default="0.0"/>
+    <arg name="Y" default="0.0"/>
+    <arg name="R" default="0.0"/>
     <param name="/$(arg robot)/constVel" value="$(arg constVel)"/>
     <param name="/$(arg robot)/strAngle" value="$(arg strAng)"/>
-        
+    <param name="/$(arg robot)/x_init" value="$(arg X)"/>
+    <param name="/$(arg robot)/y_init" value="$(arg Y)"/>
+    <param name="/$(arg robot)/radius" value="$(arg R)"/>
     <group ns="$(arg robot)">
-        <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen"/>
+        <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen">
+            <!--remap from="/$(arg robot)/cmd_vel" to="/$(arg robot)/cmd_control_vel"/-->
+        </node>
+        <!--node name="hoffmansubsystem_$(arg robot)" pkg="hoffmansubsystem" type="hoffmansubsystem_node" output="screen">
+
+        </node-->
         <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
             <param name="enableTwist" value="false"/>
         </node>
