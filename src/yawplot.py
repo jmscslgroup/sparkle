@@ -38,6 +38,8 @@ class odom2path:
         # Empty array for storing yaws from model odom that we publish in odom.cc
         self.odom_yaw = []
         self.odom_time = []
+        self.odom_X = []
+        self.odom_Y = []
 
         # Empty array for storing model yaw published by Simulink on topic {}/angles
         self.model_yaw = []
@@ -67,6 +69,8 @@ class odom2path:
         nsecs = T.to_nsec()
 
         total_t = secs + nsecs
+        self.odom_X.append(data.pose.pose.position.x)
+        self.odom_Y.append(data.pose.pose.position.y)
 
         self.odom_time.append(total_t)
         [roll, pitch, yaw] = self.calc_yaw( float(data.pose.pose.orientation.x),
@@ -92,13 +96,13 @@ class odom2path:
 
 
     def doplot(self):
-        
+
         try:
             model_coordinates = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
             coordinates = model_coordinates(self.ns[1:], 'world')
-            
+
             [qX, qY, qZ, qW] = [coordinates.pose.orientation.x, coordinates.pose.orientation.y, coordinates.pose.orientation.z, coordinates.pose.orientation.w]
-            
+
             [roll, pitch, yaw] = self.calc_yaw( float(qX), float(qY), float(qZ), float(qW))
 
             self.gazebo_yaw.append(yaw)
@@ -111,13 +115,15 @@ class odom2path:
 
         except rospy.ServiceException as e:
             rospy.loginfo("Get Model State service call failed: {0}".format(e))
-            
+
 
         if (self.odom_fetch is True) and (self.model_fetch is True):
 
             # Limits data to xx items
-            Time = self.odom_time[-500:]
-            Yaw = self.odom_yaw[-500:]
+            Time = self.odom_time[-5000:]
+            Yaw = self.odom_yaw[-5000:]
+            X_odom = self.odom_X[-5000:]
+            Y_odom = self.odom_Y[-5000:]
 
             Yaw_model = self.model_yaw[-500:]
             Time_model = self.model_time[-500:]
@@ -126,21 +132,32 @@ class odom2path:
             Time_gazebo = self.gazebo_time[-500:]
 
             #rospy.loginfo("Odom2path: Plotting next data ")
+            #self.ax.clear()
+            #self.ax.plot(Time, Yaw, linestyle='--', color='firebrick', linewidth=2)
+            #self.ax.set_axisbelow(True)
+            #self.ax.minorticks_on()
+            #self.ax.grid(which='major', linestyle='-', linewidth='0.5', color='salmon')
+            #self.ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
+            #plt.title('Model Yaw')
+            #plt.xlabel('Time')
+            #plt.ylabel('Yaw')
+
             self.ax.clear()
-            self.ax.plot(Time, Yaw, linestyle='--', color='firebrick', linewidth=2)
+            self.ax.plot(X_odom, Y_odom, linestyle='--', color='firebrick', linewidth=2)
             self.ax.set_axisbelow(True)
             self.ax.minorticks_on()
             self.ax.grid(which='major', linestyle='-', linewidth='0.5', color='salmon')
             self.ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
             plt.title('Model Yaw')
-            plt.xlabel('Time')
-            plt.ylabel('Yaw')
+            plt.xlabel('X')
+            plt.ylabel('Y')
 
-            self.ax.plot(Time_gazebo, Yaw_gazebo, linestyle='--', color='darkseagreen', linewidth=2)
 
-            self.ax.plot(Time_model, Yaw_model, linestyle='--', color='deeppink', linewidth=2)
+            #self.ax.plot(Time_gazebo, Yaw_gazebo, linestyle='--', color='darkseagreen', linewidth=2)
 
-            self.ax.legend(['odom.cc Yaw', 'Gazebo Service Call Yaw', 'Simulink Model Yaw'])
+            #self.ax.plot(Time_model, Yaw_model, linestyle='--', color='deeppink', linewidth=2)
+
+            #self.ax.legend(['odom.cc Yaw', 'Gazebo Service Call Yaw', 'Simulink Model Yaw'])
 
 
             self.ax.plot()
