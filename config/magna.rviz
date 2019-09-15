@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /RobotModel2/Links1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry1/Shape1
@@ -143,95 +142,19 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        aitne/base_link:
-          Value: true
-        aitne/odom:
-          Value: true
-        arche/base_link:
-          Value: true
-        arche/odom:
-          Value: true
         calista/base_link:
           Value: true
         calista/odom:
-          Value: true
-        carpo/base_link:
-          Value: true
-        carpo/odom:
-          Value: true
-        centauri/base_link:
-          Value: true
-        centauri/odom:
-          Value: true
-        elara/base_link:
-          Value: true
-        elara/odom:
-          Value: true
-        enceladus/base_link:
-          Value: true
-        enceladus/odom:
-          Value: true
-        europa/base_link:
-          Value: true
-        europa/odom:
-          Value: true
-        herse/base_link:
-          Value: true
-        herse/odom:
-          Value: true
-        himalia/base_link:
-          Value: true
-        himalia/odom:
-          Value: true
-        kalyke/base_link:
-          Value: true
-        kalyke/odom:
           Value: true
         magna/base_link:
           Value: true
         magna/odom:
           Value: true
-        metis/base_link:
-          Value: true
-        metis/odom:
-          Value: true
-        mimas/base_link:
-          Value: true
-        mimas/odom:
-          Value: true
         nebula/base_link:
           Value: true
         nebula/odom:
           Value: true
-        proxima/base_link:
-          Value: true
-        proxima/odom:
-          Value: true
-        tethys/base_link:
-          Value: true
-        tethys/odom:
-          Value: true
-        thebe/base_link:
-          Value: true
-        thebe/odom:
-          Value: true
-        thyone/base_link:
-          Value: true
-        thyone/odom:
-          Value: true
         world:
-          Value: true
-        zel/base_link:
-          Value: true
-        zel/odom:
-          Value: true
-        zenith/base_link:
-          Value: true
-        zenith/odom:
-          Value: true
-        zephyr/base_link:
-          Value: true
-        zephyr/odom:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -240,71 +163,14 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          aitne/odom:
-            aitne/base_link:
-              {}
-          arche/odom:
-            arche/base_link:
-              {}
           calista/odom:
             calista/base_link:
-              {}
-          carpo/odom:
-            carpo/base_link:
-              {}
-          centauri/odom:
-            centauri/base_link:
-              {}
-          elara/odom:
-            elara/base_link:
-              {}
-          enceladus/odom:
-            enceladus/base_link:
-              {}
-          europa/odom:
-            europa/base_link:
-              {}
-          herse/odom:
-            herse/base_link:
-              {}
-          himalia/odom:
-            himalia/base_link:
-              {}
-          kalyke/odom:
-            kalyke/base_link:
               {}
           magna/odom:
             magna/base_link:
               {}
-          metis/odom:
-            metis/base_link:
-              {}
-          mimas/odom:
-            mimas/base_link:
-              {}
           nebula/odom:
             nebula/base_link:
-              {}
-          proxima/odom:
-            proxima/base_link:
-              {}
-          tethys/odom:
-            tethys/base_link:
-              {}
-          thebe/odom:
-            thebe/base_link:
-              {}
-          thyone/odom:
-            thyone/base_link:
-              {}
-          zel/odom:
-            zel/base_link:
-              {}
-          zenith/odom:
-            zenith/base_link:
-              {}
-          zephyr/odom:
-            zephyr/base_link:
               {}
       Update Interval: 0
       Value: true
@@ -332,7 +198,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -348,7 +214,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /nebula/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -410,7 +276,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -426,33 +292,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /calista/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: proxima/robot_description
       TF Prefix: proxima
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 175; 175; 175
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -470,7 +331,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /proxima/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -488,7 +349,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -504,33 +365,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /proxima/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zel/robot_description
       TF Prefix: zel
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 0; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -548,7 +404,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /zel/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -566,7 +422,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -582,33 +438,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /zel/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zephyr/robot_description
       TF Prefix: zephyr
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 170; 58; 58
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -626,7 +477,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /zephyr/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -644,7 +495,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -660,33 +511,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /zephyr/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: centauri/robot_description
       TF Prefix: centauri
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 138; 224; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -704,7 +550,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /centauri/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -722,7 +568,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -738,33 +584,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /centauri/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zenith/robot_description
       TF Prefix: zenith
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 149; 149
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -782,7 +623,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /zenith/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -800,7 +641,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -816,33 +657,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /zenith/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: europa/robot_description
       TF Prefix: europa
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 252; 255; 49
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -860,7 +696,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /europa/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -878,7 +714,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -894,33 +730,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /europa/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: elara/robot_description
       TF Prefix: elara
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 55; 229
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -938,7 +769,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /elara/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -956,7 +787,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -972,33 +803,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /elara/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: herse/robot_description
       TF Prefix: herse
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 231; 238; 168
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1016,7 +842,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /herse/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1034,7 +860,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1050,33 +876,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /herse/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: thebe/robot_description
       TF Prefix: thebe
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 170; 77; 170
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1094,7 +915,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /thebe/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1112,7 +933,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1128,33 +949,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /thebe/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: metis/robot_description
       TF Prefix: metis
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 104; 127; 170
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1172,7 +988,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /metis/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1190,7 +1006,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1206,33 +1022,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /metis/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: himalia/robot_description
       TF Prefix: himalia
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 85; 0; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1250,7 +1061,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /himalia/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1268,7 +1079,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1284,33 +1095,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /himalia/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: kalyke/robot_description
       TF Prefix: kalyke
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 85; 127
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1328,7 +1134,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /kalyke/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1346,7 +1152,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1362,33 +1168,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /kalyke/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: carpo/robot_description
       TF Prefix: carpo
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 170; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1406,7 +1207,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /carpo/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1424,7 +1225,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1440,7 +1241,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /carpo/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
@@ -1451,11 +1252,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: arche/robot_description
       TF Prefix: arche
@@ -1522,29 +1318,24 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: aitne/robot_description
       TF Prefix: aitne
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 255; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1562,7 +1353,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /aitne/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1580,7 +1371,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1596,33 +1387,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /aitne/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: thyone/robot_description
       TF Prefix: thyone
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 255; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1640,7 +1426,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /thyone/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1658,7 +1444,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1674,38 +1460,33 @@ Visualization Manager:
         Value: Arrow
       Topic: /thyone/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: enceladus/robot_description
       TF Prefix: enceladus
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 170; 85; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
       Line Style: Billboards
-      Line Width: 0.5
+      Line Width: 0.10000000149011612
       Name: Path
       Offset:
         X: 0
@@ -1718,7 +1499,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /enceladus/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1736,7 +1517,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1752,33 +1533,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /enceladus/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: mimas/robot_description
       TF Prefix: mimas
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 170; 0; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1796,7 +1572,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /mimas/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1814,7 +1590,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1830,33 +1606,28 @@ Visualization Manager:
         Value: Arrow
       Topic: /mimas/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: tethys/robot_description
       TF Prefix: tethys
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 0; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -1874,7 +1645,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /tethys/path
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 0.10000000149011612
       Class: rviz/Odometry
       Covariance:
@@ -1892,7 +1663,7 @@ Visualization Manager:
           Scale: 1
           Value: true
         Value: true
-      Enabled: true
+      Enabled: false
       Keep: 100
       Name: Odometry
       Position Tolerance: 0.10000000149011612
@@ -1908,10 +1679,10 @@ Visualization Manager:
         Value: Arrow
       Topic: /tethys/odom
       Unreliable: false
-      Value: true
+      Value: false
   Enabled: true
   Global Options:
-    Background Color: 211; 215; 207
+    Background Color: 0; 0; 0
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -1934,25 +1705,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 63.45330047607422
+      Distance: 116.96295166015625
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -31.43783187866211
-        Y: -5.415034294128418
-        Z: 17.374736785888672
+        X: -16.804805755615234
+        Y: -2.1807000637054443
+        Z: 21.289026260375977
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.23979629576206207
+      Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.0703940391540527
+      Yaw: 1.485392689704895
     Saved: ~
 Window Geometry:
   "&Displays":
