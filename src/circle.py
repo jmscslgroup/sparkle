@@ -167,7 +167,7 @@ class catlaunch:
 
 
 def main(argv):
-    cl = catlaunch(260, 9)
+    cl = catlaunch(260, 22)
     print(cl.X)
 
     cl.spawn()
