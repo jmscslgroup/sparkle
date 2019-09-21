@@ -22,6 +22,8 @@ find_package(catkin REQUIRED COMPONENTS
   transmission_interface
   velocity_controllers
   velodyne_pointcloud
+  threedof
+  hoffmansubsystem
 )
 
 ## System dependencies are found with CMake's conventions
