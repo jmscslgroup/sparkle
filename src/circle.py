@@ -99,7 +99,7 @@ class catlaunch:
         for n in range(0, self.num_of_vehicles):
             print(n)
             cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
-            vel_args.append(['constVel:=4.0','strAng:=0.0595','X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'R:='+ str(self.R),'robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=8.0','strAng:=0.0595','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -167,7 +167,7 @@ class catlaunch:
 
 
 def main(argv):
-    cl = catlaunch(260, 5)
+    cl = catlaunch(260, 9)
     print(cl.X)
 
     cl.spawn()
