@@ -106,6 +106,9 @@ target_link_libraries( model_state ${catkin_LIBRARIES} )
 add_executable( transform_sparkle src/transform.cpp )
 target_link_libraries( transform_sparkle ${catkin_LIBRARIES} )
 
+add_executable( companion_timer src/companion_timer.cpp )
+target_link_libraries(companion_timer ${catkin_LIBRARIES} )
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
