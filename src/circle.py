@@ -16,7 +16,7 @@ import sys
 import signal
 import psutil
 import numpy as np
-
+import matlab.engine
 
 class catlaunch:
     def __init__(self, circumference, num_of_vehicles):
@@ -25,6 +25,9 @@ class catlaunch:
         call(["pkill", "gzclient"])
         time.sleep(2)
         self.num_of_vehicles = num_of_vehicles
+
+        # A member variable to stor matlab engine object whenever need them
+        self.matlab_engine = []
 
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
         self.car_to_bumper = 4.00111
@@ -51,7 +54,6 @@ class catlaunch:
 
         for i in range(0, num_of_vehicles):
             theta_i = theta*i
-            print(theta_i)
 
             if math.fabs(theta_i) < 0.000001:
                 theta_i = 0.0
@@ -72,6 +74,15 @@ class catlaunch:
         self.Y = Y
         self.Yaw = Yaw
 
+    def log(self):
+
+        command = 'rosbag record -a Circle_Test_n_' + str( self.num_of_vehicles)
+        # Start Ros bag record
+        self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        self.rosbagPID = self.rosbag_cmd
+        
+        self.logcall = True
+        
     def spawn(self):
 
         """Start roscore"""
@@ -128,6 +139,26 @@ class catlaunch:
         print('You pressed Ctrl+C!')
         print('############################################')
 
+        if self.logcall:
+            print('Now killing rosbag record')
+            #kill the child process of roscore
+            try:
+                bag_parent = psutil.Process(self.rosbagPID)
+                print(bag_parent)
+            except psutil.NoSuchProcess:
+                print("Rosbag Parent process doesn't exist.")
+                return
+            children = bag_parent.children(recursive=True)
+            print(children)
+            for process in children:
+                print("Attempted to kill child: " + str(process))
+                process.send_signal(signal.SIGTERM)
+
+            #kill the rosbag
+            self.rosbag_cmd.terminate()
+            #Wait to prevent the creation of  zombie process
+            self.rosbag_cmd.wait()
+
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
             self.launchspawn[n].shutdown()
@@ -167,7 +198,32 @@ class catlaunch:
 
 
 def main(argv):
-    cl = catlaunch(260, 22)
+
+    # By default number of vehicle that will be spawned is 2 when no argument is passed
+    num_of_vehicle_to_spawn = 2
+
+    if len(argv) == 0:
+        print("Default num of vehicle is 2")
+    elif len(argv) == 1:
+        if argv[0] == '--help':
+            print("Usage: ./circle [Option] [Value]");
+            print("\n")
+            print("\t --help: \t Get help")
+            print("\t -n [Integer]: \t Pass the integer value which is the number of vehicle to spawn.")
+            return
+        else:
+            print("Usage: ./circle.py -n 2")
+            print("Also see: ./circle.py --help")
+            return
+    elif len(argv) == 2:
+        num_of_vehicle_to_spawn = argv[1]
+        print("Num of Vehicle: ", num_of_vehicle_to_spawn)
+    else:
+        print("Usage: ./circle.py -n 2")
+        print("Also see: ./circle.py --help")
+        return
+
+    cl = catlaunch(260, 1)
     print(cl.X)
 
     cl.spawn()
@@ -178,4 +234,3 @@ def main(argv):
 
 if __name__ == '__main__':
     main(sys.argv[1:])
-
