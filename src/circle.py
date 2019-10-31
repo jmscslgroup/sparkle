@@ -17,6 +17,8 @@ import signal
 import psutil
 import numpy as np
 import matlab.engine
+import glob
+import os
 
 class catlaunch:
     def __init__(self, circumference, num_of_vehicles):
@@ -28,6 +30,9 @@ class catlaunch:
 
         # A member variable to stor matlab engine object whenever need them
         self.matlab_engine = []
+
+        # If log function is called, this will be set to True
+        self.logcall = False
 
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
         self.car_to_bumper = 4.00111
@@ -76,10 +81,13 @@ class catlaunch:
 
     def log(self):
 
-        command = 'rosbag record -a Circle_Test_n_' + str( self.num_of_vehicles)
+        command = 'rosbag record -a -o Circle_Test_n_' + str( self.num_of_vehicles)
         # Start Ros bag record
+
+        print("Starting Rosbag record: " + command)
+
         self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        self.rosbagPID = self.rosbag_cmd
+        self.rosbagPID = self.rosbag_cmd.pid
         
         self.logcall = True
         
@@ -139,25 +147,6 @@ class catlaunch:
         print('You pressed Ctrl+C!')
         print('############################################')
 
-        if self.logcall:
-            print('Now killing rosbag record')
-            #kill the child process of roscore
-            try:
-                bag_parent = psutil.Process(self.rosbagPID)
-                print(bag_parent)
-            except psutil.NoSuchProcess:
-                print("Rosbag Parent process doesn't exist.")
-                return
-            children = bag_parent.children(recursive=True)
-            print(children)
-            for process in children:
-                print("Attempted to kill child: " + str(process))
-                process.send_signal(signal.SIGTERM)
-
-            #kill the rosbag
-            self.rosbag_cmd.terminate()
-            #Wait to prevent the creation of  zombie process
-            self.rosbag_cmd.wait()
 
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
@@ -194,7 +183,14 @@ class catlaunch:
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
 
-        sys.exit(0)
+        #sys.exit(0)
+
+        if self.logcall:
+            list_of_files = glob.glob('./Circle_Test_n_*.bag')
+
+            latest_file = max(list_of_files, key=os.path.getctime)
+            print("Bag File Recorded Is: " + latest_file)
+            self.bagfile = latest_file
 
 
 def main(argv):
