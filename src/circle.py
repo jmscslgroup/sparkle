@@ -22,13 +22,16 @@ import os
 
 class catlaunch:
     def __init__(self, circumference, num_of_vehicles):
+
+        # Kill any existing ros and gzserver and gzclient
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
-        time.sleep(2)
+        time.sleep(1)
+        
+        # Define attributes for catlaunch class
         self.num_of_vehicles = num_of_vehicles
-
-        # A member variable to stor matlab engine object whenever need them
+        # A member variable to store matlab engine object whenever need them
         self.matlab_engine = []
 
         # If log function is called, this will be set to True
@@ -81,12 +84,13 @@ class catlaunch:
 
     def log(self):
 
-        command = 'rosbag record -a -o Circle_Test_n_' + str( self.num_of_vehicles)
+        command = 'rosbag record -a -o Circle_Test_n_' + str( self.num_of_vehicles) + ' __name:=bagrecorder'
         # Start Ros bag record
 
         print("Starting Rosbag record: " + command)
 
         self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        
         self.rosbagPID = self.rosbag_cmd.pid
         
         self.logcall = True
@@ -129,7 +133,7 @@ class catlaunch:
         print('Empty world launched.')
         time.sleep(3)
 
-        self.gzclient = subprocess.Popen('gzclient', stdout=subprocess.PIPE, shell=True)
+        self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
         self.gzclient_pid = self.gzclient.pid
 
         time.sleep(2)
@@ -142,16 +146,64 @@ class catlaunch:
             self.launchvel[n].start()
             time.sleep(1)
 
+        print("Start RVIZ")
+
+        self.rviz = subprocess.Popen(["rosrun rviz rviz  -d ../config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
+        self.rviz_pid = self.rviz.pid
+        
+        print("PID for RVIZ is " + str(self.rviz_pid))
+
+    def enableSystem(self):
+        print("System Enabled")
+        call(["rosparam", "set", "Enable", "true"])
+        enableSys = subprocess.Popen(["rosparam set Enable true"], stdout=subprocess.PIPE, shell=True)
+
+    def startTimer(self, rate):
+
+        print("Time Started")
+
+        # self.timer = subprocess.Popen( ["roslaunch sparkle companion_timer.launch publish_rate:="+str(rate)], stdout=subprocess.PIPE, shell=True)
+        # self.timer_pid = self.timer.pid
+
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch.configure_logging(uuid)
+        
+        companion_args = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/companion_timer.launch', 'publish_rate:=' + str(rate)]
+        launch_args = companion_args[1:]
+        
+        roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(companion_args)[0], launch_args)]
+
+        self.timer_launch = roslaunch.parent.ROSLaunchParent(uuid, roslaunch_file)
+        
+        self.timer_launch.start()
+
+    def killTimer(self):
+        self.timer_launch.shutdown()
+        #self.timer.terminate()
+        call(["pkill", "companion_timer"])
 
     def signal_handler(self, sig, frame):
-        print('You pressed Ctrl+C!')
-        print('############################################')
 
+        print('You pressed Ctrl+C!')
+
+        if self.logcall:
+            
+            bagkiller = subprocess.Popen('rosnode kill /bagrecorder', stdout=subprocess.PIPE, shell=True)
+            kill_child_processes(self.rosbagPID)
+            callret = call(["kill","-9 " + str( self.rosbagPID)])
+
+        print('############################################')
 
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
             self.launchspawn[n].shutdown()
             self.launchvel[n].shutdown()
+
+        
+        #self.killTimer()
+
+        print("Kill RVIZ")
+        self.rviz.terminate()
 
         print('Now killing gzclient')
         #kill the roscore
@@ -179,6 +231,8 @@ class catlaunch:
         #Wait to prevent the creation of zombie processes.
         self.roscore.wait()
 
+        call(["pkill", "rviz"])
+
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
@@ -187,10 +241,11 @@ class catlaunch:
 
         if self.logcall:
             list_of_files = glob.glob('./Circle_Test_n_*.bag')
-
-            latest_file = max(list_of_files, key=os.path.getctime)
-            print("Bag File Recorded Is: " + latest_file)
-            self.bagfile = latest_file
+            print(list_of_files)
+            if len(list_of_files) != 0:
+                latest_file = max(list_of_files, key=os.path.getctime)
+                print("Bag File Recorded Is: " + latest_file)
+                self.bagfile = latest_file
 
 
 def main(argv):
@@ -227,6 +282,16 @@ def main(argv):
     signal.signal(signal.SIGINT, cl.signal_handler)
     print('Press Ctrl+C')
     signal.pause()
+
+def kill_child_processes(parent_pid, sig=signal.SIGTERM):
+    try:
+      parent = psutil.Process(parent_pid)
+    except psutil.NoSuchProcess:
+      return
+    children = parent.children(recursive=True)
+    for process in children:
+      process.send_signal(sig)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
