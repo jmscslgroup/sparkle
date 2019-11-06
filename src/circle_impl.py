@@ -29,55 +29,62 @@ cl.spawn()
 # Start Rosbag record
 cl.log()
 
+# Start Timer
+cl.startTimer(100.0)
+
+# Enable the system
+cl.enableSystem()
+
 signal.signal(signal.SIGINT, cl.signal_handler)
 print("Press Ctrl+C")
 signal.pause()
 
-bagFileSaved = cl.bagfile
+if cl.logcall:
 
-eng = matlab.engine.start_matlab()
-eng_return = eng.addpath('/home/ivory/VersionControl/Jmscslgroup/ROSBagReader')
-B = eng.ROSBagReader(bagFileSaved)
+    try:
+        bagFileSaved = cl.bagfile
 
-eng.workspace["B"] = B
-topics = eng.eval("B.availableTopics")
+        eng = matlab.engine.start_matlab()
+        eng_return = eng.addpath('/home/ivory/VersionControl/Jmscslgroup/ROSBagReader')
+        B = eng.ROSBagReader(bagFileSaved)
 
-print("Topics available in Bagfiles are: "  + str(topics))
+        eng.workspace["B"] = B
+        topics = eng.eval("B.availableTopics")
 
-DataFile = eng.eval("B.extractOdometryData()")
+        print("Topics available in Bagfiles are: "  + str(topics))
 
-print(DataFile)
+        DataFile = eng.eval("B.extractOdometryData()")
 
-CSVFile = DataFile[0]
+        print(DataFile)
 
-data_frame = pd.read_csv(CSVFile)
+        CSVFile = DataFile[0]
 
-X = data_frame['PoseX']
-Y = data_frame['PoseY']
+        data_frame = pd.read_csv(CSVFile)
 
-Time = data_frame['Time']
+        X = data_frame['PoseX']
+        Y = data_frame['PoseY']
 
+        Time = data_frame['Time']
 
+        pt.rcParams["figure.figsize"] = (12,8)
+        params = {'legend.fontsize': 18,
+            'legend.handlelength': 2}
+        pt.rcParams.update(params)
+        pt.rcParams["font.family"] = "Times New Roman"
+        fig =pt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.set_axisbelow(True)
+        ax.minorticks_on()
+        ax.tick_params(axis="x", labelsize=18)
+        ax.tick_params(axis="y", labelsize=18)
+        pt.grid(True)
+        ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
+        ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
+        ax.set_xlabel('Time', fontsize=18)
+        ax.set_ylabel('X', fontsize=18)
+        ax.set_title("X Coordinate Timeseries:",fontsize= 20)
 
-
-
-pt.rcParams["figure.figsize"] = (12,8)
-params = {'legend.fontsize': 18,
-    'legend.handlelength': 2}
-pt.rcParams.update(params)
-pt.rcParams["font.family"] = "Times New Roman"
-fig =pt.figure()
-ax = fig.add_subplot(1,1,1)
-ax.set_axisbelow(True)
-ax.minorticks_on()
-ax.tick_params(axis="x", labelsize=18)
-ax.tick_params(axis="y", labelsize=18)
-pt.grid(True)
-ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-ax.set_xlabel('Time', fontsize=18)
-ax.set_ylabel('X', fontsize=18)
-ax.set_title("X Coordinate Timeseries:",fontsize= 20)
-
-pt.plot(Time, X,  color='firebrick', linewidth=1, linestyle='-', marker ='.', markersize=2 )
-pt.show()
+        pt.plot(Time, X,  color='firebrick', linewidth=1, linestyle='-', marker ='.', markersize=2 )
+        pt.show()
+    except AttributeError:
+        print("No bagfile information found.")
