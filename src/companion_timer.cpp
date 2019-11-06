@@ -36,12 +36,15 @@ int main(int argc, char** argv)
     
     nodeHandle.getParam("pub_rate", pub_rate);
 
+    ROS_INFO_STREAM("Desired publish rate provided by the user is "<< pub_rate);
+    
     nodeHandle.setParam("do_publish", false);
     
 //    nodeHandle.param("do_publish", do_publish, false);
 
     ros::Time lastTime = ros::Time::now();
 
+    ROS_INFO_STREAM("Starting companion Time");
     while(ros::ok())
     {
         nodeHandle.setParam("do_publish",  false);
@@ -52,7 +55,6 @@ int main(int argc, char** argv)
         {
             lastTime = newTime;
             nodeHandle.setParam("do_publish",  true);
-            ROS_INFO_STREAM("Published True");
         }
         ros::spinOnce();
         loop_rate.sleep();
