@@ -4,7 +4,7 @@
 # Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-""" This script helps launch a fleet of n cars along x-axis. """
+""" This script helps launch a fleet of n cars. """
 
 import roslaunch
 import rospy, rosbag
@@ -28,16 +28,14 @@ Attributes:
     1. num_of_vehicles: Number of vehicles to be placed on circumference
     2. matlab_engine: To save matlab engine when matlab engine is started
     3. car_to_bumper: Car length
-    4. R: Radius of the Circle
-    5. theta: angular separation of two consecutive vehicle on the circle
-    6. X: X-coordinates of all the vehicles with respect to the world frame
-    7. Y: Y-coordinates of all the vehicles with respect to the world frame
-    8. Yaw: yaw of all the vehicles with respect to the world frame
-    9. callflag: a Dictionary of boolean to tell what functions were already called.
+    4. X: X-coordinates of all the vehicles with respect to the world frame
+    5. Y: Y-coordinates of all the vehicles with respect to the world frame
+    6. Yaw: yaw of all the vehicles with respect to the world frame
+    7. callflag: a Dictionary of boolean to tell what functions were already called.
 
 Functions:
 
-    1. __init__(circumference, num_of_vehicles): basically a constructor
+    1. __init__( num_of_vehicles, X, Y, Yaw): basically a constructor
     2. log() : function upon calling starts rosbag record
     3. startROS(): function upon calling starts roscore
     4. killROS(): function upon calling kills roscore
@@ -56,11 +54,11 @@ Functions:
 
 '''
 
-class catlaunch:
+class catlaunch(object):
     '''
     __init__ takes length of circumference and number of vehicles to be placed on the circle
     '''
-    def __init__(self, circumference, num_of_vehicles):
+    def __init__(self,  num_of_vehicles, X, Y, Yaw):
 
         # Kill any existing ros and gzserver and gzclient
         call(["pkill", "ros"])
@@ -77,19 +75,6 @@ class catlaunch:
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
         self.car_to_bumper = 4.00111
 
-        """Generate coordinate on x-axis to place `num_of_vehicles`"""
-        r = circumference/(2*3.14159265359) #Calculate the radius of the circle
-        print('************Radius of the circle is {}'.format(r))
-        self.R = r
-
-        theta = (2*3.14159265359)/num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
-        self.theta = theta
-
-
-        X = [] # X-coordinates of cars on  the circle
-        Y = [] # Y-coordinate of cars  on the circle
-        Yaw = [] #Yaw of cars placed on the circle, with respect to the world frame
-
         # defining the names of the car to be spawned. Currently maximum of 22 cars
         self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',
                 'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
@@ -97,23 +82,6 @@ class catlaunch:
                 'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
                 'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos',
                 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina']
-
-        # Calculate, X, Y and Yaw of each cars on the circle. They are assumed to be placed at a equal separation.
-        for i in range(0, num_of_vehicles):
-            theta_i = theta*i
-
-            if math.fabs(theta_i) < 0.000001:
-                theta_i = 0.0
-            x = r*math.cos(theta_i)
-            if math.fabs(x) < 0.000001:
-                x = 0.0
-            X.append(x)
-
-            y = r*math.sin(theta_i)
-            if math.fabs(y) < 0.000001:
-                y = 0.0
-            Y.append(y)
-            Yaw.append(theta_i + (3.14159265359/2))
 
         self.X = X
         self.Y = Y
@@ -141,6 +109,7 @@ class catlaunch:
 
     def stopLog(self):
         if self.callflag["log"]:
+            print("Stopping ROSBAG Recorder.")
             bagkiller = subprocess.Popen('rosnode kill /bagrecorder', stdout=subprocess.PIPE, shell=True)
             kill_child_processes(self.rosbagPID)
             callret = call(["kill","-9 " + str( self.rosbagPID)])
