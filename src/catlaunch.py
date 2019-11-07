@@ -54,7 +54,7 @@ Functions:
 
 '''
 
-class catlaunch(object):
+class catlaunch:
     '''
     __init__ takes length of circumference and number of vehicles to be placed on the circle
     '''

@@ -35,7 +35,7 @@ Attributes:
 Functions:
     1. __init__(circumference, num_of_vehicles): basically a constructor
 '''
-class circle(catlaunch):
+class circle(catlaunch, object):
     
     def __init__(self, circumference, num_of_vehicles):
 
