@@ -13,11 +13,11 @@
     <param name="/$(arg robot)/radius" value="$(arg R)"/>
     <group ns="$(arg robot)">
         <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen">
-            <remap from="/$(arg robot)/cmd_vel" to="/$(arg robot)/cmd_control_vel"/>
+            <!--remap from="/$(arg robot)/cmd_vel" to="/$(arg robot)/cmd_control_vel"/-->
         </node>
-        <node name="hoffmansubsystem_$(arg robot)" pkg="hoffmansubsystem" type="hoffmansubsystem_node" output="screen">
+        <!--node name="hoffmansubsystem_$(arg robot)" pkg="hoffmansubsystem" type="hoffmansubsystem_node" output="screen">
 
-        </node>
+        </node-->
         <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
             <param name="enableTwist" value="false"/>
         </node>
