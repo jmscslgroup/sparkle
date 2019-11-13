@@ -12,8 +12,6 @@ import sys, math, time
 import signal
 import subprocess, shlex
 from subprocess import call
-import sys
-import signal
 import psutil
 import numpy as np
 import matlab.engine
@@ -91,14 +89,15 @@ class catlaunch:
         self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False}
 
         self.uuid = ""
+        self.UpdateRate = 1000
 
     '''
         log function starts logging of the bag files
 
     '''    
-    def log(self):
+    def log(self, duration):
 
-        command = 'rosbag record -a -o Circle_Test_n_' + str( self.num_of_vehicles) + ' __name:=bagrecorder'
+        command = 'rosbag record /magna/odom -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.UpdateRate) + ' --duration=' + str(duration) +  ' __name:=bagrecorder'
         # Start Ros bag record
         print("Starting Rosbag record: " + command)
         self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
@@ -109,11 +108,18 @@ class catlaunch:
 
     def stopLog(self):
         if self.callflag["log"]:
-            print("Stopping ROSBAG Recorder.")
+            # print("Stopping ROSBAG Recorder.")
+            self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
             bagkiller = subprocess.Popen('rosnode kill /bagrecorder', stdout=subprocess.PIPE, shell=True)
-            kill_child_processes(self.rosbagPID)
-            callret = call(["kill","-9 " + str( self.rosbagPID)])
-
+            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
+            # print("Test: ".format(test.communicate()))
+            # subprocess.Popen(["rosnode list | grep *bagrecorder | xargs rosnode kill"], stdout=subprocess.PIPE, shell=True)
+            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
+            # print("Test: ".format(test.communicate()))
+            # kill_child_processes(self.rosbagPID)
+            # callret = call(["kill","-9 " + str( self.rosbagPID)])
+            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
+            # print("Test: ".format(test.communicate()))
         
     """Start roscore"""
     def startROS(self):
@@ -172,6 +178,8 @@ class catlaunch:
         if not self.callflag["startROS"]:
             self.startROS()
 
+        time.sleep(3)
+
         self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         # Create a new ROS Node
         rospy.init_node('twentytwo', anonymous=True)
@@ -221,42 +229,19 @@ class catlaunch:
         call(["rosparam", "set", "Enable", "true"])
         enableSys = subprocess.Popen(["rosparam set Enable true"], stdout=subprocess.PIPE, shell=True)
 
-    def startTimer(self, rate):
+    def setUpdateRate(self, rate):
+        self.UpdateRate = rate
+        call(["rosparam", "set", "/desiredUpdateRate",  str(rate)])
 
-        print("Time Started")
-
-        # self.timer = subprocess.Popen( ["roslaunch sparkle companion_timer.launch publish_rate:="+str(rate)], stdout=subprocess.PIPE, shell=True)
-        # self.timer_pid = self.timer.pid
-
-        roslaunch.configure_logging(self.uuid)
-        
-        companion_args = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/companion_timer.launch', 'publish_rate:=' + str(rate)]
-        launch_args = companion_args[1:]
-        
-        roslaunch_file = [(roslaunch.rlutil.resolve_launch_arguments(companion_args)[0], launch_args)]
-
-        self.timer_launch = roslaunch.parent.ROSLaunchParent(self.uuid, roslaunch_file)
-        
-        self.timer_launch.start()
-
-    def killTimer(self):
-        self.timer_launch.shutdown()
-        #self.timer.terminate()
-        call(["pkill", "companion_timer"])
-
-    def killSimulation(self, sig, frame):
+    def killSimulation(self, sig):
 
         print('You pressed Ctrl+C!')
-
         self.stopLog()
         print('############################################')
-
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
             self.launchspawn[n].shutdown()
             self.launchvel[n].shutdown()
-
-        self.killTimer()
 
         print("Kill RVIZ")
         self.rviz.terminate()
@@ -270,12 +255,13 @@ class catlaunch:
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
 
+        print("##### Simulation Terminated #####")
+
         #sys.exit(0)
 
     def getLatestBag(self):
         if self.callflag["log"]:
             list_of_files = glob.glob('./Circle_Test_n_*.bag')
-            print(list_of_files)
             if len(list_of_files) != 0:
                 latest_file = max(list_of_files, key=os.path.getctime)
                 print("Bag File Recorded Is: " + latest_file)
@@ -283,6 +269,7 @@ class catlaunch:
                 return latest_file
         else:
             print("No bag was recorded in the immediate run.")
+            return None
 
 
 def main(argv):
@@ -329,11 +316,21 @@ def kill_child_processes(parent_pid, sig=signal.SIGTERM):
     try:
       parent = psutil.Process(parent_pid)
     except psutil.NoSuchProcess:
+      print("Parent process doesn't exist.")
       return
     children = parent.children(recursive=True)
     for process in children:
+      print("Attempted to kill child: " + str(process))
       process.send_signal(sig)
 
+def terminate_ros_node(s):
+    list_cmd = subprocess.Popen("rosnode list", shell=True, stdout=subprocess.PIPE)
+    list_output = list_cmd.stdout.read()
+    retcode = list_cmd.wait()
+    assert retcode == 0, "List command returned %d" % retcode
+    for str in list_output.split("\n"):
+        if (str.startswith(s)):
+            system("rosnode kill " + str)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
