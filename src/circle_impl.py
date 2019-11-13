@@ -4,87 +4,62 @@
 # Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from circle import catlaunch
+from circle import circle
+from Bagplot import Bagplot
 import signal
 import matlab.engine
 import pandas as pd
+import sys, math, time
 import matplotlib.pyplot as pt
 import matplotlib.animation as animation
 from matplotlib import style
+import yaml
+from operator import add
 
 
-# Circumference of circle 
-circum_circle = 260.0
+Files = []
+i = 1
+NUM_VEHICLES  = [3, 9]
+UPDATE_RATE = [50]
 
-# Number of  Vehicles to Spawn
-n_vehicles = 1
-cl = catlaunch(circum_circle, n_vehicles)
+# A set of six simulation with two cars and update rate varying from 20 to 120 Hz
+for nn in NUM_VEHICLES: 
+    for i in UPDATE_RATE:
+        print("===================================")
+        print("========   Simulation  Begin   ========")
+        print("===================================")
 
-#Print the X coordinates of all vehicles for sanity checking
-print("X coordinates of vehicles spawned: ", cl.X)
+        ## Simulation 1
+        # Define Simulation Configuration
+        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 300.0}
+        cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
 
-# Spawn all vehicles 
-cl.spawn()
+        #Print the X coordinates of all vehicles for sanity checking
+        print("X coordinates of vehicles spawned: ", cl.X)
 
-# Start Rosbag record
-cl.log()
+        #Print the Y coordinates of all vehicles for sanity checking
+        print("Y coordinates of vehicles spawned: ", cl.Y)
 
-# Start Timer
-cl.startTimer(100.0)
+        # Start a simulation
+        bagFile = cl.startSim1(simConfig["update_rate"], simConfig["log_time"] )
 
-# Enable the system
-cl.enableSystem()
+        if bagFile is not None:
+            Bag  = Bagplot(bagFile)
+            datafiles = Bag.getOdometryDataFile()
+            Files.append(datafiles)
+            Bag.plotOdometry(datafiles, 'PoseY')
 
-signal.signal(signal.SIGINT, cl.signal_handler)
-print("Press Ctrl+C")
-signal.pause()
+        configFileToSave = cl.bagfile[0:-4] + "/" + "simConfig.yaml"
 
-if cl.logcall:
+        with open(configFileToSave, 'w') as file:
+            documents = yaml.dump(simConfig, file)
 
-    try:
-        bagFileSaved = cl.bagfile
+        time.sleep(7)
 
-        eng = matlab.engine.start_matlab()
-        eng_return = eng.addpath('/home/ivory/VersionControl/Jmscslgroup/ROSBagReader')
-        B = eng.ROSBagReader(bagFileSaved)
+# Now since we have all the bag files
 
-        eng.workspace["B"] = B
-        topics = eng.eval("B.availableTopics")
+Files = reduce(add, Files)
 
-        print("Topics available in Bagfiles are: "  + str(topics))
+Bag.plotOdometry(Files, 'PoseY', Title='Consolidated Plot')
 
-        DataFile = eng.eval("B.extractOdometryData()")
 
-        print(DataFile)
-
-        CSVFile = DataFile[0]
-
-        data_frame = pd.read_csv(CSVFile)
-
-        X = data_frame['PoseX']
-        Y = data_frame['PoseY']
-
-        Time = data_frame['Time']
-
-        pt.rcParams["figure.figsize"] = (12,8)
-        params = {'legend.fontsize': 18,
-            'legend.handlelength': 2}
-        pt.rcParams.update(params)
-        pt.rcParams["font.family"] = "Times New Roman"
-        fig =pt.figure()
-        ax = fig.add_subplot(1,1,1)
-        ax.set_axisbelow(True)
-        ax.minorticks_on()
-        ax.tick_params(axis="x", labelsize=18)
-        ax.tick_params(axis="y", labelsize=18)
-        pt.grid(True)
-        ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax.set_xlabel('Time', fontsize=18)
-        ax.set_ylabel('X', fontsize=18)
-        ax.set_title("X Coordinate Timeseries:",fontsize= 20)
-
-        pt.plot(Time, X,  color='firebrick', linewidth=1, linestyle='-', marker ='.', markersize=2 )
-        pt.show()
-    except AttributeError:
-        print("No bagfile information found.")
