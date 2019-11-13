@@ -374,3 +374,5 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+src/.vscode/*
+src/.vscode/*.*
