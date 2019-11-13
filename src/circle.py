@@ -41,7 +41,7 @@ class circle(catlaunch, object):
 
         """Generate coordinate on x-axis to place `num_of_vehicles`"""
         r = circumference/(2*3.14159265359) #Calculate the radius of the circle
-        print('************Radius of the circle is {}'.format(r))
+        print('************ Radius of the circle is {} ************'.format(r))
         self.R = r
 
         theta = (2*3.14159265359)/num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
@@ -69,3 +69,29 @@ class circle(catlaunch, object):
             Yaw.append(theta_i + (3.14159265359/2))
 
             super(circle, self).__init__(num_of_vehicles, X, Y, Yaw)
+
+    ## We will define some simulation sequence that can be called without fuss
+    def startSim1(self, UpdateRate=20, logTime=60):
+        
+        # spawn all the vehicles
+        self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
+        time.sleep(3)
+
+        # Set Update Rate
+        self.setUpdateRate(UpdateRate)
+        time.sleep(3)
+
+        # Enable the system
+        self.enableSystem()
+        time.sleep(3)
+
+        # Start Rosbag record for 60 seconds
+        self.log(logTime)
+        time.sleep(logTime)
+
+        print('Time to terminate')
+        self.killSimulation(signal.SIGINT)
+        
+        bagFile = self.getLatestBag()
+
+        return bagFile
