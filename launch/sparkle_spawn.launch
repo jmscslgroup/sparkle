@@ -32,8 +32,13 @@
         <node pkg="sparkle" type="transform_sparkle" name="transform_sparkle_$(arg robot)" output="screen"/>
 
         <!--node pkg="hoffmansubsystem" type="hoffmansubsystem_node" name="hoffmansubsystem_node"  output="screen" required="true"/-->
-        <node pkg="threedof" type="threedof_node" name="threedof_node_$(arg robot)">
+        <!--node pkg="threedof" type="threedof_node" name="threedof_node_$(arg robot)">
+        </node-->
+
+        <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen">
         </node>
+
+
         <!--node pkg="sparklev2" type="sparklev2_node" name="sparklev2_node_$(arg robot)"  output="screen" required="true"/-->
         
 

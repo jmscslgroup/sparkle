@@ -103,6 +103,9 @@ target_link_libraries( cmd_sparkle ${catkin_LIBRARIES} )
 add_executable( model_state src/model_state.cc )
 target_link_libraries( model_state ${catkin_LIBRARIES} )
 
+add_executable( bicycle src/bicycle.cpp )
+target_link_libraries( bicycle ${catkin_LIBRARIES} )
+
 add_executable( transform_sparkle src/transform.cpp )
 target_link_libraries( transform_sparkle ${catkin_LIBRARIES} )
 

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="robot" default="magna"/>
+    
+    <arg name="X" default="43.83.0"/>
+    <arg name="Y" default="0.0"/>
+    <arg name="Z" default="0"/>
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
+
+    <param name="/$(arg robot)/psi_init" value="$(arg yaw)"/>
+    <param name="/$(arg robot)/x_init" value="$(arg X)"/>
+    <param name="/$(arg robot)/y_init" value="$(arg Y)"/>
+
+
+    <group ns="$(arg robot)">
+    <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen">
+    </node>
+    </group>
+
+
+</launch>

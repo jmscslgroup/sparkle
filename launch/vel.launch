@@ -4,9 +4,9 @@
 <launch>
     
     
-    <arg name="robot" default="sparkle"/>
-    <arg name="strAng" default="0"/>
-    <arg name="constVel" default="1.0"/>
+    <arg name="robot" default="magna"/>
+    <arg name="strAng" default="0.0595"/>
+    <arg name="constVel" default="8.0"/>
     <arg name="R" default="0.0"/>
     <param name="/$(arg robot)/constVel" value="$(arg constVel)"/>
     <param name="/$(arg robot)/strAngle" value="$(arg strAng)"/>
