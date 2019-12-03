@@ -40,10 +40,10 @@ class Bagplot(object):
         self.BagReader = self.engine.ROSBagReader(bagfile)
 
     '''
-        Returns the list of odometry Data files
+        Returns the list of Data files according to the file filter
 
     '''
-    def getOdometryDataFile(self):
+    def getDataFile(self, fileFilter="magna-odom"):
         self.engine.workspace["BagReader"] = self.BagReader
         
         datafiles = self.engine.eval("BagReader.extractOdometryData()")
@@ -51,7 +51,7 @@ class Bagplot(object):
         # I want data files only of time *-odom
         for file in datafiles:
             
-            if "magna-odom" not in file:
+            if fileFilter not in file:
                 datafiles.remove(file)
 
         return datafiles
@@ -59,7 +59,7 @@ class Bagplot(object):
     '''
     Plot specific single attributes from the array of files passed 
     '''
-    def plotOdometry(self, datafiles, attribute, Title=None):
+    def plotData(self, datafiles, attribute, Title=None, fileFilter='_'):
         TimeArray = []
         XArray = []
         FileName   = []
@@ -92,7 +92,7 @@ class Bagplot(object):
 
         for i in range(0, len(XArray)):
             c=colors[i]
-            pt.plot(TimeArray[i] - TimeArray[i][0], XArray[i], color =c, linewidth = 1, linestyle='-', marker='.', markersize = 2)
+            pt.plot(TimeArray[i] - TimeArray[i][0], XArray[i], color =c, linewidth = 1, linestyle=None, marker='.', markersize = 5)
         ax.legend(FileName)
         if Title is None:
             ax.set_title(self.bagfile)
@@ -103,9 +103,9 @@ class Bagplot(object):
         dt_object = datetime.datetime.fromtimestamp(time.time())
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
         if Title is None:
-            fileNameToSave = self.bagfile[0:-4] + "/" + dt + "_odom"
+            fileNameToSave = self.bagfile[0:-4] + "/" + dt + "_" + fileFilter
         else:
-            fileNameToSave =Title + "/" + dt + "_odom"
+            fileNameToSave =Title + "/" + dt + "_" + fileFilter
 
         pickle.dump(fig,file(fileNameToSave + ".pickle",'w'))
         current_fig.savefig(fileNameToSave + ".pdf", dpi = 300)
