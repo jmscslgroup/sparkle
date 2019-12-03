@@ -72,21 +72,24 @@ class circle(catlaunch, object):
 
     ## We will define some simulation sequence that can be called without fuss
     def startSim1(self, UpdateRate=20, logTime=60):
-        
-        # spawn all the vehicles
-        self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
-        time.sleep(3)
 
         # Set Update Rate
         self.setUpdateRate(UpdateRate)
-        time.sleep(3)
+        time.sleep(2)
 
+        self.setLogDuration(logTime)
+
+        # spawn all the vehicles
+        self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
+        time.sleep(4)
+
+     
         # Enable the system
-        self.enableSystem()
-        time.sleep(3)
+#        self.enableSystem()
+#        time.sleep(4)
 
         # Start Rosbag record for 60 seconds
-        self.log(logTime)
+        #self.log(logTime)
         time.sleep(logTime)
 
         print('Time to terminate')
