@@ -57,7 +57,7 @@ class catlaunch:
     '''
     __init__ takes length of circumference and number of vehicles to be placed on the circle
     '''
-    def __init__(self,  num_of_vehicles, X, Y, Yaw):
+    def __init__(self,  num_of_vehicles, X, Y, Yaw, **kwargs):
 
         # Kill any existing ros and gzserver and gzclient
         call(["pkill", "ros"])
@@ -67,6 +67,15 @@ class catlaunch:
         
         # Define attributes for catlaunch class
         self.num_of_vehicles = num_of_vehicles
+
+        # This will be used to set Gazebo physic properties
+        self.max_update_rate = kwargs["max_update_rate"]
+        self.time_step = kwargs["time_step"]
+
+        # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
+        self.update_rate =  kwargs["update_rate"]
+        self.log_time =  kwargs["log_time"]
+
 
         # A member variable to store matlab engine object whenever need them
         self.matlab_engine = []
@@ -82,16 +91,20 @@ class catlaunch:
                 'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos',
                 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina']
 
+        # X-Coordinates of all the vehicles.
         self.X = X
+
+        # Y-Coordinates of all the vehicles.
         self.Y = Y
+
+        #Yaw of all the vehicles.
         self.Yaw = Yaw
 
         # A boolean dictionary that will be set to true if correspondong function is called
         self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False}
 
         self.uuid = ""
-        self.UpdateRate = 10
-        self.duration = 60 #default value
+
 
     '''
         log function starts logging of the bag files
@@ -99,12 +112,16 @@ class catlaunch:
     '''    
     def log(self):
 
-        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.UpdateRate) + ' --duration=' + str(self.duration) +  ' __name:=bagrecorder'
+        # specify rosbag record command with different flags, etc.
+        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
+
+
         # Start Ros bag record
         print("Starting Rosbag record: " + command)
         self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         self.rosbagPID = self.rosbag_cmd.pid
 
+        # So this is for temporarily generating a filename, that will change later when we will retrieve the bag file name
         dt_object = datetime.datetime.fromtimestamp(time.time())
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
 
@@ -113,10 +130,11 @@ class catlaunch:
         self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], stdout=subprocess.PIPE, shell=True)
         self.gzstatsPID =   self.gzstats.pid
 
-
-        self.velFreqFile='veltopic_Frequency_' + dt + '.txt'
-        self.velHzSats = subprocess.Popen(["rostopic hz /magna/vel > "+ self.velFreqFile],  stdout=subprocess.PIPE, shell=True)
-        self.velHzSatsPID =   self.velHzSats.pid
+        # log the actual publish rate of the  /magna/vel 
+        # Actually, we might not this as rostopic hz basically subscribes to the message and calculate the average frequency over the window.
+        # self.velFreqFile='veltopic_Frequency_' + dt + '.txt'
+        # self.velHzSats = subprocess.Popen(["rostopic hz /magna/vel > "+ self.velFreqFile],  stdout=subprocess.PIPE, shell=True)
+        # self.velHzSatsPID =   self.velHzSats.pid
 
         # The log call to true once log is called     
         self.callflag["log"] = True
@@ -126,18 +144,9 @@ class catlaunch:
             # print("Stopping ROSBAG Recorder.")
             self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
             bagkiller = subprocess.Popen('rosnode kill /bagrecorder', stdout=subprocess.PIPE, shell=True)
-            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
-            # print("Test: ".format(test.communicate()))
-            # subprocess.Popen(["rosnode list | grep *bagrecorder | xargs rosnode kill"], stdout=subprocess.PIPE, shell=True)
-            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
-            # print("Test: ".format(test.communicate()))
-            # kill_child_processes(self.rosbagPID)
-            # callret = call(["kill","-9 " + str( self.rosbagPID)])
-            # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
-            # print("Test: ".format(test.communicate()))
 
             self.gzstats.terminate()
-            self.velHzSats.terminate()
+            # self.velHzSats.terminate()
         
     """Start roscore"""
     def startROS(self):
@@ -146,7 +155,7 @@ class catlaunch:
         self.callflag["startROS"] = True
         time.sleep(5)
 
-    """ Kill ROS Code if it has started """
+    """ Kill ROS Core if it has started """
     def killROS(self):
 
         if self.callflag["startROS"]:
@@ -211,7 +220,6 @@ class catlaunch:
 
         #Object to spawn catvehicle in the empty world
         
-
         cli_args = []
         vel_args = []
         spawn_file = []
@@ -222,7 +230,7 @@ class catlaunch:
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
         for n in range(0, self.num_of_vehicles):
             print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]), 'updateRate:='+   str(self.UpdateRate)])
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]), 'updateRate:='+   str(self.update_rate)])
             vel_args.append(['constVel:=0.5','strAng:=0.0595','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
@@ -250,18 +258,12 @@ class catlaunch:
         if not  self.callflag["visualize"]:
             self.visualize()
 
-    def enableSystem(self):
-        print("System Enabled")
-        call(["rosparam", "set", "Enable", "true"])
-        enableSys = subprocess.Popen(["rosparam set Enable true"],  stdout=subprocess.PIPE, shell=True)
-
     def setUpdateRate(self, rate):
-        self.UpdateRate = rate
-#        call(["rosparam", "set", "/desiredUpdateRate",  str(rate)])
+        self.update_rate = rate
 
     def setLogDuration(self, duration):
         print('ROSBag record duration will be {} seconds'.format(duration))
-        self.duration = duration
+        self.log_time = duration
 
     def killSimulation(self, sig):
 
@@ -301,7 +303,7 @@ class catlaunch:
 
                 fileName = self.bagfile[0:-4]
                 move_cmd = subprocess.Popen(["mv  " + self.gzstatsFile + " "+  fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
-                move_cmd = subprocess.Popen(["mv " +  self.velFreqFile  + " " + fileName + "_velFreq.txt"],   stdout=subprocess.PIPE, shell=True)
+                # move_cmd = subprocess.Popen(["mv " +  self.velFreqFile  + " " + fileName + "_velFreq.txt"],   stdout=subprocess.PIPE, shell=True)
                 
                 return latest_file
         else:
