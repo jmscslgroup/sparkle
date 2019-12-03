@@ -8,6 +8,11 @@
 
 import roslaunch
 import rospy, rosbag
+
+from gazebo_msgs.srv import GetPhysicsProperties
+from gazebo_msgs.srv import SetPhysicsProperties
+
+
 import sys, math, time
 import signal
 import subprocess, shlex
@@ -59,22 +64,28 @@ class catlaunch:
     '''
     def __init__(self,  num_of_vehicles, X, Y, Yaw, **kwargs):
 
+        try:
+            # Define attributes for catlaunch class
+            self.num_of_vehicles = num_of_vehicles
+
+            # This will be used to set Gazebo physic properties
+            self.max_update_rate = kwargs["max_update_rate"]
+            self.time_step = kwargs["time_step"]
+
+            # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
+            self.update_rate =  kwargs["update_rate"]
+            self.log_time =  kwargs["log_time"]
+        except KeyError as e:
+            print("catlaunch(): KeyError: {}".format(str(e)))
+            raise
+
         # Kill any existing ros and gzserver and gzclient
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
         time.sleep(1)
         
-        # Define attributes for catlaunch class
-        self.num_of_vehicles = num_of_vehicles
 
-        # This will be used to set Gazebo physic properties
-        self.max_update_rate = kwargs["max_update_rate"]
-        self.time_step = kwargs["time_step"]
-
-        # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
-        self.update_rate =  kwargs["update_rate"]
-        self.log_time =  kwargs["log_time"]
 
 
         # A member variable to store matlab engine object whenever need them
@@ -199,8 +210,12 @@ class catlaunch:
 
         
 
-    def spawn(self):
-
+    '''
+    
+    create function starts ros, create gazebo world and set desired physics
+    properties such as max step size and max update rate.
+    '''
+    def create(self):
         # If roscore has not started yet, then start the roscore
         if not self.callflag["startROS"]:
             self.startROS()
@@ -217,6 +232,30 @@ class catlaunch:
 
         self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
         self.gzclient_pid = self.gzclient.pid
+        
+        ## Now we will set the desired physics properties in Gazebo based on what is there in  **kwargs 
+        # ## using rosservice call
+        
+        rospy.wait_for_service('gazebo/get_physics_properties')
+        rospy.wait_for_service('gazebo/set_physics_properties')
+
+
+        get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+        physics_properties = get_physics_properties_prox()
+
+        physics_properties.max_update_rate = self.max_update_rate
+        physics_properties.time_step = self.time_step
+
+        set_physics_properties_prox = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
+        set_physics_properties_prox(physics_properties.time_step,
+                                    physics_properties.max_update_rate,
+                                    physics_properties.gravity,
+                                    physics_properties.ode_config)
+
+    '''
+    Spwans all cars and the impart velocity to them
+    '''
+    def spawn(self):
 
         #Object to spawn catvehicle in the empty world
         
@@ -302,7 +341,9 @@ class catlaunch:
                 self.bagfile = latest_file
 
                 fileName = self.bagfile[0:-4]
-                move_cmd = subprocess.Popen(["mv  " + self.gzstatsFile + " "+  fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                create_dir = subprocess.Popen(["mkdir " +  fileName],   stdout=subprocess.PIPE, shell=True) 
+                move_cmd = subprocess.Popen(["mv  " + self.gzstatsFile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                self.gzstatsFile = fileName + "_gzStats.txt"
                 # move_cmd = subprocess.Popen(["mv " +  self.velFreqFile  + " " + fileName + "_velFreq.txt"],   stdout=subprocess.PIPE, shell=True)
                 
                 return latest_file
