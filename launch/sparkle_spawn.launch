@@ -11,12 +11,14 @@
     <arg name="roll" default="0"/>
     <arg name="pitch" default="0"/>
     <arg name="yaw" default="0"/>
+    <arg name="updateRate" default="1.0"/>
 
     <param name="/$(arg robot)/windx" value="0.0"/>
     <param name="/$(arg robot)/windy" value="0.0"/>
     <param name="/$(arg robot)/psi_init" value="$(arg yaw)"/>
     <param name="/$(arg robot)/x_init" value="$(arg X)"/>
     <param name="/$(arg robot)/y_init" value="$(arg Y)"/>
+    <param name="/$(arg robot)/updateRate" value="$(arg updateRate)"/>
     <param name="/$(arg robot)/childFrameId" value="$(arg robot)/base_link"/>
     <param name="/$(arg robot)/headerFrameId" value="$(arg robot)/odom"/>
     <!-- push robot_description to factor:wspawn robot in gazebo -->
