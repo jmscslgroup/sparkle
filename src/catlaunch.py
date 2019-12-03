@@ -16,6 +16,7 @@ import psutil
 import numpy as np
 import matlab.engine
 import glob
+import datetime
 import os
 
 '''
@@ -89,19 +90,33 @@ class catlaunch:
         self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False}
 
         self.uuid = ""
-        self.UpdateRate = 1000
+        self.UpdateRate = 10
+        self.duration = 60 #default value
 
     '''
         log function starts logging of the bag files
 
     '''    
-    def log(self, duration):
+    def log(self):
 
-        command = 'rosbag record /magna/odom -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.UpdateRate) + ' --duration=' + str(duration) +  ' __name:=bagrecorder'
+        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.UpdateRate) + ' --duration=' + str(self.duration) +  ' __name:=bagrecorder'
         # Start Ros bag record
         print("Starting Rosbag record: " + command)
         self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         self.rosbagPID = self.rosbag_cmd.pid
+
+        dt_object = datetime.datetime.fromtimestamp(time.time())
+        dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
+
+        # log the gz stats
+        self.gzstatsFile ='gz_stats_' + dt + '.txt'
+        self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], stdout=subprocess.PIPE, shell=True)
+        self.gzstatsPID =   self.gzstats.pid
+
+
+        self.velFreqFile='veltopic_Frequency_' + dt + '.txt'
+        self.velHzSats = subprocess.Popen(["rostopic hz /magna/vel > "+ self.velFreqFile],  stdout=subprocess.PIPE, shell=True)
+        self.velHzSatsPID =   self.velHzSats.pid
 
         # The log call to true once log is called     
         self.callflag["log"] = True
@@ -120,6 +135,9 @@ class catlaunch:
             # callret = call(["kill","-9 " + str( self.rosbagPID)])
             # test = subprocess.Popen('rosnode list', stdout=subprocess.PIPE, shell=True)
             # print("Test: ".format(test.communicate()))
+
+            self.gzstats.terminate()
+            self.velHzSats.terminate()
         
     """Start roscore"""
     def startROS(self):
@@ -185,8 +203,14 @@ class catlaunch:
         rospy.init_node('twentytwo', anonymous=True)
         roslaunch.configure_logging(self.uuid)
 
+        if not self.callflag["startGZserver"]:
+            self.startGZserver()
+
+        self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
+        self.gzclient_pid = self.gzclient.pid
 
         #Object to spawn catvehicle in the empty world
+        
 
         cli_args = []
         vel_args = []
@@ -198,28 +222,30 @@ class catlaunch:
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
         for n in range(0, self.num_of_vehicles):
             print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
-            vel_args.append(['constVel:=8.0','strAng:=0.0595','R:='+ str(self.R),'robot:='+ str(self.name[n])])
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]), 'updateRate:='+   str(self.UpdateRate)])
+            vel_args.append(['constVel:=0.5','strAng:=0.0595','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
             self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
-        if not self.callflag["startGZserver"]:
-            self.startGZserver()
-
-        self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
-        self.gzclient_pid = self.gzclient.pid
-
-        time.sleep(2)
+        time.sleep(5)
 
         for n in range(0, self.num_of_vehicles):
-            print('Vehicle' + str(n) + ' spawning')
+            print('Vehicle [' + str(n) + '] spawning.')
             self.launchspawn[n].start()
-            time.sleep(6)
+            time.sleep(5)
+
+        print('Velocity node ' + str(0) + '  started.')
+        self.launchvel[0].start()
+
+        # We will start ROSBag record immediately 
+        self.log()
+
+        for n in range(1, self.num_of_vehicles):
+            print('Velocity node ' + str(n) + '  started.')
             self.launchvel[n].start()
-            time.sleep(1)
 
         if not  self.callflag["visualize"]:
             self.visualize()
@@ -227,11 +253,15 @@ class catlaunch:
     def enableSystem(self):
         print("System Enabled")
         call(["rosparam", "set", "Enable", "true"])
-        enableSys = subprocess.Popen(["rosparam set Enable true"], stdout=subprocess.PIPE, shell=True)
+        enableSys = subprocess.Popen(["rosparam set Enable true"],  stdout=subprocess.PIPE, shell=True)
 
     def setUpdateRate(self, rate):
         self.UpdateRate = rate
-        call(["rosparam", "set", "/desiredUpdateRate",  str(rate)])
+#        call(["rosparam", "set", "/desiredUpdateRate",  str(rate)])
+
+    def setLogDuration(self, duration):
+        print('ROSBag record duration will be {} seconds'.format(duration))
+        self.duration = duration
 
     def killSimulation(self, sig):
 
@@ -255,6 +285,8 @@ class catlaunch:
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
 
+        self.killROS()
+
         print("##### Simulation Terminated #####")
 
         #sys.exit(0)
@@ -266,6 +298,11 @@ class catlaunch:
                 latest_file = max(list_of_files, key=os.path.getctime)
                 print("Bag File Recorded Is: " + latest_file)
                 self.bagfile = latest_file
+
+                fileName = self.bagfile[0:-4]
+                move_cmd = subprocess.Popen(["mv  " + self.gzstatsFile + " "+  fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                move_cmd = subprocess.Popen(["mv " +  self.velFreqFile  + " " + fileName + "_velFreq.txt"],   stdout=subprocess.PIPE, shell=True)
+                
                 return latest_file
         else:
             print("No bag was recorded in the immediate run.")
