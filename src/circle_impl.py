@@ -31,9 +31,9 @@ for nn in NUM_VEHICLES:
 
         ## Simulation 1
         # Define Simulation Configuration
-        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 90.0}
-        cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
-
+        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 90.0, "max_update_rate": 100.0, "time_step": 0.01}
+        #cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
+        cl = circle(**simConfig)
         #Print the X coordinates of all vehicles for sanity checking
         print("X coordinates of vehicles spawned: ", cl.X)
 
@@ -41,7 +41,7 @@ for nn in NUM_VEHICLES:
         print("Y coordinates of vehicles spawned: ", cl.Y)
 
         # Start a simulation
-        bagFile = cl.startSim1(simConfig["update_rate"], simConfig["log_time"] )
+        bagFile = cl.startSim1()
 
         if bagFile is not None:
             Bag  = Bagplot(bagFile)
