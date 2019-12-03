@@ -85,7 +85,7 @@ class GZStats(object):
         
         # Change the color and its transparency
         ax1.fill_between( SimTime, Factor, color="skyblue", alpha=0.2)
-        ax1.plot(SimTime, Factor, color="Slateblue", alpha=0.6)
+        ax1.plot(SimTime, Factor, color="Slateblue", alpha=0.6, linestyle='-', linewidth='1', marker='.', markersize = 3)
         
         ax1.set_axisbelow(True)
         ax1.minorticks_on()
@@ -100,7 +100,7 @@ class GZStats(object):
         
         # Change the color and its transparency
         ax2.fill_between( RealTime, Factor, color="lightcoral", alpha=0.2)
-        ax2.plot(RealTime, Factor, color="crimson", alpha=0.6)
+        ax2.plot(RealTime, Factor, color="crimson", alpha=0.6, linestyle='-', linewidth='1', marker='.', markersize = 3)
         
         ax2.set_axisbelow(True)
         ax2.minorticks_on()
