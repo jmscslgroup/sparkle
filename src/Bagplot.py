@@ -43,10 +43,12 @@ class Bagplot(object):
         Returns the list of Data files according to the file filter
 
     '''
-    def getDataFile(self, fileFilter="magna-odom"):
+    def getDataFile(self, fileFilter="magna-odom", msg_types = "odom"):
         self.engine.workspace["BagReader"] = self.BagReader
         
-        datafiles = self.engine.eval("BagReader.extractOdometryData()")
+        datafiles = []
+        if msg_types == "odom":
+            datafiles = self.engine.eval("BagReader.extractOdometryData()")
 
         # I want data files only of time *-odom
         for file in datafiles:
@@ -54,58 +56,70 @@ class Bagplot(object):
             if fileFilter not in file:
                 datafiles.remove(file)
 
-        return datafiles
-
-    '''
-    Plot specific single attributes from the array of files passed 
-    '''
-    def plotData(self, datafiles, attribute, Title=None, fileFilter='_'):
-        TimeArray = []
-        XArray = []
-        FileName   = []
-        for f in datafiles:
-            if ".csv" in f:
-                data_frame = pd.read_csv(f)
-                Time = data_frame["Time"]
-                X = data_frame[attribute]
-                TimeArray.append(Time)
-                XArray.append(X)
-                FileName.append(f)
-
-        pt.rcParams["figure.figsize"] = (16,8)
-        params = {'legend.fontsize': 10, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
-        pt.rcParams.update(params)
-        pt.rcParams["font.family"] = "Times New Roman"
-        fig = pt.figure()
-        ax = fig.add_subplot(1,1,1)
-        ax.set_axisbelow(True)
-        ax.minorticks_on()
-        ax.tick_params(axis="x", labelsize=16)
-        ax.tick_params(axis="y", labelsize=16)
-        pt.grid(True)
-        ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax.set_xlabel('Time', fontsize=16)
-        ax.set_ylabel(attribute, fontsize=16)
+        return 
         
-        colors=cm.rainbow(np.linspace(0,1,len(XArray)))
+    '''
+    Plot specific single attributes from the array of files passed
+    '''
+    def plot_timeseries(self, datafiles, attribute, fileFilter='_'):
+        Title = self.bagfile[0:-4]
+        plot_timeseries(datafiles, attribute, fileFilter, Title)
 
-        for i in range(0, len(XArray)):
-            c=colors[i]
-            pt.plot(TimeArray[i] - TimeArray[i][0], XArray[i], color =c, linewidth = 1, linestyle=None, marker='.', markersize = 5)
-        ax.legend(FileName)
-        if Title is None:
-            ax.set_title(self.bagfile)
-        else:
-            ax.set_title(Title)
-        current_fig = pt.gcf()
-       # pt.show()
-        dt_object = datetime.datetime.fromtimestamp(time.time())
-        dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
-        if Title is None:
-            fileNameToSave = self.bagfile[0:-4] + "/" + dt + "_" + fileFilter
-        else:
-            fileNameToSave =Title + "/" + dt + "_" + fileFilter
+        
 
-        pickle.dump(fig,file(fileNameToSave + ".pickle",'w'))
-        current_fig.savefig(fileNameToSave + ".pdf", dpi = 300)
+'''
+Plot specific single attributes from the array of files passed
+'''
+def plot_timeseries(datafiles, attribute, fileFilter='_',  Title=None):
+
+
+    if Title is None:
+        Title = "Untitled"
+    TimeArray = []
+    XArray = []
+    FileName   = []
+    for f in datafiles:
+        if ".csv" in f:
+            data_frame = pd.read_csv(f)
+            Time = data_frame["Time"]
+            X = data_frame[attribute]
+            TimeArray.append(Time)
+            XArray.append(X)
+            FileName.append(f)
+
+    pt.rcParams["figure.figsize"] = (16,8)
+    params = {'legend.fontsize': 10, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
+    pt.rcParams.update(params)
+    pt.rcParams["font.family"] = "Times New Roman"
+    fig = pt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.set_axisbelow(True)
+    ax.minorticks_on()
+    ax.tick_params(axis="x", labelsize=16)
+    ax.tick_params(axis="y", labelsize=16)
+    pt.grid(True)
+    ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
+    ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
+    ax.set_xlabel('Time', fontsize=16)
+    ax.set_ylabel(attribute, fontsize=16)
+    
+    colors=cm.rainbow(np.linspace(0,1,len(XArray)))
+
+    for i in range(0, len(XArray)):
+        c=colors[i]
+        pt.plot(TimeArray[i] - TimeArray[i][0], XArray[i], color =c, linewidth = 1, linestyle=None, marker='.', markersize = 5)
+    ax.legend(FileName)
+
+
+    ax.set_title(Title)
+    current_fig = pt.gcf()
+    # pt.show()
+    dt_object = datetime.datetime.fromtimestamp(time.time())
+    dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
+    fileNameToSave =Title + "/" + dt + "_" + fileFilter
+
+    pickle.dump(fig,file(fileNameToSave + ".pickle",'w'))
+    current_fig.savefig(fileNameToSave + ".pdf", dpi = 300)
+
+
+   
