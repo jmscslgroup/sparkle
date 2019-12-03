@@ -39,10 +39,15 @@ class circle(catlaunch, object):
     
     def __init__(self, **kwargs):
 
-        self.circumference = kwargs["circumference"]
-        self.num_of_vehicles = kwargs["num_vehicle"]
-        self.update_rate = kwargs["update_rate"]
-        self.log_time = kwargs["log_time"]
+        try:
+            self.circumference = kwargs["circumference"]
+            self.num_of_vehicles = kwargs["num_vehicle"]
+            self.update_rate = kwargs["update_rate"]
+            self.log_time = kwargs["log_time"]
+        except KeyError as e:
+            print("circle(): KeyError: {}".format(str(e)))
+            raise
+
 
         """Generate coordinate on x-axis to place `num_of_vehicles`"""
         r = self.circumference/(2*3.14159265359) #Calculate the radius of the circle
@@ -73,16 +78,12 @@ class circle(catlaunch, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"])
+            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"])
 
     ## We will define some simulation sequence that can be called without fuss
     def startSim1(self):
 
-        # Set Update Rate
-        self.setUpdateRate(self.update_rate)
-        time.sleep(2)
-
-        self.setLogDuration(self.log_time)
+        self.create()
 
         # spawn all the vehicles
         self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
