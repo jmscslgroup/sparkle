@@ -37,14 +37,19 @@ Functions:
 '''
 class circle(catlaunch, object):
     
-    def __init__(self, circumference, num_of_vehicles):
+    def __init__(self, **kwargs):
+
+        self.circumference = kwargs["circumference"]
+        self.num_of_vehicles = kwargs["num_vehicle"]
+        self.update_rate = kwargs["update_rate"]
+        self.log_time = kwargs["log_time"]
 
         """Generate coordinate on x-axis to place `num_of_vehicles`"""
-        r = circumference/(2*3.14159265359) #Calculate the radius of the circle
+        r = self.circumference/(2*3.14159265359) #Calculate the radius of the circle
         print('************ Radius of the circle is {} ************'.format(r))
         self.R = r
 
-        theta = (2*3.14159265359)/num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
+        theta = (2*3.14159265359)/self.num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
         self.theta = theta
 
         X = [] # X-coordinates of cars on  the circle
@@ -52,7 +57,7 @@ class circle(catlaunch, object):
         Yaw = [] #Yaw of cars placed on the circle, with respect to the world frame
 
         # Calculate, X, Y and Yaw of each cars on the circle. They are assumed to be placed at a equal separation.
-        for i in range(0, num_of_vehicles):
+        for i in range(0, self.num_of_vehicles):
             theta_i = theta*i
 
             if math.fabs(theta_i) < 0.000001:
@@ -68,29 +73,23 @@ class circle(catlaunch, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-            super(circle, self).__init__(num_of_vehicles, X, Y, Yaw)
+            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"])
 
     ## We will define some simulation sequence that can be called without fuss
-    def startSim1(self, UpdateRate=20, logTime=60):
+    def startSim1(self):
 
         # Set Update Rate
-        self.setUpdateRate(UpdateRate)
+        self.setUpdateRate(self.update_rate)
         time.sleep(2)
 
-        self.setLogDuration(logTime)
+        self.setLogDuration(self.log_time)
 
         # spawn all the vehicles
         self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
         time.sleep(4)
 
-     
-        # Enable the system
-#        self.enableSystem()
-#        time.sleep(4)
-
         # Start Rosbag record for 60 seconds
-        #self.log(logTime)
-        time.sleep(logTime)
+        time.sleep(self.log_time)
 
         print('Time to terminate')
         self.killSimulation(signal.SIGINT)
