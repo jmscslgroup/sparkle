@@ -59,7 +59,7 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
         return;
     }
     ros::Duration duration = current_time - lastUpdate;
-    
+
     lastUpdate = current_time;
     double dT = duration.toSec() + (duration.toNSec()*1e-9);
 
@@ -134,12 +134,14 @@ int main(int argc, char** argv)
     lastUpdate = ros::Time();
     ROS_INFO_STREAM(" ######## Last Update Time is "<<lastUpdate.toSec());
     
+    double updateRate;
 
     n.param("x_init", x_init, 0.0);
     n.param("y_init", y_init, 0.0);
     n.param("psi_init", psi_init, 0.0);
     n.param("str_init", str_init, 0.0);
     n.param("wheelBase", wheelBase, 2.62);
+    n.param("updateRate", updateRate, 2.0);
 
     x_old = x_init;
     y_old = y_init;
@@ -159,15 +161,30 @@ int main(int argc, char** argv)
 
 
     ros::Rate loop_rate(100);
-        
     newMessage = false;
+    
+    ros::Time previousTime = ros::Time::now();
+    ros::Time newTime = ros::Time::now();
+    
+    ros::Duration duration = newTime - previousTime;
+    double dT;
 
     while(ros::ok())
     {
         if(newMessage)
         {
-            setvel_pub.publish(newOdom);
-            vel_pub.publish(newVel);
+            newTime = ros::Time::now();
+        
+            duration = newTime - previousTime;
+            dT = duration.toSec() + (duration.toNSec()*1e-9);
+            
+            if(dT >= 1.0/updateRate)
+            {
+                setvel_pub.publish(newOdom);
+                vel_pub.publish(newVel);
+                previousTime = newTime;
+
+            }
             newMessage = false;
         }
         
