@@ -19,8 +19,8 @@ from operator import add
 
 Files = []
 i = 1
-NUM_VEHICLES  = [3, 9]
-UPDATE_RATE = [50]
+NUM_VEHICLES  = [5, 20]
+UPDATE_RATE = [1]
 
 # A set of six simulation with two cars and update rate varying from 20 to 120 Hz
 for nn in NUM_VEHICLES: 
@@ -31,7 +31,7 @@ for nn in NUM_VEHICLES:
 
         ## Simulation 1
         # Define Simulation Configuration
-        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 300.0}
+        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 90.0}
         cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
 
         #Print the X coordinates of all vehicles for sanity checking
@@ -45,9 +45,9 @@ for nn in NUM_VEHICLES:
 
         if bagFile is not None:
             Bag  = Bagplot(bagFile)
-            datafiles = Bag.getOdometryDataFile()
+            datafiles = Bag.getDataFile(fileFilter="magna-setvel")
             Files.append(datafiles)
-            Bag.plotOdometry(datafiles, 'PoseY')
+            Bag.plotData(datafiles, 'PoseY', fileFilter='magna-setvel')
 
         configFileToSave = cl.bagfile[0:-4] + "/" + "simConfig.yaml"
 
@@ -60,6 +60,6 @@ for nn in NUM_VEHICLES:
 
 Files = reduce(add, Files)
 
-Bag.plotOdometry(Files, 'PoseY', Title='Consolidated Plot')
+Bag.plotData(Files, 'PoseY', Title='Consolidated Plot', fileFilter='magna-setvel')
 
 
