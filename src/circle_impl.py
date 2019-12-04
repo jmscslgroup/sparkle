@@ -42,7 +42,7 @@ for nn in NUM_VEHICLES:
         print("Y coordinates of vehicles spawned: ",  Circ.Y)
 
         # Start a simulation
-        bagFile = Circ.startSim1()
+        bagFile = Circ.start_circle_sim()
 
         if bagFile is not None:
             Bag  = Bagplot(bagFile)

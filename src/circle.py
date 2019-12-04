@@ -81,7 +81,7 @@ class circle(catlaunch, object):
             super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"])
 
     ## We will define some simulation sequence that can be called without fuss
-    def startSim1(self):
+    def start_circle_sim(self):
 
         self.create()
 
