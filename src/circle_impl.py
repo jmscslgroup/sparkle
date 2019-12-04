@@ -5,6 +5,7 @@
 # All rights reserved.
 
 from circle import circle
+import Bagplot
 from Bagplot import Bagplot
 import signal
 import matlab.engine
@@ -33,33 +34,33 @@ for nn in NUM_VEHICLES:
         # Define Simulation Configuration
         simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 90.0, "max_update_rate": 100.0, "time_step": 0.01}
         #cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
-        cl = circle(**simConfig)
+        Circ = circle(**simConfig)
         #Print the X coordinates of all vehicles for sanity checking
-        print("X coordinates of vehicles spawned: ", cl.X)
+        print("X coordinates of vehicles spawned: ",  Circ.X)
 
         #Print the Y coordinates of all vehicles for sanity checking
-        print("Y coordinates of vehicles spawned: ", cl.Y)
+        print("Y coordinates of vehicles spawned: ",  Circ.Y)
 
         # Start a simulation
-        bagFile = cl.startSim1()
+        bagFile = Circ.startSim1()
 
         if bagFile is not None:
             Bag  = Bagplot(bagFile)
-            datafiles = Bag.getDataFile(fileFilter="magna-setvel")
+            datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
             Files.append(datafiles)
-            Bag.plotData(datafiles, 'PoseY', fileFilter='magna-setvel')
+            Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')
 
-        configFileToSave = cl.bagfile[0:-4] + "/" + "simConfig.yaml"
+        configFileToSave =  Circ.bagfile[0:-4] + "/" + "simConfig.yaml"
 
         with open(configFileToSave, 'w') as file:
             documents = yaml.dump(simConfig, file)
-
+    
         time.sleep(7)
 
 # Now since we have all the bag files
 
 Files = reduce(add, Files)
 
-Bag.plotData(Files, 'PoseY', Title='Consolidated Plot', fileFilter='magna-setvel')
+Bagplot.plot_timeseries(Files, 'PoseY', Title='Consolidated Plot', fileFilter='magna-setvel')
 
 
