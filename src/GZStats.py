@@ -97,6 +97,7 @@ class GZStats(object):
         ax1.set_xlabel('Sim Time', fontsize=16)
         ax1.set_ylabel('Real Time Factor', fontsize=16)
         ax1.legend(['Real time factor average: ' + str(self.rtf_avg) + ', std: ' + str(self.rtf_std)])
+        ax1.set_title( self.statfile[0:-4]+ "\n " + "Real Time Factor vs Sim Time")
         
         # Change the color and its transparency
         ax2.fill_between( RealTime, Factor, color="lightcoral", alpha=0.2)
@@ -111,6 +112,7 @@ class GZStats(object):
         ax2.set_xlabel('Real Time', fontsize=16)
         ax2.set_ylabel('Real Time Factor', fontsize=16)
         ax2.legend(['Real time factor average: ' + str(self.rtf_avg) + ', std: ' + str(self.rtf_std)])
+        ax2.set_title( self.statfile[0:-4]+ "\n" + "Real Time Factor vs Real Time")
 
  
 
@@ -120,7 +122,7 @@ class GZStats(object):
             pickle.dump(fig,file(fileToSave + "_RTF.pickle",'w'))
             current_fig.savefig(fileToSave + "_RTF.pdf", dpi = 300) 
 
-        pt.show()
+        #pt.show()
         
     def plotSimStatus(self, save=True):
         SimTime = self.dataframe['SimTime']
@@ -146,7 +148,8 @@ class GZStats(object):
         ax1.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
         ax1.set_xlabel('Sim Time', fontsize=16)
         ax1.set_ylabel('Gazebo Sim Pause Status', fontsize=16)
-        ax1.legend(['Pause ratio: ' + str(self.pause_ratio*100)+ '%'])
+        ax1.legend(['Pause percentage: ' + str(self.pause_ratio*100)+ '%'])
+        ax1.set_title( self.statfile[0:-4]+ "\n" + "Sim Status (Pause/Unpause) vs Sim Time")
         
         # Change the color and its transparency
         ax2.plot(RealTime, SimStatus, color="crimson", alpha=0.6,  linestyle='-', linewidth='0.5', marker='.', markersize = 10)
@@ -159,7 +162,8 @@ class GZStats(object):
         ax2.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
         ax2.set_xlabel('Real Time', fontsize=16)
         ax2.set_ylabel('Gazebo Sim Pause Status', fontsize=16)
-        ax2.legend(['Pause Percentage: ' + str(self.pause_ratio*100) + '%'])
+        ax2.legend(['Pause percentage: ' + str(self.pause_ratio*100) + '%'])
+        ax2.set_title( self.statfile[0:-4]+ "\n" + "Sim Status (Pause/Unpause) vs Real Time")
  
 
         if(save== True):
@@ -168,5 +172,5 @@ class GZStats(object):
             pickle.dump(fig,file(fileToSave + "SimStatus.pickle",'w'))
             current_fig.savefig(fileToSave + "_SimStatus.pdf", dpi = 300) 
 
-        pt.show()
+       # pt.show()
         
