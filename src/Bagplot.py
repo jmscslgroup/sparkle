@@ -56,22 +56,100 @@ class Bagplot(object):
             if fileFilter not in file:
                 datafiles.remove(file)
 
-        return 
+        return datafiles
         
     '''
     Plot specific single attributes from the array of files passed
     '''
     def plot_timeseries(self, datafiles, attribute, fileFilter='_'):
         Title = self.bagfile[0:-4]
+
         plot_timeseries(datafiles, attribute, fileFilter, Title)
 
+    '''
+    Plot the frequency / publish rateof timeseries data passed to the function
+    '''    
+    def plot_topic_hz(self, datafiles, window_size = 10, save = True):
         
+        datafile = datafiles[0]
+        Time = []
+        if ".csv" in datafile:
+            dataframe = pd.read_csv(datafile)
+            Time = dataframe["Time"]
+
+        time_diff = np.diff(Time)
+        time_length = len(time_diff)
+
+        assert time_length > window_size, "Number of messages must be greater than the window size"
+
+        frequency = [] # Hz
+        std_dev = [] # seconds
+
+
+        for i in range(0,  window_size):
+            frequency.append(0)
+            std_dev.append(0)
+
+        for i in range(window_size,  time_length):
+            mean = np.mean(time_diff[i-window_size:i])
+            rate = 1./mean if mean > 0. else 0.0
+            frequency.append(rate)
+            std = np.std(time_diff[i-window_size:i])
+            std_dev.append(std)
+
+       # for i in range( time_length - window_size,  time_length):
+       #     frequency.append(0)
+       #     std_dev.append(0)
+
+        pt.style.use('seaborn')
+        pt.rcParams["font.family"] = "Times New Roman"
+        pt.rcParams["figure.figsize"] = (18,12)
+        params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper left'}
+        pt.rcParams.update(params)
+        fig, (ax1, ax2) = pt.subplots(2, 1)
+        
+        # Change the color and its transparency
+        ti = Time[1:]
+        ax1.fill_between( Time[1:], frequency, color="skyblue", alpha=0.2)
+        ax1.plot(Time[1:], frequency, color="Slateblue", alpha=0.6,  linestyle='-', linewidth='0.5', marker='.', markersize = 10)
+        
+        ax1.set_axisbelow(True)
+        ax1.minorticks_on()
+        ax1.tick_params(axis="x", labelsize=16)
+        ax1.tick_params(axis="y", labelsize=16)
+        pt.grid(True)
+        ax1.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
+        ax1.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
+        ax1.set_xlabel('Time Stamp', fontsize=16)
+        ax1.set_ylabel('Publish Rate/Frequency', fontsize=16)
+        ax1.set_title(datafile+ "\n" + "Publish Rate vs Time")
+
+        # Change the color and its transparency
+        ax2.fill_between( Time[1:], std_dev, color="lightcoral", alpha=0.2)
+        ax2.plot(Time[1:], std_dev, color="crimson", alpha=0.6,  linestyle='-', linewidth='0.5', marker='.', markersize = 10)
+        
+        ax2.set_axisbelow(True)
+        ax2.minorticks_on()
+        ax2.tick_params(axis="x", labelsize=16)
+        ax2.tick_params(axis="y", labelsize=16)
+        ax2.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
+        ax2.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
+        ax2.set_xlabel('Time Stamp', fontsize=16)
+        ax2.set_ylabel('Standard Deviation of  time diff', fontsize=16)
+        ax2.set_title(datafile+ "\n" + "Standard Deviation of time diff  vs Time")
+
+        if(save== True):
+            current_fig = pt.gcf()
+            fileToSave = datafile[0:-4]
+            pickle.dump(fig,file(fileToSave + "topic_frequency.pickle",'w'))
+            current_fig.savefig(fileToSave + "_topic_frequency.pdf", dpi = 300) 
+
+        #pt.show()
 
 '''
 Plot specific single attributes from the array of files passed
 '''
 def plot_timeseries(datafiles, attribute, fileFilter='_',  Title=None):
-
 
     if Title is None:
         Title = "Untitled"
