@@ -124,7 +124,7 @@ class catlaunch:
     def log(self):
 
         # specify rosbag record command with different flags, etc.
-        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
+        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
 
 
         # Start Ros bag record
@@ -140,12 +140,6 @@ class catlaunch:
         self.gzstatsFile ='gz_stats_' + dt + '.txt'
         self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], stdout=subprocess.PIPE, shell=True)
         self.gzstatsPID =   self.gzstats.pid
-
-        # log the actual publish rate of the  /magna/vel 
-        # Actually, we might not this as rostopic hz basically subscribes to the message and calculate the average frequency over the window.
-        # self.velFreqFile='veltopic_Frequency_' + dt + '.txt'
-        # self.velHzSats = subprocess.Popen(["rostopic hz /magna/vel > "+ self.velFreqFile],  stdout=subprocess.PIPE, shell=True)
-        # self.velHzSatsPID =   self.velHzSats.pid
 
         # The log call to true once log is called     
         self.callflag["log"] = True
@@ -228,6 +222,7 @@ class catlaunch:
         roslaunch.configure_logging(self.uuid)
 
         if not self.callflag["startGZserver"]:
+            time.sleep(3)
             self.startGZserver()
 
         self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
@@ -251,6 +246,12 @@ class catlaunch:
                                     physics_properties.max_update_rate,
                                     physics_properties.gravity,
                                     physics_properties.ode_config)
+        time.sleep(2)
+
+        get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+        physics_properties = get_physics_properties_prox()
+        print("Current  max_update_rate is {}".format( physics_properties.max_update_rate))
+
 
     '''
     Spwans all cars and the impart velocity to them
@@ -270,7 +271,7 @@ class catlaunch:
         for n in range(0, self.num_of_vehicles):
             print(n)
             cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]), 'updateRate:='+   str(self.update_rate)])
-            vel_args.append(['constVel:=0.5','strAng:=0.0595','R:='+ str(self.R),'robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=0.5','strAng:=0.03','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -341,11 +342,13 @@ class catlaunch:
                 self.bagfile = latest_file
 
                 fileName = self.bagfile[0:-4]
-                create_dir = subprocess.Popen(["mkdir " +  fileName],   stdout=subprocess.PIPE, shell=True) 
-                move_cmd = subprocess.Popen(["mv  " + self.gzstatsFile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
-                self.gzstatsFile = fileName + "_gzStats.txt"
-                # move_cmd = subprocess.Popen(["mv " +  self.velFreqFile  + " " + fileName + "_velFreq.txt"],   stdout=subprocess.PIPE, shell=True)
-                
+                create_dir = subprocess.Popen(["mkdir -v " +  fileName],   stdout=subprocess.PIPE, shell=True) 
+                stdout = create_dir.communicate()[0]
+                print('mkdir STDOUT:{}'.format(stdout))
+                move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsFile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                stdout = move_cmd.communicate()[0]
+                print('mv STDOUT:{}'.format(stdout))
+                self.gzstatsFile = fileName+"/" +fileName + "_gzStats.txt"
                 return latest_file
         else:
             print("No bag was recorded in the immediate run.")
