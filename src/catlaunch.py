@@ -76,6 +76,7 @@ class catlaunch:
             self.update_rate =  kwargs["update_rate"]
             self.log_time =  kwargs["log_time"]
             self.include_laser = "true" if kwargs["laser"] else "false"
+            self.description = kwargs["description"]
         except KeyError as e:
             print("catlaunch(): KeyError: {}".format(str(e)))
             raise
@@ -125,7 +126,7 @@ class catlaunch:
     def log(self):
 
         # specify rosbag record command with different flags, etc.
-        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
+        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
 
 
         # Start Ros bag record
@@ -271,7 +272,7 @@ class catlaunch:
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
         for n in range(0, self.num_of_vehicles):
             print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(include_laser), 'updateRate:='+   str(self.update_rate)])
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(self.include_laser), 'updateRate:='+   str(self.update_rate)])
             vel_args.append(['constVel:=0.5','strAng:=0.03','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
