@@ -6,13 +6,12 @@
 
 """ This script helps launch a fleet of n cars along x-axis. """
 
-import roslaunch
-import rospy, rosbag
-import sys, math, time
+import sys
+import math, time
 import signal
 import subprocess, shlex
 from subprocess import call
-import sys
+
 import signal
 import psutil
 import numpy as np
@@ -78,7 +77,7 @@ class circle(catlaunch, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"])
+            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], laser = kwargs["laser"], description = kwargs["description"])
 
     ## We will define some simulation sequence that can be called without fuss
     def start_circle_sim(self):
