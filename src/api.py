@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+#
+# Author: Rahul Bhadani
+# Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
+# All rights reserv
 
 from circle import circle
 from Bagplot import plot_timeseries
@@ -38,7 +43,7 @@ def sparkle_sim(num_vehicles, publish_rate, max_update_rate, time_step, log_time
 
     print("Simulation beging")
    
-    simConfig = {"circumference": 450.0, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": 0.01, "laser": include_laser, "description": description}
+    simConfig = {"circumference": 450.0, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": 0.01, "include_laser": include_laser, "description": description}
     
     
     print("Simulation Configuration: {}".format(simConfig))
