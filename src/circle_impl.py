@@ -43,7 +43,7 @@ for num_vehicles in NUM_VEHICLES:
         for max_update_rate in MAX_UPDATE_RATE:
             ## Simulation 1
             # Define Simulation Configuration
-            simConfig = {"circumference": 450.0, "num_vehicle":  num_vehicles, "update_rate": update_rate, "log_time": 120.0, "max_update_rate": max_update_rate, "time_step": 0.01}
+            simConfig = {"circumference": 450.0, "num_vehicle":  num_vehicles, "update_rate": update_rate, "log_time": 120.0, "max_update_rate": max_update_rate, "time_step": 0.01, "laser": True}
             #cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
             Circ = circle(**simConfig)
 
