@@ -4,7 +4,8 @@
 
     <!-- these are the arguments you can pass this launch file, for example paused:=true -->
     <arg name="robot" default="sparkle"/>
-    <arg name="model" default="$(find sparkle)/urdf/sparkle.xacro roboname:='$(arg robot)'"/>
+    <arg name="laser_sensor" default="false"/>
+    <arg name="model" default="$(find sparkle)/urdf/sparkle.xacro roboname:='$(arg robot)' laser_sensor:='$(arg laser_sensor)'"/>
     <arg name="X" default="0"/>
     <arg name="Y" default="0"/>
     <arg name="Z" default="0"/>
