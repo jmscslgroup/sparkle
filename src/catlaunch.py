@@ -75,6 +75,7 @@ class catlaunch:
             # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
             self.update_rate =  kwargs["update_rate"]
             self.log_time =  kwargs["log_time"]
+            self.include_laser = "true" if kwargs["laser"] else "false"
         except KeyError as e:
             print("catlaunch(): KeyError: {}".format(str(e)))
             raise
@@ -270,7 +271,7 @@ class catlaunch:
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
         for n in range(0, self.num_of_vehicles):
             print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]), 'updateRate:='+   str(self.update_rate)])
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(include_laser), 'updateRate:='+   str(self.update_rate)])
             vel_args.append(['constVel:=0.5','strAng:=0.03','R:='+ str(self.R),'robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
