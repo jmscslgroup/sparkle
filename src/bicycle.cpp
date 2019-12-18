@@ -140,7 +140,7 @@ int main(int argc, char** argv)
     n.param("y_init", y_init, 0.0);
     n.param("psi_init", psi_init, 0.0);
     n.param("str_init", str_init, 0.0);
-    n.param("wheelBase", wheelBase, 2.62);
+    n.param("wheelBase", wheelBase, 2.70); //2.7m is wheelbase of toyota prius
     n.param("updateRate", updateRate, 2.0);
 
     x_old = x_init;
