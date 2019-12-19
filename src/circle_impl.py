@@ -5,8 +5,9 @@
 # All rights reserved.
 
 from circle import circle
-import Bagplot
+from Bagplot import plot_timeseries
 from Bagplot import Bagplot
+from GZStats import GZStats
 import signal
 import matlab.engine
 import pandas as pd
@@ -32,7 +33,7 @@ for nn in NUM_VEHICLES:
 
         ## Simulation 1
         # Define Simulation Configuration
-        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 90.0, "max_update_rate": 100.0, "time_step": 0.01, "include_laser": True, "description": "Trial"}
+        simConfig = {"circumference": 260.0, "num_vehicle":  nn, "update_rate": i, "log_time": 30.0, "max_update_rate": 100.0, "time_step": 0.01, "include_laser": True, "description": "Trial"}
         #cl = circle(simConfig["circumference"], simConfig["num_vehicle"])
         Circ = circle(**simConfig)
         #Print the X coordinates of all vehicles for sanity checking
@@ -44,11 +45,18 @@ for nn in NUM_VEHICLES:
         # Start a simulation
         bagFile = Circ.start_circle_sim()
 
+        gz_stat_file = Circ.gzstatsFile
+
+        GZ = GZStats(gz_stat_file)
+        GZ.plotRTF()
+        GZ.plotSimStatus()
+
         if bagFile is not None:
             Bag  = Bagplot(bagFile)
             datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
             Files.append(datafiles)
             Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')
+            Bag.plot_topic_hz(datafiles)
 
         configFileToSave =  Circ.bagfile[0:-4] + "/" + "simConfig.yaml"
 
@@ -61,6 +69,6 @@ for nn in NUM_VEHICLES:
 
 Files = reduce(add, Files)
 
-Bagplot.plot_timeseries(Files, 'PoseY', Title='Consolidated Plot', fileFilter='magna-setvel')
+plot_timeseries(Files, 'PoseY', Title='Consolidated Plot', fileFilter='magna-setvel')
 
 
