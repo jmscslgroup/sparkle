@@ -75,7 +75,7 @@ class catlaunch:
             # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
             self.update_rate =  kwargs["update_rate"]
             self.log_time =  kwargs["log_time"]
-            self.include_laser = "true" if kwargs["laser"] else "false"
+            self.include_laser = "true" if kwargs["include_laser"] else "false"
             self.description = kwargs["description"]
         except KeyError as e:
             print("catlaunch(): KeyError: {}".format(str(e)))
@@ -273,7 +273,7 @@ class catlaunch:
         for n in range(0, self.num_of_vehicles):
             print(n)
             cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(self.include_laser), 'updateRate:='+   str(self.update_rate)])
-            vel_args.append(['constVel:=0.5','strAng:=0.03','R:='+ str(self.R),'robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=0.5','strAng:=0.03','robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -360,10 +360,10 @@ class catlaunch:
 def main(argv):
 
     # By default number of vehicle that will be spawned is 2 when no argument is passed
-    num_of_vehicle_to_spawn = 2
+    num_of_vehicle_to_spawn = 1
 
     if len(argv) == 0:
-        print("Default num of vehicle is 2")
+        print("Default num of vehicle is 1")
     elif len(argv) == 1:
         if argv[0] == '--help':
             print("Usage: ./circle [Option] [Value]");
@@ -372,7 +372,7 @@ def main(argv):
             print("\t -n [Integer]: \t Pass the integer value which is the number of vehicle to spawn.")
             return
         else:
-            print("Usage: ./circle.py -n 2")
+            print("Usage: ./circle.py -n 1")
             print("Also see: ./circle.py --help")
             return
     elif len(argv) == 2:
@@ -383,15 +383,17 @@ def main(argv):
         print("Also see: ./circle.py --help")
         return
 
-    cl = catlaunch(260, 1)
-    print(cl.X)
+    simConfig = {"circumference": 450.0, "num_vehicle":  1, "update_rate": 25, "log_time": 120, "max_update_rate": 25, "time_step": 0.01, "laser": True, "description": "catlauch test run"}
 
+    cl = catlaunch(1, [10], [20], [0.023], **simConfig)
+    print(cl.X)
+    cl.create()
     cl.spawn()
 
-    signal.signal(signal.SIGINT, cl.killSimulation)
-    print('Press Ctrl+C')
-    signal.pause()
+    time.sleep(cl.log_time)
 
+    print('Time to terminate')
+    cl.killSimulation(signal.SIGINT)
 
 ####################################################################
 ###########                                         Utility Functions                                #############
