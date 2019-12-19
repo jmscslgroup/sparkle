@@ -6,12 +6,12 @@
     <arg name="robot" default="sparkle"/>
     <arg name="laser_sensor" default="false"/>
     <arg name="model" default="$(find sparkle)/urdf/sparkle.xacro roboname:='$(arg robot)' laser_sensor:='$(arg laser_sensor)'"/>
-    <arg name="X" default="0"/>
-    <arg name="Y" default="0"/>
-    <arg name="Z" default="0"/>
-    <arg name="roll" default="0"/>
-    <arg name="pitch" default="0"/>
-    <arg name="yaw" default="0"/>
+    <arg name="X" default="0.0"/>
+    <arg name="Y" default="0.0"/>
+    <arg name="Z" default="0.006517"/>
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
     <arg name="updateRate" default="1.0"/>
 
     <param name="/$(arg robot)/windx" value="0.0"/>
