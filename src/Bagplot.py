@@ -64,7 +64,7 @@ class Bagplot(object):
     def plot_timeseries(self, datafiles, attribute, fileFilter='_'):
         Title = self.bagfile[0:-4]
 
-        plot_timeseries(datafiles, attribute, fileFilter, Title)
+        plot_ts(datafiles, attribute, fileFilter, Title)
 
     '''
     Plot the frequency / publish rateof timeseries data passed to the function
@@ -149,7 +149,7 @@ class Bagplot(object):
 '''
 Plot specific single attributes from the array of files passed
 '''
-def plot_timeseries(datafiles, attribute, fileFilter='_',  Title=None):
+def plot_ts(datafiles, attribute, fileFilter='_',  Title=None):
 
     if Title is None:
         Title = "Untitled"
