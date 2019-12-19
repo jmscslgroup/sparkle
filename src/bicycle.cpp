@@ -105,7 +105,7 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
     newOdom.child_frame_id = ns + "/base_link";
     newOdom.pose.pose.position.x = x;
     newOdom.pose.pose.position.y = y;
-    newOdom.pose.pose.position.z = 0.0;
+    newOdom.pose.pose.position.z = 0.006517;
 
     newOdom.pose.pose.orientation.x = 0.0;
     newOdom.pose.pose.orientation.y = 0.0;
