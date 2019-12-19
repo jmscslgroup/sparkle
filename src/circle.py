@@ -91,6 +91,10 @@ class circle(catlaunch, object):
         self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
         time.sleep(4)
 
+        self.applyVel(leader_vel="3.5", follower_vel_method="uniform")
+
+        self.visualize()
+
         # Start Rosbag record for 60 seconds
         time.sleep(self.log_time)
 
