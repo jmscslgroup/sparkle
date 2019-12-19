@@ -6,12 +6,13 @@
 
 """ This script helps launch a fleet of n cars along x-axis. """
 
-import sys
-import math, time
+import roslaunch
+import rospy, rosbag
+import sys, math, time
 import signal
 import subprocess, shlex
 from subprocess import call
-
+import sys
 import signal
 import psutil
 import numpy as np
@@ -43,6 +44,8 @@ class circle(catlaunch, object):
             self.num_of_vehicles = kwargs["num_vehicle"]
             self.update_rate = kwargs["update_rate"]
             self.log_time = kwargs["log_time"]
+            self.include_laser = kwargs["include_laser"]
+            self.description = kwargs["description"]
         except KeyError as e:
             print("circle(): KeyError: {}".format(str(e)))
             raise
@@ -77,7 +80,7 @@ class circle(catlaunch, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], laser = kwargs["laser"], description = kwargs["description"])
+            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
 
     ## We will define some simulation sequence that can be called without fuss
     def start_circle_sim(self):
