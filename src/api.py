@@ -5,7 +5,6 @@
 # All rights reserv
 
 from circle import circle
-from Bagplot import plot_timeseries
 from Bagplot import Bagplot
 from GZStats import GZStats
 import signal
