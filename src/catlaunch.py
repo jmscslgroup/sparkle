@@ -270,9 +270,23 @@ class catlaunch:
         self.launchvel = []
         launchfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/sparkle_spawn.launch']
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
-        for n in range(0, self.num_of_vehicles):
-            print(n)
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(self.include_laser), 'updateRate:='+   str(self.update_rate)])
+
+
+        n = 0
+        # First Vehicle
+        print('Vehicle Numer: {}'.format(n))
+        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(self.include_laser), 'updateRate:='+   str(self.update_rate)])
+        vel_args.append(['constVel:=1.5','strAng:=0.03','robot:='+ str(self.name[n])])
+        print(cli_args[n][0:])
+        spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
+        vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
+        self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
+        self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+
+
+        for n in range(1, self.num_of_vehicles):
+            print('Vehicle Numer: {}'.format(n))
+            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=false', 'updateRate:='+   str(self.update_rate)])
             vel_args.append(['constVel:=0.5','strAng:=0.03','robot:='+ str(self.name[n])])
             print(cli_args[n][0:])
             spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
