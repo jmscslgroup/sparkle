@@ -114,7 +114,7 @@ class catlaunch:
         self.Yaw = Yaw
 
         # A boolean dictionary that will be set to true if correspondong function is called
-        self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False}
+        self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False, "startVel": False}
 
         self.uuid = ""
 
@@ -126,7 +126,7 @@ class catlaunch:
     def log(self):
 
         # specify rosbag record command with different flags, etc.
-        command = 'rosbag record /magna/odom /magna/vel  /magna/setvel -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
+        command = 'rosbag record -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
 
 
         # Start Ros bag record
@@ -248,11 +248,15 @@ class catlaunch:
                                     physics_properties.max_update_rate,
                                     physics_properties.gravity,
                                     physics_properties.ode_config)
-        time.sleep(2)
+        time.sleep(4)
 
         get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
         physics_properties = get_physics_properties_prox()
         print("Current  max_update_rate is {}".format( physics_properties.max_update_rate))
+        
+        if physics_properties.max_update_rate != self.max_update_rate:
+            print("Max Update Rate was not set properly, terminating simulation")
+            sys.exist()
 
 
     '''
@@ -314,14 +318,14 @@ class catlaunch:
         vel_file =  []
         self.launchvel = []
         n = 0
-        vel_args.append(['constVel:='+leader_vel,'strAng:=0.03','robot:='+ str(self.name[n])])
+        vel_args.append(['constVel:='+leader_vel,'strAng:=0.0199586','robot:='+ str(self.name[n])])
         velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
        
         vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
         self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
         
         for n in range(1, self.num_of_vehicles):
-            vel_args.append(['constVel:='+follower_vel,'strAng:=0.03','robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:='+follower_vel,'strAng:=0.0199586','robot:='+ str(self.name[n])])
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
@@ -334,6 +338,8 @@ class catlaunch:
         for n in range(1, self.num_of_vehicles):
             print('Velocity node ' + str(n) + '  started.')
             self.launchvel[n].start()
+
+        self.callflag["startVel"] = True
 
 
     def setUpdateRate(self, rate):
@@ -351,11 +357,13 @@ class catlaunch:
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
             self.launchspawn[n].shutdown()
-            self.launchvel[n].shutdown()
+            if self.callflag["startVel"]:
+                self.launchvel[n].shutdown()
 
-        print("Kill RVIZ")
-        self.rviz.terminate()
-        call(["pkill", "rviz"])
+        if self.callflag["visualize"]:
+            print("Kill RVIZ")
+            self.rviz.terminate()
+            call(["pkill", "rviz"])
 
         print('Now killing gzclient')
         #kill the roscore
