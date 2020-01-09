@@ -69,8 +69,8 @@ namespace gazebo
                 this->model_name = this->model->GetName();
                 this->tf_scope = this->model_name;
                 this->odometry_topic = "/" + this->model_name + "/odom";
-                ROS_INFO_STREAM("Name of the model is "<< this->model_name);
-                ROS_INFO_STREAM("Odometry topic set is  "<< this->odometry_topic);
+                ROS_INFO_STREAM("[Odometry ModelPlugin] Name of the model is "<< this->model_name);
+                ROS_INFO_STREAM("[Odometry ModelPlugin] Odometry topic set is  "<< this->odometry_topic);
                
                 this->rosnode = new ros::NodeHandle(this->model_name);
                 this->odometry_publisher =  this->rosnode->advertise<nav_msgs::Odometry>(odometry_topic, 1);
@@ -78,13 +78,13 @@ namespace gazebo
                 this->bounding_box_model = this->model->BoundingBox();
                 this->collision_box_model = this->model->CollisionBoundingBox();
 
-                ROS_INFO_STREAM("Bounding box of "<<this->model_name<<"= X:"<<this->bounding_box_model.XLength()
-                        <<"Y:"<<this->bounding_box_model.YLength()
-                        <<"Z:"<<this->bounding_box_model.ZLength());
+                ROS_INFO_STREAM("[Odometry ModelPlugin] Bounding box of "<<this->model_name<<"= X:"<<this->bounding_box_model.XLength()
+                        <<", Y:"<<this->bounding_box_model.YLength()
+                        <<", Z:"<<this->bounding_box_model.ZLength());
 
-                ROS_INFO_STREAM("Collision Bounding box of "<<this->model_name<<"= X:"<<this->collision_box_model.XLength()
-                        <<"Y:"<<this->collision_box_model.YLength()
-                        <<"Z:"<<this->collision_box_model.ZLength());
+                ROS_INFO_STREAM("[Odometry ModelPlugin] Collision Bounding box of "<<this->model_name<<"= X:"<<this->collision_box_model.XLength()
+                        <<", Y:"<<this->collision_box_model.YLength()
+                        <<", Z:"<<this->collision_box_model.ZLength());
                 
                 // Listen to the update event. This event is broadcast every simulation iteration.
                 this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&odometry::OnUpdate, this));
@@ -101,11 +101,11 @@ namespace gazebo
                 ignition::math::Vector3<double> pos = this->model_poses.Pos();
                 ignition::math::Quaternion<double> quat = this->model_poses.Rot();
 
-                ROS_DEBUG_STREAM(this->model_name<<" Pos = X: "<<pos.X() <<" Y: "<<pos.Y() <<" Z: "<<pos.Z());
-                ROS_DEBUG_STREAM(this->model_name<<" Quat = X: "<<quat.X() <<" Y: "<<quat.Y() <<" Z: "<<quat.Z() << "W: "<<quat.W());
+                ROS_DEBUG_STREAM(this->model_name<<"[Odometry ModelPlugin] Pos = X: "<<pos.X() <<" Y: "<<pos.Y() <<" Z: "<<pos.Z());
+                ROS_DEBUG_STREAM(this->model_name<<"[Odometry ModelPlugin] Quat = X: "<<quat.X() <<" Y: "<<quat.Y() <<" Z: "<<quat.Z() << "W: "<<quat.W());
                 
-                ROS_DEBUG_STREAM(this->model_name<<" Linear Vel = X: "<<this->model_linear_vel.X() <<" Y: "<<this->model_linear_vel.Y() <<" Z: "<<this->model_linear_vel.Z());
-                ROS_DEBUG_STREAM(this->model_name<<" Angular = X: "<<this->model_angular_vel.X() <<" Y: "<<this->model_angular_vel.Y() <<" Z: "<<this->model_angular_vel.Z());
+                ROS_DEBUG_STREAM(this->model_name<<"[Odometry ModelPlugin] Linear Vel = X: "<<this->model_linear_vel.X() <<" Y: "<<this->model_linear_vel.Y() <<" Z: "<<this->model_linear_vel.Z());
+                ROS_DEBUG_STREAM(this->model_name<<"[Odometry ModelPlugin] Angular = X: "<<this->model_angular_vel.X() <<" Y: "<<this->model_angular_vel.Y() <<" Z: "<<this->model_angular_vel.Z());
                 
                 static tf::TransformBroadcaster br;
                 tf::Transform transform;
