@@ -89,6 +89,13 @@ add_library(sparkle_odom SHARED src/odom.cc)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(sparkle_odom ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
+## Declare a C++ library
+add_library(min_distance SHARED src/distance.cc)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(min_distance ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
