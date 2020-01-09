@@ -61,8 +61,6 @@ namespace gazebo
             
             gazebo::transport::NodePtr gazebo_node;
             gazebo::transport::SubscriberPtr laser_scan_sub;
-            PubMultiQueue pmq;
-            PubQueue<std_msgs::Float64>::Ptr pub_queue;
 
         public:
         
@@ -109,6 +107,8 @@ namespace gazebo
                 
                 this->distance_publisher.publish(this->minimum_distance);
                 this->angle_publisher.publish(this->angle_of_min_distance);
+                //this->distance_queue->push(this->minimum_distance, this->distance_publisher);
+                //this->angle_queue->push(this->angle_of_min_distance, this->angle_publisher);
             }
             
             void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
@@ -161,11 +161,10 @@ namespace gazebo
                 this->rosnode = new ros::NodeHandle(this->ns+"/distance");
                 this->distance_publisher = this->rosnode->advertise<std_msgs::Float64>(this->distance_topic, 1);
                 this->angle_publisher = this->rosnode->advertise<std_msgs::Float64>(this->angle_topic, 1);
-                
-                this->pub_queue = this->pmq.addPub<std_msgs::Float64>();
-                
+                 
                 //this->new_laserscan_connection = this->parent_sensor->LaserShape()->ConnectNewLaserScans(boost::bind(&distance::OnNewScan, this));
                 
+                // Subscribe Gazebo-topic and work on laser data and produce minimum of all distances.
                 this->laser_scan_sub = this->gazebo_node->Subscribe(this->parent_sensor->Topic(), &distance::OnNewScan, this);
 
             }
