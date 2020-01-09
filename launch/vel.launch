@@ -7,10 +7,8 @@
     <arg name="robot" default="magna"/>
     <arg name="strAng" default="0.0595"/>
     <arg name="constVel" default="8.0"/>
-    <arg name="R" default="0.0"/>
     <param name="/$(arg robot)/constVel" value="$(arg constVel)"/>
     <param name="/$(arg robot)/strAngle" value="$(arg strAng)"/>
-    <param name="/$(arg robot)/radius" value="$(arg R)"/>
     <group ns="$(arg robot)">
         <node name="cmd_sparkle_$(arg robot)" pkg="sparkle" type="cmd_sparkle" output="screen">
             <!--remap from="/$(arg robot)/cmd_vel" to="/$(arg robot)/cmd_control_vel"/-->
