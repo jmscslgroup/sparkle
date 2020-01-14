@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+<launch>
+    
+    <!-- mandatory arguments-->
+    <arg name="leader_name" default="sun"/>
+    <arg name="this_name" default="moon"/>
+    <arg name="initial_distance" default="12.0"/>
+    <arg name="steering" default="0.3"/>
+    <arg name="leader_x_init" default="10.0"/>
+    <arg name="this_x_init" default="20.0"/>
+    <arg name="leader_y_init" default="20.0"/>
+    <arg name="this_y_init" default="10.0"/>
+    
+    <!-- optional arguments -->
+    <arg name="this_sensor_distance_topic" default="/$(arg this_name)/distance/dist"/>
+    <arg name="useSensor" default="false"/>
+    
+
+    
+    
+    <arg name="leader_odom_topic" default="/$(arg leader_name)/odom"/>
+    <arg name="this_odom_topic" default="/$(arg this_name)/odom"/>
+
+    <arg name="leader_vel_topic" default="/$(arg leader_name)/vel"/>
+    <arg name="this_vel_topic" default="/$(arg this_name)/vel"/>
+
+    <arg name="leader_accel_topic" default="/$(arg leader_name)/accel"/>
+    <arg name="this_accel_topic" default="/$(arg this_name)/accel"/>
+    
+    <arg name="cmd_vel_topic" default="/$(arg this_name)/cmd_vel"/>
+
+    <remap from="/$(arg this_name)/leaderodom" to="$(arg leader_odom_topic)"/>
+    <remap from="/$(arg this_name)/odom" to="$(arg this_odom_topic)"/>
+    
+    <remap from="/$(arg this_name)/leadervel" to="$(arg leader_vel_topic)"/> 
+    <remap from="/$(arg this_name)/vel" to="$(arg this_vel_topic)"/>
+
+    <remap from="/$(arg this_name)/leaderaccel" to="$(arg leader_accel_topic)"/> 
+    <remap from="/$(arg this_name)/accel" to="$(arg this_accel_topic)"/>
+
+    <remap from="/$(arg this_name)/cmd_vel" to="$(arg cmd_vel_topic)"/>
+
+    <remap from="/$(arg this_name)/distance" to="$(arg this_sensor_distance_topic)" />
+    <!--remap from="/leaderX_init" to="/$(arg leader_name)/leaderX_init"/>
+    <remap from="/X_init" to="/$(arg this_name)/X_init"/>
+    <remap from="/leaderY_init" to="/$(arg leader_name)/leaderY_init"/>
+    <remap from="/Y_init" to="/$(arg this_name)/Y_init"/-->
+
+
+
+    <param name="/$(arg this_name)/useSensorDistance" value="$(arg useSensor)"/>
+    <param name="/$(arg this_name)/distance_init" value="$(arg initial_distance)"/>
+    <param name="/$(arg this_name)/str_angle" value="$(arg steering)"/>
+    
+    <param name="/$(arg this_name)/leaderX_init" value="$(arg leader_x_init)"/>
+    <param name="/$(arg this_name)/X_init" value="$(arg this_x_init)"/>
+    <param name="/$(arg this_name)/leaderY_init" value="$(arg leader_y_init)"/>
+    <param name="/$(arg this_name)/Y_init" value="$(arg this_y_init)"/>
+
+    <group ns="$(arg this_name)">
+        <node name="carfollower_$(arg this_name)" pkg="sparkle" type="carfollowing.py" output="screen" args="-t $(arg this_name) -l $(arg leader_name)">
+           
+        </node>
+        
+        <node name="model_state_$(arg this_name)" pkg="sparkle" type="model_state" output="screen">
+            <param name="enableTwist" value="false"/>
+        </node>
+    </group>
+    
+
+
+
+
+</launch>
+
