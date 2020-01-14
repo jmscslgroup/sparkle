@@ -52,12 +52,20 @@ class circle(catlaunch, object):
 
 
         """Generate coordinate on x-axis to place `num_of_vehicles`"""
-        r = self.circumference/(2*3.14159265359) #Calculate the radius of the circle
+        r = self.circumference/(2*np.pi) #Calculate the radius of the circle
         print('************ Radius of the circle is {} ************'.format(r))
         self.R = r
 
+        self.car_to_bumper = 4.52
+        self.L = 2.70002 #wheelbase
+
         theta = (2*3.14159265359)/self.num_of_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
         self.theta = theta
+
+        print('Theta:{}'.format(theta))
+
+        self.const_angle = np.arctan(self.L/self.R)
+        print('Constant Steering Angle:={}'.format(self.const_angle))
 
         X = [] # X-coordinates of cars on  the circle
         Y = [] # Y-coordinate of cars  on the circle
@@ -80,7 +88,7 @@ class circle(catlaunch, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-            super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
+        super(circle, self).__init__(self.num_of_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
 
     ## We will define some simulation sequence that can be called without fuss
     def start_circle_sim(self):
@@ -91,7 +99,15 @@ class circle(catlaunch, object):
         self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
         time.sleep(4)
 
-        self.applyVel(leader_vel="3.5", follower_vel_method="uniform")
+        radius =  self.R
+       
+        angle =  self.const_angle
+        
+        #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
+       
+        initial_distance =    (self.circumference - self.num_of_vehicles*self.car_to_bumper )/ (self.num_of_vehicles - 1)
+
+        self.applyVel(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
         self.visualize()
 
