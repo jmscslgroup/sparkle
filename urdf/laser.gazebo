@@ -10,7 +10,7 @@
         <sensor type="ray" name="sick_lms291">
               <pose>0 0 0 0 0 0</pose>
                    <visualize>true</visualize>
-                    <update_rate>100.0</update_rate><!-- update rate will be limited by Gazebo's time step and real time factor-->
+                    <update_rate>20.0</update_rate><!-- update rate will be limited by Gazebo's time step and real time factor-->
                        <ray>
                            <scan>
                                 <horizontal>
