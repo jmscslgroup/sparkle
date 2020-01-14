@@ -23,6 +23,10 @@ import matlab.engine
 import glob
 import datetime
 import os
+from functools import partial
+from multiprocessing.pool import Pool
+from multiprocessing import Process
+import multiprocessing
 
 '''
 Summary of Class catlaunch:
@@ -31,11 +35,10 @@ This class requires a ros package 'Sparkle'
 Attributes:
     1. num_of_vehicles: Number of vehicles to be placed on circumference
     2. matlab_engine: To save matlab engine when matlab engine is started
-    3. car_to_bumper: Car length
-    4. X: X-coordinates of all the vehicles with respect to the world frame
-    5. Y: Y-coordinates of all the vehicles with respect to the world frame
-    6. Yaw: yaw of all the vehicles with respect to the world frame
-    7. callflag: a Dictionary of boolean to tell what functions were already called.
+    3. X: X-coordinates of all the vehicles with respect to the world frame
+    4. Y: Y-coordinates of all the vehicles with respect to the world frame
+    5. Yaw: yaw of all the vehicles with respect to the world frame
+    6. callflag: a Dictionary of boolean to tell what functions were already called.
 
 Functions:
 
@@ -63,7 +66,7 @@ class catlaunch:
     __init__ takes length of circumference and number of vehicles to be placed on the circle
     '''
     def __init__(self,  num_of_vehicles, X, Y, Yaw, **kwargs):
-
+        print("Number of cpu : {}".format(multiprocessing.cpu_count()))
         try:
             # Define attributes for catlaunch class
             self.num_of_vehicles = num_of_vehicles
@@ -85,6 +88,8 @@ class catlaunch:
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
+        call(["pkill", "rosbag"])
+        call(["pkill", "record"])
         time.sleep(1)
         
 
@@ -93,8 +98,7 @@ class catlaunch:
         # A member variable to store matlab engine object whenever need them
         self.matlab_engine = []
 
-        #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
-        self.car_to_bumper = 4.00111
+
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
         self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',
@@ -126,21 +130,20 @@ class catlaunch:
     def log(self):
 
         # specify rosbag record command with different flags, etc.
-        command = 'rosbag record -o Circle_Test_n_' + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+' --duration=' + str(self.log_time) +  ' __name:=bagrecorder'
-
+        command = ["rosbag "+ " record "+ " --all "+ " -o Circle_Test_n_" + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+ ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
-        print("Starting Rosbag record: " + command)
-        self.rosbag_cmd = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        print("Starting Rosbag record:{} ".format(command))
+        self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
         self.rosbagPID = self.rosbag_cmd.pid
-
+        time.sleep(5)
         # So this is for temporarily generating a filename, that will change later when we will retrieve the bag file name
         dt_object = datetime.datetime.fromtimestamp(time.time())
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
 
         # log the gz stats
         self.gzstatsFile ='gz_stats_' + dt + '.txt'
-        self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], stdout=subprocess.PIPE, shell=True)
+        self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], shell=True)
         self.gzstatsPID =   self.gzstats.pid
 
         # The log call to true once log is called     
@@ -148,12 +151,70 @@ class catlaunch:
 
     def stopLog(self):
         if self.callflag["log"]:
-            # print("Stopping ROSBAG Recorder.")
+            print("Stopping ROSBAG Recorder.")
             self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
-            bagkiller = subprocess.Popen('rosnode kill /bagrecorder', stdout=subprocess.PIPE, shell=True)
+            #time.sleep(5+self.num_of_vehicles)
+            bagkiller = subprocess.Popen(["rosnode kill /bagrecorder"], shell=True)
 
+            ## Check of .bag.active is still being written
+            print("Retrieving latest bag file")
+            list_of_files1 = glob.glob('*.bag')
+            list_of_files2 = glob.glob('*.bag.active')
+            list_of_files = list_of_files1 + list_of_files2
+            print(list_of_files)
+            covertToBag = False
+            if len(list_of_files) != 0:
+                latest_file = max(list_of_files, key=os.path.getctime)
+                if "bag.active" in latest_file[-10:]:
+                    try:
+                        filesize = os.path.getsize(latest_file)
+                    except OSError as err:
+                        print("OS error: {0}".format(err))
+                        sys.exit()
+                    while True:
+                        try:
+                            time.sleep(2)
+                            newfilesize = os.path.getsize(latest_file)
+                            byteswritten = newfilesize - filesize
+                            print("Bag file is still being written. Byes written: {}".format(byteswritten))
+                        except OSError as err:
+                            print('.active bag file is gone.')
+                            list_of_files1 = glob.glob('*.bag')
+                            list_of_files2 = glob.glob('*.bag.active')
+                            list_of_files = list_of_files1 + list_of_files2
+                            latest_file_written = max(list_of_files, key=os.path.getctime)
+                            if (latest_file_written[:-4] == latest_file[:-11]):
+                                print("Bag file {} successfully written".format(latest_file_written))
+                            else:
+                                print("Something went wrong while finising  writing {}.".format(latest_file))
+                            covertToBag = True
+                            break
+                        if byteswritten == 0:
+                            break
+                        else:
+                            filesize = newfilesize
+                            
+            if covertToBag is True:
+                print('bag file saved successfully')
+
+
+          
+            stdout = bagkiller.communicate()
+            print('rosnode kill: {}'.format(stdout))
+            time.sleep(5+self.num_of_vehicles)
+
+            print(bagkiller)
+
+           
+
+            #check if bag file has been killed:
+            psaef = subprocess.Popen(["ps -aef | grep bagrecorder"], shell=True)
+            stdout = psaef.communicate()
+            print('ps -aef  STDOUT:{}'.format(stdout))
+            
+            call(["pkill", "rosbag"])
+            call(["pkill", "record"])
             self.gzstats.terminate()
-            # self.velHzSats.terminate()
         
     """Start roscore"""
     def startROS(self):
@@ -200,7 +261,7 @@ class catlaunch:
     def visualize(self):
 
         print("Start RVIZ")
-        self.rviz = subprocess.Popen(["rosrun rviz rviz  -d ../config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
+        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d ../config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
         self.rviz_pid = self.rviz.pid
         self.callflag["visualize"] = True
 
@@ -256,7 +317,7 @@ class catlaunch:
         
         if physics_properties.max_update_rate != self.max_update_rate:
             print("Max Update Rate was not set properly, terminating simulation")
-            sys.exist()
+            sys.exit()
 
 
     '''
@@ -307,40 +368,71 @@ class catlaunch:
         try:
            leader_vel = kwargs["leader_vel"]
            follower_vel_method = kwargs["follower_vel_method"]
+           str_angle = kwargs["str_angle"]
         except KeyError as e:
             print("catlaunch.applyVel: KeyError: {}".format(str(e)))
             raise
 
-        if follower_vel_method == "uniform":
-            follower_vel = leader_vel
-
         vel_args = []
         vel_file =  []
         self.launchvel = []
-        n = 0
-        vel_args.append(['constVel:='+leader_vel,'strAng:=0.0199586','robot:='+ str(self.name[n])])
-        velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
-       
-        vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-        self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+ 
         
-        for n in range(1, self.num_of_vehicles):
-            vel_args.append(['constVel:='+follower_vel,'strAng:=0.0199586','robot:='+ str(self.name[n])])
+        if follower_vel_method == "uniform":
+            follower_vel = leader_vel
+            n = 0
+            vel_args.append(['constVel:='+leader_vel,'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
+            velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
+       
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
-        print('Velocity node ' + str(0) + '  started.')
-        self.launchvel[0].start()
+            print('Velocity node ' + str(0) + '  started.')
+            self.launchvel[0].start()
 
-        # We will start ROSBag record immediately 
-        self.log()
-        
-        for n in range(1, self.num_of_vehicles):
-            print('Velocity node ' + str(n) + '  started.')
-            self.launchvel[n].start()
+            # We will start ROSBag record immediately 
+            self.log()
+            for n in range(1, self.num_of_vehicles):
+                vel_args.append(['constVel:='+follower_vel, 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
+                vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
+                self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
-        self.callflag["startVel"] = True
+            for n in range(1, self.num_of_vehicles):
+                print('Velocity node ' + str(n) + '  started.')
+                self.launchvel[n].start()
 
+            self.callflag["startVel"] = True
+
+        elif follower_vel_method == "ovftl":
+            initial_distance = kwargs["initial_distance"]
+            n= 0
+            
+            print('self.name[self.num_of_vehicles - 1] : {}'.format(self.name[self.num_of_vehicles - 1]))
+            vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[self.num_of_vehicles - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle) , 'leader_x_init:='+str(self.X[self.num_of_vehicles-1]), 'leader_y_init:='+str(self.Y[self.num_of_vehicles-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[self.num_of_vehicles - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])    
+             
+            velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/carfollowing.launch']
+
+            vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
+            self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+
+            print('Velocity node ' + str(0) + '  started.')
+            self.launchvel[0].start()
+
+            # We will start ROSBag record immediately 
+            self.log()
+            for n in range(1, self.num_of_vehicles):
+                vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[n - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle), 'leader_x_init:='+str(self.X[n-1]), 'leader_y_init:='+str(self.Y[n-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[n - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])    
+                vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])]) 
+                self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+
+            for n in range(1, self.num_of_vehicles):
+                print('Velocity node ' + str(n) + '  started.')
+                self.launchvel[n].start()
+
+            self.callflag["startVel"] = True
+
+            time.sleep(3)
+            call(["rosparam", "set", "/execute", "true"])
 
     def setUpdateRate(self, rate):
         self.update_rate = rate
@@ -350,9 +442,8 @@ class catlaunch:
         self.log_time = duration
 
     def killSimulation(self, sig):
-
+        time.sleep(5)
         print('You pressed Ctrl+C!')
-        self.stopLog()
         print('############################################')
         print('Terminating spawn launches')
         for n in range(0, self.num_of_vehicles):
@@ -372,7 +463,8 @@ class catlaunch:
         self.gzclient.wait()
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
-
+        
+        self.stopLog()
         self.killROS()
 
         print("##### Simulation Terminated #####")
@@ -380,22 +472,47 @@ class catlaunch:
         #sys.exit(0)
 
     def getLatestBag(self):
+        print("Retrieving latest bag file")
         if self.callflag["log"]:
-            list_of_files = glob.glob('./Circle_Test_n_*.bag')
+            list_of_files1 = glob.glob('*.bag')
+            list_of_files2 = glob.glob('*.bag.active')
+            list_of_files = list_of_files1 + list_of_files2
+            print(list_of_files)
             if len(list_of_files) != 0:
                 latest_file = max(list_of_files, key=os.path.getctime)
+                
+                # if bag  file didn't terminate properly then we need to reindex it.
+                if "bag.active" in latest_file[-10:]:
+                    reindex = subprocess.Popen(["rosbag reindex " +  latest_file],   stdout=subprocess.PIPE, shell=True)
+                    stdout = reindex.communicate()[0]
+                    print('reindex STDOUT:{}'.format(stdout))
+
+                    bagfix = subprocess.Popen(["rosbag fix " +  latest_file + " " + latest_file[:-7]],   stdout=subprocess.PIPE, shell=True)
+                    stdout = bagfix.communicate()[0]
+                    print('bagfix STDOUT:{}'.format(stdout))
+                    latest_file = latest_file[:-7]
+
+                if "bag"not  in latest_file[-3:]:
+                    print("Bag file recording unsuccessful in this sesssion")
+                    sys.exit()
+                    
                 print("Bag File Recorded Is: " + latest_file)
+
+
                 self.bagfile = latest_file
 
                 fileName = self.bagfile[0:-4]
                 create_dir = subprocess.Popen(["mkdir -v " +  fileName],   stdout=subprocess.PIPE, shell=True) 
-                stdout = create_dir.communicate()[0]
+                stdout = create_dir.communicate()
                 print('mkdir STDOUT:{}'.format(stdout))
+                print("Renaming GZStat log file [{}] to retain bag file information".format(self.gzstatsFile))
                 move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsFile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
-                stdout = move_cmd.communicate()[0]
+                stdout = move_cmd.communicate()
                 print('mv STDOUT:{}'.format(stdout))
                 self.gzstatsFile = fileName+"/" +fileName + "_gzStats.txt"
                 return latest_file
+            else:
+                print("No compatible bag file was found.")    
         else:
             print("No bag was recorded in the immediate run.")
             return None
