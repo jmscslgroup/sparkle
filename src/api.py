@@ -17,7 +17,7 @@ from matplotlib import style
 import yaml
 from operator import add
 
-def sparkle_sim(num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, description=""):
+def sparkle_sim(circumference, num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, description=""):
     """
     Sparkle Simulation API
 
@@ -42,7 +42,7 @@ def sparkle_sim(num_vehicles, publish_rate, max_update_rate, time_step, log_time
 
     print("Simulation beging")
    
-    simConfig = {"circumference": 850.0, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": 0.01, "include_laser": include_laser, "description": description}
+    simConfig = {"circumference": circumference, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": 0.01, "include_laser": include_laser, "description": description}
     
     
     print("Simulation Configuration: {}".format(simConfig))
@@ -52,22 +52,25 @@ def sparkle_sim(num_vehicles, publish_rate, max_update_rate, time_step, log_time
     # Start a simulation
     bagFile = Circ.start_circle_sim()
 
-    gz_stat_file = Circ.gzstatsFile
+    print("Bagfile recorded is {}".format(bagFile))
 
+    gz_stat_file = Circ.gzstatsFile
+    print("GZStat file is {}".format(gz_stat_file))
     GZ = GZStats(gz_stat_file)
     GZ.plotRTF()
     GZ.plotSimStatus()
 
+    datafiles = []
     if bagFile is not None:
         Bag  = Bagplot(bagFile)
         datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
         Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')
         Bag.plot_topic_hz(datafiles)
 
-    configFileToSave =  Circ.bagfile[0:-4] + "/" + "simConfig.yaml"
+        configFileToSave =  Circ.bagfile[0:-4] + "/" + "simConfig.yaml"
 
-    with open(configFileToSave, 'w') as file:
-        documents = yaml.dump(simConfig, file)
+        with open(configFileToSave, 'w') as file:
+            documents = yaml.dump(simConfig, file)
 
     time.sleep(6)
     pt.close('all')
