@@ -15,6 +15,11 @@
         <ambient>0.4 0.4 0.4 1</ambient>
         <background>0.7 0.7 0.7 1</background>
         <shadows>1</shadows>
+        <sky>
+            <clouds>
+                <speed>18</speed>
+            </clouds>
+        </sky>
    </scene>
 
     <physics name='default_physics' default='0' type='ode'>
@@ -80,7 +85,7 @@
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Grey</name>
+              <name>Gazebo/Residential</name>
             </script>
           </material>
         </visual>
