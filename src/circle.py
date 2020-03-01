@@ -105,9 +105,10 @@ class circle(catlaunch, object):
         
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
        
-        initial_distance =    (self.circumference - self.num_of_vehicles*self.car_to_bumper )/ (self.num_of_vehicles - 1)
+        # initial_distance =    (self.circumference - self.num_of_vehicles*self.car_to_bumper )/ (self.num_of_vehicles - 1)
 
-        self.applyVel(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
+        self.applyVel(leader_vel = 3.5, str_angle = angle, follower_vel_method="uniform")
+        #self.applyVel(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
         self.visualize()
 
