@@ -376,3 +376,6 @@ TSWLatexianTemp*
 *.lpz
 src/.vscode/*
 src/.vscode/*.*
+
+# pycharm ignore
+.idea/
