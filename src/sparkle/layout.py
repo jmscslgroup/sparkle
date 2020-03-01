@@ -30,20 +30,14 @@ from multiprocessing import Process
 import multiprocessing
 
 '''
-Summary of Class sparkle:
+Summary of Class `'layout'`:
 This class requires a ros package 'Sparkle'
 
-Attributes:
-    1. num_of_vehicles: Number of vehicles to be placed on circumference
-    2. matlab_engine: To save matlab engine when matlab engine is started
-    3. X: X-coordinates of all the vehicles with respect to the world frame
-    4. Y: Y-coordinates of all the vehicles with respect to the world frame
-    5. Yaw: yaw of all the vehicles with respect to the world frame
-    6. callflag: a Dictionary of boolean to tell what functions were already called.
+
 
 Functions:
 
-    1. __init__( num_of_vehicles, X, Y, Yaw): basically a constructor
+    1. __init__( n_vehicles, X, Y, Yaw): basically a constructor
     2. log() : function upon calling starts rosbag record
     3. startROS(): function upon calling starts roscore
     4. killROS(): function upon calling kills roscore
@@ -62,21 +56,78 @@ Functions:
 
 '''
 
-class sparkle:
+class layout:
     '''
-    # SPARKLE
+    `layout`: Base class for Scalable and Distributed Simulation for Autonomous Cyber-Physical Systems.
 
-    Takes length of circumference and number of vehicles to be placed on the circle
+    Creates simulation layout for simulating vehicles and control.
+
+    Parameters
+    -------------
+    X: `list`, `double`
+        x-coordinate of vehicles's position in the world frame of reference
+    Y: `list`, `double`
+        y-coordinate of vehicles's position in the world frame of reference
+    Yaw: `list`, `double`
+        yaw of all the vehicles in the world frame of reference
+    n_vehicles: `double`)
+        Number of vehicles to spawn in the simulation
+    kwargs
+            variable keyword arguments
+
+            max_update_rate: `double`
+                Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator
+            time_step: `double`
+                Time Step size taken by time-step solver during simulation
+            update_rate: `double`
+                Update Rate to publish new state information by decoupled vehicle model
+            log_time: `double`
+                Amount of time in seconds to capture data while running the simulation
+            description: `string`
+                A descriptive text about the current simulation run
+
+    Attributes
+    ---------------
+    n_vehicles
+    X
+    Y
+    Yaw
+    max_update_rate
+    time_step
+    update_rate
+    log_time
+    description
+    matlab_engine
+    package_path
+    name
+    callflag
+    uuid
+
+
+    Returns
+    -----------
+    `layout`
+        An instance of the object `sparkle.layout`
+
+
     '''
-    def __init__(self,  num_of_vehicles, X, Y, Yaw, **kwargs):
+    def __init__(self,  n_vehicles, X, Y, Yaw, **kwargs):
         print("Number of cpu : {}".format(multiprocessing.cpu_count()))
-        # Define attributes for sparkle class
-        self.num_of_vehicles = num_of_vehicles
+        # Define attributes for layout class
+        self.n_vehicles = n_vehicles
+        
+        # X-Coordinates of all the vehicles.
+        self.X = X
+        # Y-Coordinates of all the vehicles.
+        self.Y = Y
+        #Yaw of all the vehicles.
+        self.Yaw = Yaw
+
         self.max_update_rate = 100
         self.time_step = 0.01
+        self.update_rate = 20.0
         self.log_time = 60.0
-        self.include_laser  = "false"
-        self.description = "sparkle simulation"
+        self.description = "Sparkle simulation"
         
         try:
             # This will be used to set Gazebo physic properties
@@ -99,11 +150,6 @@ class sparkle:
             self.log_time =  kwargs["log_time"]
         except KeyError as e:
             pass
-
-        try:
-            self.include_laser = "true" if kwargs["include_laser"] else "false"
-        except KeyError as e:
-            pass     
         
         try:
             self.description = kwargs["description"]
@@ -117,9 +163,6 @@ class sparkle:
         call(["pkill", "rosbag"])
         call(["pkill", "record"])
         time.sleep(1)
-
-
-
 
         # A member variable to store matlab engine object whenever need them
         self.matlab_engine = []
@@ -143,29 +186,18 @@ class sparkle:
                 'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos',
                 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina']
 
-        # X-Coordinates of all the vehicles.
-        self.X = X
-
-        # Y-Coordinates of all the vehicles.
-        self.Y = Y
-
-        #Yaw of all the vehicles.
-        self.Yaw = Yaw
-
         # A boolean dictionary that will be set to true if correspondong function is called
         self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False, "startVel": False}
 
         self.uuid = ""
 
 
-    '''
-        log function starts logging of the bag files
-
-    '''
     def log(self):
-
+        '''
+        Class method `log`: Logs the data as bag files upon calling
+        '''
         # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ " --all "+ " -o Circle_Test_n_" + str( self.num_of_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + '_laser_' + self.include_laser+ ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = ["rosbag "+ " record "+ " --all "+ " -o Circle_Test_n_" + str( self.n_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
@@ -188,7 +220,7 @@ class sparkle:
         if self.callflag["log"]:
             print("Stopping ROSBAG Recorder.")
             self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
-            #time.sleep(5+self.num_of_vehicles)
+            #time.sleep(5+self.n_vehicles)
             bagkiller = subprocess.Popen(["rosnode kill /bagrecorder"], shell=True)
 
             ## Check of .bag.active is still being written
@@ -236,7 +268,7 @@ class sparkle:
 
             stdout = bagkiller.communicate()
             print('rosnode kill: {}'.format(stdout))
-            time.sleep(5+self.num_of_vehicles)
+            time.sleep(5+self.n_vehicles)
 
             print(bagkiller)
 
@@ -373,7 +405,7 @@ class sparkle:
         n = 0
         # First Vehicle
         print('Vehicle Numer: {}'.format(n))
-        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=' +str(self.include_laser), 'updateRate:='+   str(self.update_rate)])
+        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=true', 'updateRate:='+   str(self.update_rate)])
 
         print(cli_args[n][0:])
         spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
@@ -382,7 +414,7 @@ class sparkle:
 
 
 
-        for n in range(1, self.num_of_vehicles):
+        for n in range(1, self.n_vehicles):
             print('Vehicle Numer: {}'.format(n))
             cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=false', 'updateRate:='+   str(self.update_rate)])
 
@@ -394,7 +426,7 @@ class sparkle:
 
         time.sleep(5)
 
-        for n in range(0, self.num_of_vehicles):
+        for n in range(0, self.n_vehicles):
             print('Vehicle [' + str(n) + '] spawning.')
             self.launchspawn[n].start()
             time.sleep(5)
@@ -405,7 +437,7 @@ class sparkle:
            follower_vel_method = kwargs["follower_vel_method"]
            str_angle = kwargs["str_angle"]
         except KeyError as e:
-            print("sparkle.applyVel: KeyError: {}".format(str(e)))
+            print("layout.applyVel: KeyError: {}".format(str(e)))
             raise
 
         vel_args = []
@@ -427,12 +459,12 @@ class sparkle:
 
             # We will start ROSBag record immediately
             self.log()
-            for n in range(1, self.num_of_vehicles):
+            for n in range(1, self.n_vehicles):
                 vel_args.append(['constVel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
-            for n in range(1, self.num_of_vehicles):
+            for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
                 self.launchvel[n].start()
 
@@ -442,8 +474,8 @@ class sparkle:
             initial_distance = kwargs["initial_distance"]
             n= 0
 
-            print('self.name[self.num_of_vehicles - 1] : {}'.format(self.name[self.num_of_vehicles - 1]))
-            vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[self.num_of_vehicles - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle) , 'leader_x_init:='+str(self.X[self.num_of_vehicles-1]), 'leader_y_init:='+str(self.Y[self.num_of_vehicles-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[self.num_of_vehicles - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])
+            print('self.name[self.n_vehicles - 1] : {}'.format(self.name[self.n_vehicles - 1]))
+            vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[self.n_vehicles - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle) , 'leader_x_init:='+str(self.X[self.n_vehicles-1]), 'leader_y_init:='+str(self.Y[self.n_vehicles-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[self.n_vehicles - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])
 
             velfile = [self.package_path+'/launch/carfollowing.launch']
 
@@ -455,12 +487,12 @@ class sparkle:
 
             # We will start ROSBag record immediately
             self.log()
-            for n in range(1, self.num_of_vehicles):
+            for n in range(1, self.n_vehicles):
                 vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[n - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle), 'leader_x_init:='+str(self.X[n-1]), 'leader_y_init:='+str(self.Y[n-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[n - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
-            for n in range(1, self.num_of_vehicles):
+            for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
                 self.launchvel[n].start()
 
@@ -481,7 +513,7 @@ class sparkle:
         print('You pressed Ctrl+C!')
         print('############################################')
         print('Terminating spawn launches')
-        for n in range(0, self.num_of_vehicles):
+        for n in range(0, self.n_vehicles):
             self.launchspawn[n].shutdown()
             if self.callflag["startVel"]:
                 self.launchvel[n].shutdown()
@@ -581,7 +613,7 @@ def main(argv):
 
     simConfig = {"circumference": 450.0, "num_vehicle":  1, "update_rate": 25, "log_time": 120, "max_update_rate": 25, "time_step": 0.01, "laser": True, "description": "catlauch test run"}
 
-    cl = sparkle(1, [10], [20], [0.023], **simConfig)
+    cl = layout(1, [10], [20], [0.023], **simConfig)
     print(cl.X)
     cl.create()
     cl.spawn()

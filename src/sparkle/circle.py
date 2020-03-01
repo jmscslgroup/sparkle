@@ -20,10 +20,10 @@ import matlab.engine
 import glob
 import os
 
-from sparkle import sparkle
+from layout import layout
 
 '''
-Summary of Class sparkle:
+Summary of Class layout:
 This class requires a ros package 'Sparkle'
 
 Attributes:
@@ -35,7 +35,7 @@ Attributes:
 Functions:
     1. __init__(circumference, num_of_vehicles): basically a constructor
 '''
-class circle(sparkle, object):
+class circle(layout, object):
     
     def __init__(self, **kwargs):
 
