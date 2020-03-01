@@ -20,10 +20,10 @@ import matlab.engine
 import glob
 import os
 
-from catlaunch import catlaunch
+from sparkle import sparkle
 
 '''
-Summary of Class catlaunch:
+Summary of Class sparkle:
 This class requires a ros package 'Sparkle'
 
 Attributes:
@@ -35,7 +35,7 @@ Attributes:
 Functions:
     1. __init__(circumference, num_of_vehicles): basically a constructor
 '''
-class circle(catlaunch, object):
+class circle(sparkle, object):
     
     def __init__(self, **kwargs):
 
