@@ -10,7 +10,7 @@ from Bagplot import plot_ts
 
 Files = []
 
-datafile = sparkle_sim(circumference = 230, num_vehicles=22, publish_rate=20.0, max_update_rate=20.0, time_step=0.01, log_time=200.0, include_laser=True, description="API Testing")
+datafile = sparkle_sim(circumference = 230, num_vehicles=1, publish_rate=100.0, max_update_rate=100.0, time_step=0.01, log_time=250.0, include_laser=True, description="API Testing")
 Files.append(datafile)
 print("Data received is: {}".format(datafile))
 
