@@ -8,6 +8,7 @@
 
 import roslaunch
 import rospy, rosbag
+import rospkg
 
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties
@@ -98,7 +99,16 @@ class catlaunch:
         # A member variable to store matlab engine object whenever need them
         self.matlab_engine = []
 
+        # get an instance of RosPack with the default search paths
+        rospack = rospkg.RosPack()
 
+        self.package_path = ''
+
+        try:
+            self.package_path = rospack.get_path('sparkle')
+        except rospkg.ResourceNotFound as s:
+            print("Package "+ str(s.args[0])+ " Not Found")
+            raise
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
         self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',
@@ -251,7 +261,7 @@ class catlaunch:
     def startGZserver(self):
 
          #Object to launch empty world
-        launch = roslaunch.parent.ROSLaunchParent(self.uuid,["/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/empty.launch"])
+        launch = roslaunch.parent.ROSLaunchParent(self.uuid,[ self.package_path + "/launch/empty.launch"])
         launch.start()
         print('Empty world launched.')
         # The log call to true once log is called     
@@ -261,7 +271,7 @@ class catlaunch:
     def visualize(self):
 
         print("Start RVIZ")
-        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d ../config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
+        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d" +self.package_path + "/config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
         self.rviz_pid = self.rviz.pid
         self.callflag["visualize"] = True
 
@@ -333,7 +343,7 @@ class catlaunch:
         
         self.launchspawn = []
         
-        launchfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/sparkle_spawn.launch']
+        launchfile = [self.package_path + '/launch/sparkle_spawn.launch']
        
         n = 0
         # First Vehicle
@@ -381,8 +391,8 @@ class catlaunch:
         if follower_vel_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['constVel:='+leader_vel,'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
-            velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/vel.launch']
+            vel_args.append(['constVel:='+str(leader_vel),'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
+            velfile = [self.package_path + '/launch/vel.launch']
        
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
@@ -393,7 +403,7 @@ class catlaunch:
             # We will start ROSBag record immediately 
             self.log()
             for n in range(1, self.num_of_vehicles):
-                vel_args.append(['constVel:='+follower_vel, 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
+                vel_args.append(['constVel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
@@ -410,7 +420,7 @@ class catlaunch:
             print('self.name[self.num_of_vehicles - 1] : {}'.format(self.name[self.num_of_vehicles - 1]))
             vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[self.num_of_vehicles - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle) , 'leader_x_init:='+str(self.X[self.num_of_vehicles-1]), 'leader_y_init:='+str(self.Y[self.num_of_vehicles-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[self.num_of_vehicles - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])    
              
-            velfile = ['/home/ivory/VersionControl/catvehicle_ws/src/sparkle/launch/carfollowing.launch']
+            velfile = [self.package_path+'/launch/carfollowing.launch']
 
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
             self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
