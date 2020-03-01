@@ -1,0 +1,16 @@
+.. sparkle documentation master file, created by
+   sphinx-quickstart on Sun Mar  1 05:22:05 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Project Sparkle: Repeatability through Scalable and Distributed Simulation for Intelligent Vehicle CPS
+******************************************************************************************************
+.. automodule:: sparkle
+    :members:
+
+.. autoclass:: layout
+    :members:
+
+.. toctree::
+    :maxdepth: 4
+    :caption: Contents:
