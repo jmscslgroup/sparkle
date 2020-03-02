@@ -3,14 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Project Sparkle: Repeatability through Scalable and Distributed Simulation for Intelligent Vehicle CPS
-******************************************************************************************************
+Project Sparkle
+***************
+.. Repeatability through Scalable and Distributed Simulation for Intelligent Vehicle CPS
+
+.. toctree::
+    :maxdepth: 4
+    :caption: Contents:
+
+Base Class `layout`
+=====================================================================================
+
 .. automodule:: sparkle
     :members:
 
 .. autoclass:: layout
     :members:
 
-.. toctree::
-    :maxdepth: 4
-    :caption: Contents:
