@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#
+# Initial Date: September 2019
 # Author: Rahul Bhadani
-# Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
+# Copyright (c)  Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
 """ This script helps launch a fleet of n cars. """

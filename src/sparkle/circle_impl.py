@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-#
+# Initial Date: November 2019
 # Author: Rahul Bhadani
-# Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
+# Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
 from circle import circle

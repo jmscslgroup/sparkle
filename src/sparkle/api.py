@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-#
+# Initial Date: January 2020
 # Author: Rahul Bhadani
 # Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
-# All rights reserv
+# All rights reserved
 
 from circle import circle
 from Bagplot import Bagplot

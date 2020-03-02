@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# Initial Date: December 2019
+# Author: Rahul Bhadani
+# Copyright (c)  Rahul Bhadani, Arizona Board of Regents
+# All rights reserved.
+
 import rospy
 import sys, math, time, getopt
 import signal
