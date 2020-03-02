@@ -39,7 +39,7 @@ Functions:
 
     1. __init__( n_vehicles, X, Y, Yaw): basically a constructor
     2. log() : function upon calling starts rosbag record
-    3. startROS(): function upon calling starts roscore
+    3. roscore(): function upon calling starts roscore
     4. killROS(): function upon calling kills roscore
     5. startGZserver(): starts ROS-gazebo GZserver via a launch file
     6. spawn(): spawns the number of vehicles specified in __init__
@@ -52,7 +52,7 @@ Functions:
     main(): If you decide to directly execute this file, main () will be the entry point. Otherwise you can use this script as a class definition to instantiate an object
 
     A proper call sequence after object instantiation:
-    Option 1:    startROS() -> spawn() -> startTimer () -> enableSystem() -> log()->killSimulation()->getLatestBag()
+    Option 1:    roscore() -> spawn() -> startTimer () -> enableSystem() -> log()->killSimulation()->getLatestBag()
 
 '''
 
@@ -70,38 +70,74 @@ class layout:
         y-coordinate of vehicles's position in the world frame of reference
     Yaw: `list`, `double`
         yaw of all the vehicles in the world frame of reference
-    n_vehicles: `double`)
+    n_vehicles: `double`
         Number of vehicles to spawn in the simulation
     kwargs
             variable keyword arguments
 
             max_update_rate: `double`
                 Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator
+                Default Value: 100 Hz
             time_step: `double`
                 Time Step size taken by time-step solver during simulation
+                Default Value: 0.01 seconds
             update_rate: `double`
                 Update Rate to publish new state information by decoupled vehicle model
+                Default Value: 20 Hz
             log_time: `double`
                 Amount of time in seconds to capture data while running the simulation
+                Default Value: 60.0 seconds
             description: `string`
                 A descriptive text about the current simulation run
+                Default Value: "Sparkle simulation"
 
     Attributes
     ---------------
-    n_vehicles
-    X
-    Y
-    Yaw
-    max_update_rate
-    time_step
-    update_rate
-    log_time
-    description
-    matlab_engine
-    package_path
-    name
-    callflag
-    uuid
+    X: `list`, `double`
+        x-coordinate of vehicles's position in the world frame of reference
+
+    Y: `list`, `double`
+        y-coordinate of vehicles's position in the world frame of reference
+    
+    Yaw: `list`, `double`
+    
+    n_vehicles: `double`
+        Number of vehicles to spawn in the simulation
+    
+    max_update_rate: `double`
+        Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator. 
+        Default Value: 100 Hz
+    
+    time_step: `double`
+        Time Step size taken by time-step solver during simulation
+        Default Value: 0.01 seconds
+    
+    update_rate: `double`
+        Update Rate to publish new state information by decoupled vehicle model
+        Default Value: 20 Hz
+    
+    log_time: `double`
+        Amount of time in seconds to capture data while running the simulation
+        Default Value: 60.0 seconds
+    
+    description: `string`
+        A descriptive text about the current simulation run
+        Default Value: "Sparkle simulation"
+    
+    package_path: `string`
+        Saved the ROS package path for the Sparkle Package
+    
+    name: `list`, `string`
+        A list of mnemonics to name vehicle
+    
+    callflag:`dictionary`
+        Dictionary to keep track of executation sequence of different class function
+    
+    uuid:
+        A universally unique identifier (UUID)  for roslaunch
+    
+    logdir: `string`
+        Path where ROSBags is saved
 
 
     Returns
@@ -111,7 +147,7 @@ class layout:
 
 
     '''
-    def __init__(self,  n_vehicles, X, Y, Yaw, **kwargs):
+    def __init__(self,  n_vehicles=1, X=0, Y=0, Yaw=0.0, **kwargs):
         print("Number of cpu : {}".format(multiprocessing.cpu_count()))
         # Define attributes for layout class
         self.n_vehicles = n_vehicles
@@ -128,6 +164,7 @@ class layout:
         self.update_rate = 20.0
         self.log_time = 60.0
         self.description = "Sparkle simulation"
+        self.logdir = "./"
         
         try:
             # This will be used to set Gazebo physic properties
@@ -164,9 +201,6 @@ class layout:
         call(["pkill", "record"])
         time.sleep(1)
 
-        # A member variable to store matlab engine object whenever need them
-        self.matlab_engine = []
-
         # get an instance of RosPack with the default search paths
         rospack = rospkg.RosPack()
 
@@ -187,17 +221,60 @@ class layout:
                 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina']
 
         # A boolean dictionary that will be set to true if correspondong function is called
-        self.callflag = {"log": False, "startROS":  False, "startGZserver": False, "visualize": False, "startVel": False}
+        self.callflag = {"log": False, "roscore":  False, "startGZserver": False, "visualize": False, "startVel": False}
 
         self.uuid = ""
 
+    def roscore(self,  uri="localhost", port=11311):
+        """
+        layout.roscore(uri="localhost", port=11311)
+        Starts the roscore.
 
-    def log(self):
+        Parameters
+        -------------
+        uri: `string`
+            Specifies ROS_MASTER_URI
+            A valid IP address string or resolvable hostname
+        port: `integer` [0-65535]
+            port number where roscore will start
+            A valid port ranges from 0 to 65535 but note that not all port numbers are allowed.
+
+        Example
+        ----------
+        
+        >>> L = layout()
+        >>> L.roscore("ivory.local", 11321 )
+
+        >>> M = layout()
+        >>> remoteURI = "150.135.222.42"
+        >>> port = 134
+        >>> M.roscore(remoteURI, port)
+        
+        """
+        os.environ["ROS_MASTER_URI"] = "http://"+uri+":"+str(port)
+        
+        self.roscore = subprocess.Popen('roscore -p ' + str(port), stdout=subprocess.PIPE, shell=True)
+        self.roscore_pid = self.roscore.pid
+        self.callflag["roscore"] = True
+        time.sleep(5)
+
+    def log(self, logdir="./"):
         '''
+        layout.log(logdir = "./")
+
         Class method `log`: Logs the data as bag files upon calling
+        
+        The function starts rosbag record in a subprocess and saved PID identifier.
+        It also start logging gz stat metrics for post-analysis of simulation.
+        
+        Parameters
+        -------------
+        logdir: `string`
+            Path/Directory where ROS Bag will be saved
         '''
+        self.logdir = logdir
         # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ " --all "+ " -o Circle_Test_n_" + str( self.n_vehicles) + '_updateRate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = ["rosbag "+ " record "+ " --all "+ " -o" + logdir + "/sparkle_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
@@ -209,18 +286,27 @@ class layout:
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
 
         # log the gz stats
-        self.gzstatsFile ='gz_stats_' + dt + '.txt'
-        self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsFile ], shell=True)
-        self.gzstatsPID =   self.gzstats.pid
+        self.gzstatsfile =self.logdir + '/gz_stats_' + dt + '.txt'
+        self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsfile ], shell=True)
 
         # The log call to true once log is called
         self.callflag["log"] = True
 
-    def stopLog(self):
+    def stoplog(self):
+        '''
+        layout.stoplog()
+
+        Class method `stoplog`: Stop the logging of ROSBag data.
+        
+        The function gracefully terminates the `rosbag record` command and waits until the bag file writing is complete.
+        The function also reindexes the bag file in case the rosbag record terminates prematurely.
+        
+        '''
+
         if self.callflag["log"]:
             print("Stopping ROSBAG Recorder.")
             self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
-            #time.sleep(5+self.n_vehicles)
+
             bagkiller = subprocess.Popen(["rosnode kill /bagrecorder"], shell=True)
 
             ## Check of .bag.active is still being written
@@ -229,7 +315,7 @@ class layout:
             list_of_files2 = glob.glob('*.bag.active')
             list_of_files = list_of_files1 + list_of_files2
             print(list_of_files)
-            covertToBag = False
+            bagconverted = False
             if len(list_of_files) != 0:
                 latest_file = max(list_of_files, key=os.path.getctime)
                 if "bag.active" in latest_file[-10:]:
@@ -253,26 +339,22 @@ class layout:
                             if (latest_file_written[:-4] == latest_file[:-11]):
                                 print("Bag file {} successfully written".format(latest_file_written))
                             else:
-                                print("Something went wrong while finising  writing {}.".format(latest_file))
-                            covertToBag = True
+                                print("Something went wrong while finising the  writing of {}.".format(latest_file))
+                            bagconverted = True
                             break
                         if byteswritten == 0:
                             break
                         else:
                             filesize = newfilesize
 
-            if covertToBag is True:
+            if bagconverted is True:
                 print('bag file saved successfully')
-
-
 
             stdout = bagkiller.communicate()
             print('rosnode kill: {}'.format(stdout))
             time.sleep(5+self.n_vehicles)
 
             print(bagkiller)
-
-
 
             #check if bag file has been killed:
             psaef = subprocess.Popen(["ps -aef | grep bagrecorder"], shell=True)
@@ -283,17 +365,10 @@ class layout:
             call(["pkill", "record"])
             self.gzstats.terminate()
 
-    """Start roscore"""
-    def startROS(self):
-        self.roscore = subprocess.Popen('roscore', stdout=subprocess.PIPE, shell=True)
-        self.roscore_pid = self.roscore.pid
-        self.callflag["startROS"] = True
-        time.sleep(5)
-
     """ Kill ROS Core if it has started """
     def killROS(self):
 
-        if self.callflag["startROS"]:
+        if self.callflag["roscore"]:
             print('Killing roscore')
             #kill the child process of roscore
             try:
@@ -341,8 +416,8 @@ class layout:
     '''
     def create(self):
         # If roscore has not started yet, then start the roscore
-        if not self.callflag["startROS"]:
-            self.startROS()
+        if not self.callflag["roscore"]:
+            self.roscore()
 
         time.sleep(3)
 
@@ -531,7 +606,7 @@ class layout:
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
 
-        self.stopLog()
+        self.stoplog()
         self.killROS()
 
         print("##### Simulation Terminated #####")
@@ -572,11 +647,11 @@ class layout:
                 create_dir = subprocess.Popen(["mkdir -v " +  fileName],   stdout=subprocess.PIPE, shell=True)
                 stdout = create_dir.communicate()
                 print('mkdir STDOUT:{}'.format(stdout))
-                print("Renaming GZStat log file [{}] to retain bag file information".format(self.gzstatsFile))
-                move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsFile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                print("Renaming GZStat log file [{}] to retain bag file information".format(self.gzstatsfile))
+                move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsfile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
                 stdout = move_cmd.communicate()
                 print('mv STDOUT:{}'.format(stdout))
-                self.gzstatsFile = fileName+"/" +fileName + "_gzStats.txt"
+                self.gzstatsfile = fileName+"/" +fileName + "_gzStats.txt"
                 return latest_file
             else:
                 print("No compatible bag file was found.")
