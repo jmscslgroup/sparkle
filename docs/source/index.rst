@@ -20,3 +20,14 @@ Base Class `layout`
 .. autoclass:: layout
     :members:
 
+Class `circle`
+=====================================================================================
+Inherits from `layout`, performs simulation on circular trajectory.
+
+.. autoclass:: circle
+    :members:
+
+Functions
+=====================================================================================
+
+.. autofunction:: animate_circle

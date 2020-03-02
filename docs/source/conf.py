@@ -57,7 +57,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Sparkle: Repeatability through Scalable and Distributed Simulation for Intelligent Vehicle CPS'
+project = u'Sparkle: Repeatability through Scalable and Distributed Simulation for Connected-and-Inteligent-Vehicle CPS'
 copyright = u'2020, Rahul Bhadani'
 author = u'Rahul Bhadani'
 
