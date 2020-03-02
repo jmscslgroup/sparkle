@@ -17,59 +17,72 @@ from matplotlib import style
 import yaml
 from operator import add
 
-def sparkle_sim(circumference, num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, description=""):
-    """
-    Sparkle Simulation API
+def animate_circle(circumference, num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+    '''
+    Sparkle Simulation API: `animate_circle`
 
-     Parameters
-    ----------
-    num_vehicles: `integer`, The number vehicles to be spawned in the simulation
+    Higher level API for performing simulation on a circular trajectory
 
-    publish_rate: `double`, The desired publish rate of the velocity of the vehicles' updated odometry to  update Gazebo simulation
+    Parameters
+    --------------
+    num_vehicles: `integer`
+         The number vehicles to be spawned in the simulation
+
+    publish_rate: `double`
+        The desired publish rate of the velocity of the vehicles' updated odometry to  update Gazebo simulation
     
-    max_update_rate: `double`, Max Update Rate to be set in Gazebo Physics Simulation
+    max_update_rate: `double`
+        Max Update Rate to be set in Gazebo Physics Simulation
     
-    time_step: `double`, Time step for Gazebo Physics Simulation
+    time_step: `double`
+        Time step for Gazebo Physics Simulation
     
-    include_laser: `bool`, Boolean flag to include/exclude laser model and laser plugin on the first vehicle model
+    include_laser: `bool`
+        Boolean flag to include/exclude laser model and laser plugin on the first vehicle model
+
+    logdir: `string`
+        Directory/Path where bag files and other data files recording simulation statistics will be saved.
     
-    description: `string`, Any human readable description of this simulation, the default is empty string, useful for annotating bag file name, will be saved  in the yaml file.
+    description: `string`
+        Any human readable description of this simulation, the default is empty string, useful for annotating bag file name, will be saved  in the yaml file.
     
     Returns
-    --------
-    The name of the bag file is returned. We want all those bag files to create an aggregated plot of total simulation run.
-    """
+    ----------
+    `string`
+        A list of data files is returned. We can specify only certain information to retrieved from saved bag files at the end of the simulation.
+
+   '''
 
     print("Simulation beging")
    
-    simConfig = {"circumference": circumference, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": 0.01, "include_laser": include_laser, "description": description}
+    simConfig = {"circumference": circumference, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": time_step, "include_laser": include_laser, "logdir": logdir, "description": description}
     
     
     print("Simulation Configuration: {}".format(simConfig))
     
-    Circ = circle(**simConfig)
+    C = circle(**simConfig)
 
     # Start a simulation
-    bagFile = Circ.start_circle_sim()
+    bag = C.simulate(logdir=logdir)
 
-    print("Bagfile recorded is {}".format(bagFile))
+    print("Bagfile recorded is {}".format(bag))
 
-    gz_stat_file = Circ.gzstatsFile
+    gz_stat_file = C.gzstatsfile
     print("GZStat file is {}".format(gz_stat_file))
     GZ = GZStats(gz_stat_file)
     GZ.plotRTF()
     GZ.plotSimStatus()
 
     datafiles = []
-    if bagFile is not None:
-        Bag  = Bagplot(bagFile)
+    if bag is not None:
+        Bag  = Bagplot(bag)
         datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
         Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')
         Bag.plot_topic_hz(datafiles)
 
-        configFileToSave =  Circ.bagfile[0:-4] + "/" + "simConfig.yaml"
+        configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
 
-        with open(configFileToSave, 'w') as file:
+        with open(configfile, 'w') as file:
             documents = yaml.dump(simConfig, file)
 
     time.sleep(6)
