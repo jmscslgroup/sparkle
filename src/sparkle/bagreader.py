@@ -32,14 +32,14 @@ class bagreader:
         Name of the bag file, e.g. 2019-08-21-22-00-00.bag
     dir: `string`
         Directory where bag file is located
-    bagReader: `rosbag.Bag`
+    reader: `rosbag.Bag`
         rosbag.Bag object that 
 
     topic: `pandas dataframe`
         stores the available topic from bag file being read as a table
     n_messages: `integer`
         stores the number of messages
-    message_type:`list`, `string`
+    message_types:`list`, `string`
         stores all the available message types
     datafolder: `string`
         stores the path/folder where bag file is present - may be relative to the bag file or full-qualified path.
@@ -63,7 +63,41 @@ class bagreader:
     '''
 
     def __init__(self, bagfile):
-        pass
+        self.bagfile = bagfile
+        
+        slashindices = find(bagfile, '/')
+        
+        # length of slashindices list will be zero if a user has pass only bag file name , e.g. 2020-03-04-12-22-42.bag
+        if  len(slashindices) > 0:
+            self.filename =bagfile[slashindices[-1]:]
+            self.dir = bagfile[slashindices[0]:slashindices[-1]]
+        else:
+            self.filename = bagfile
+            self.dir = './'
+
+        self.reader = rosbag.Bag(self.bagfile)
+
+        info = self.reader.get_type_and_topic_info() 
+        self.topic_tuple = info.topics.values()
+        self.topics = info.topics.keys()
+
+        self.message_types = []
+        for t1 in self.topic_tuple: self.message_types.append(t1.msg_type)
+
+        self.n_messages = []
+        for t1 in self.topic_tuple: self.message_types.append(t1.message_count)
+
+        self.frequency = []
+        for t1 in self.topic_tuple: self.frequency.append(t1.frequency)
+
+        df = pd.DataFrame(list(zip(self.topics, self.message_types, self.n_messages, self.frequency)), columns=['Topics', 'Types', 'Message Count', 'Frequency'])
+
+        self.start_time = self.reader.get_start_time()
+        self.end_time = self.reader.get_end_time()
+
+
+
+        
 
     def laser_data(self, **kwargs):
         pass
@@ -109,6 +143,27 @@ class bagreader:
 
     def animate_pointcloud(self):
         pass
+
+def find(s, ch):
+    '''
+    Function `find` returns indices all the occurence of `ch` in `s` 
+
+    Parameters
+    -------------
+    s: `string`
+        String or a setence where to search for occurrences of the character `ch`
+
+    s: `char`
+        Character to look for
+
+    Returns
+    ---------
+    `list`
+        List of indices of occurrences of character `ch` in the string `s`.
+
+    '''
+    return [i for i, ltr in enumerate(s) if ltr == ch]
+
 
 
     
