@@ -194,7 +194,7 @@ def plot_ts(datafiles, attribute, fileFilter='_',  Title=None):
     # pt.show()
     dt_object = datetime.datetime.fromtimestamp(time.time())
     dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
-    fileNameToSave =Title + "/" + dt + "_" + fileFilter
+    fileNameToSave = Title + "/" + dt + "_" + fileFilter
 
     pickle.dump(fig,file(fileNameToSave + ".pickle",'w'))
     current_fig.savefig(fileNameToSave + ".pdf", dpi = 300)
