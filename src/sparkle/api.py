@@ -18,7 +18,7 @@ from matplotlib import style
 import yaml
 from operator import add
 
-def animate_circle(circumference, num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_circle(circumference, n_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
     '''
     Sparkle Simulation API: `animate_circle`
 
@@ -56,7 +56,7 @@ def animate_circle(circumference, num_vehicles, publish_rate, max_update_rate, t
 
     print("Simulation beging")
    
-    simConfig = {"circumference": circumference, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": time_step, "include_laser": include_laser, "logdir": logdir, "description": description}
+    simConfig = {"circumference": circumference, "n_vehicles":  n_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": time_step, "include_laser": include_laser, "logdir": logdir, "description": description}
     
     
     print("Simulation Configuration: {}".format(simConfig))
@@ -93,7 +93,7 @@ def animate_circle(circumference, num_vehicles, publish_rate, max_update_rate, t
 
     return datafiles
 
-def animate_catvehicle(package_name, circumference, num_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_catvehicle(package_name, circumference, n_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
     '''
     Sparkle Simulation API: `animate_catvehicle`
 
@@ -131,7 +131,7 @@ def animate_catvehicle(package_name, circumference, num_vehicles, publish_rate, 
 
     print("Simulation beging")
    
-    simConfig = {"circumference": circumference, "num_vehicle":  num_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": time_step, "include_laser": include_laser, "logdir": logdir, "description": description, "package_name":  package_name}
+    simConfig = {"circumference": circumference, "n_vehicles":  n_vehicles, "update_rate": publish_rate, "log_time": log_time, "max_update_rate": max_update_rate, "time_step": time_step, "include_laser": include_laser, "logdir": logdir, "description": description, "package_name":  package_name}
     
     
     print("Simulation Configuration: {}".format(simConfig))
