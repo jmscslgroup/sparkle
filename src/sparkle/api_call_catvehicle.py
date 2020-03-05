@@ -16,14 +16,14 @@ import uuid
 Files = []
 unique_runid = str(uuid.uuid4())
 vehicle = 5
-for i in range(4):
-    datafile = animate_catvehicle( package_name="catvehicle", circumference = 230, n_vehicles=vehicle, publish_rate=100.0, max_update_rate=100.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = "/home/ivory/CyverseData/ProjectSparkle", description="CAT Vehicle Simulation:" + str(vehicle) + "Car, Iteration " + str(i) + " ID " + unique_runid)
+for i in range(5):
+    datafile = animate_catvehicle( package_name="catvehicle", circumference = 230, n_vehicles=vehicle, publish_rate=100.0, max_update_rate=100.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = "/home/reu-cat/CyverseData/ProjectSparkle", description="CAT Vehicle Simulation:" + str(vehicle) + "Car, Iteration " + str(i) + " ID " + unique_runid)
     Files.append(datafile)
     print("Data received is: {}".format(datafile))
 
 Files = reduce(add, Files)
 
-plot_ts(Files, 'PoseY',Title='/home/ivory/CyverseData/ProjectSparkle/Consolidated Plot', fileFilter='magna-odom')
+plot_ts(Files, 'PoseY',Title='/home/reu-cat/CyverseData/ProjectSparkle/Consolidated Plot', fileFilter='magna-odom')
 
 print("Bag files captured in this run are:")
 print(Files)
