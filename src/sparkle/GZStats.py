@@ -5,7 +5,6 @@
 # All rights reserved.
 
 import signal
-import matlab.engine
 import pandas as pd
 import sys, math, time, datetime
 import matplotlib.pyplot as pt
@@ -15,11 +14,6 @@ import numpy as np
 from matplotlib.pyplot import cm
 import pickle
 
-'''
-This class uses matlab's python engine and ROSBagReader class written in MATLAB
-to create plots of required bag files
-
-'''
 
 class GZStats(object):
     '''
@@ -77,7 +71,6 @@ class GZStats(object):
         Factor = self.dataframe['Factor']
 
         pt.style.use('seaborn')
-        pt.rcParams["font.family"] = "Times New Roman"
         pt.rcParams["figure.figsize"] = (18,12)
         params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
         pt.rcParams.update(params)
@@ -130,7 +123,6 @@ class GZStats(object):
         SimStatus = self.dataframe['SimStatus']
 
         pt.style.use('seaborn')
-        pt.rcParams["font.family"] = "Times New Roman"
         pt.rcParams["figure.figsize"] = (18,12)
         params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper left'}
         pt.rcParams.update(params)
