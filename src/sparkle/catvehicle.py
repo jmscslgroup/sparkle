@@ -255,7 +255,7 @@ class catvehicle(layout, object):
             # We will start ROSBag record immediately
             self.log(logdir=logdir, prefix=self.package_name)
             for n in range(1, self.n_vehicles):
-                vel_args.append(['constVel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
+                vel_args.append(['vel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
@@ -299,10 +299,10 @@ class catvehicle(layout, object):
         
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
 
-        self.control(leader_vel = 6.5, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
+        self.control(leader_vel = 3.0, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
         #self.control(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
-        self.rviz(self.package_path + "/config/magna.rviz")
+        self.rviz(self.package_path + "/config/magna_multi.rviz")
 
         # Start Rosbag record for 60 seconds
         time.sleep(self.log_time)
