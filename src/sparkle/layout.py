@@ -207,6 +207,13 @@ class layout:
         except KeyError as e:
             pass
 
+        self.package_name = "sparkle"
+        try:
+            self.package_name = kwargs["package_name"]
+        except KeyError as e:
+            pass
+
+        print("PACKAGE NAME IS {}".format(self.package_name))
         # Kill any existing ros and gzserver and gzclient
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
@@ -221,7 +228,7 @@ class layout:
         self.package_path = ''
 
         try:
-            self.package_path = rospack.get_path('sparkle')
+            self.package_path = rospack.get_path(self.package_name)
         except rospkg.ResourceNotFound as s:
             print("Package "+ str(s.args[0])+ " Not Found")
             raise
@@ -309,7 +316,7 @@ class layout:
             pass
         return roscore_status
 
-    def log(self, logdir="./"):
+    def log(self, logdir="./", prefix = "sparkle"):
         '''
         layout.log(logdir = "./")
 
@@ -322,10 +329,13 @@ class layout:
         -------------
         logdir: `string`
             Path/Directory where ROS Bag will be saved
+
+        prefix: `string`
+            A descriptive string to be prefixed at the beginning of bag file name.
         '''
         self.logdir = logdir
         # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ " --all "+ " -o " + logdir + "/sparkle_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = ["rosbag "+ " record "+ " --all "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
@@ -416,7 +426,6 @@ class layout:
             call(["pkill", "record"])
             self.gzstats.terminate()
 
-
     def killroscore(self):
         """ 
         layout.killroscore()
@@ -465,25 +474,30 @@ class layout:
         self.callflag["physicsengine"] = True
         time.sleep(3)
 
-    def rviz(self):
+    def rviz(self, config = "/home/ivory/VersionControl/catvehicle_ws/src/sparkle/config/magna.rviz"):
         '''
         layout.rviz()
 
         Class method `rviz` starts the rosr-rviz for visualizing vehicle's path, point cloud, etc.
 
         Sets the `layout.callflag["rviz"]` to `True`.
+
+        Parameters
+        ---------------
+        cofig: `string`
+            filepath of the rviz configuration file.
+
+        Example
+        ---------------
+        >>> L = layout()
+        >>> L.rviz(config="/home/ivory/catvehicle_ws/src/catvehicle/config/catvehicle.rviz")
+
         '''
         print("Start ros-rviz")
-        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d" +self.package_path + "/config/magna.rviz"], stdout=subprocess.PIPE, shell=True)
+        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d " +config], stdout=subprocess.PIPE, shell=True)
         self.rviz_pid = self.rviz.pid
         self.callflag["rviz"] = True
 
-
-    '''
-
-    create function starts ros, create physics world (e.g. Gazebo world) and set desired physics
-    properties such as max step size and max update rate.
-    '''
     def create(self, uri="localhost", port=11311):
         '''
         layout.create(uri="localhost", port=11311)
@@ -566,7 +580,6 @@ class layout:
         if physics_properties.max_update_rate != self.max_update_rate:
             print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
             sys.exit()
-
 
     def spawn(self):
         '''
@@ -680,7 +693,7 @@ class layout:
             self.launchvel[0].start()
 
             # We will start ROSBag record immediately
-            self.log(logdir=logdir)
+            self.log(logdir=logdir, prefix=self.package_name)
             for n in range(1, self.n_vehicles):
                 vel_args.append(['constVel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -806,7 +819,8 @@ class layout:
                 stdout = move_cmd.communicate()
                 print('mv STDOUT:{}'.format(stdout))
                 self.gzstatsfile = fileName+"/" +fileName + "_gzStats.txt"
-                return latest_file
+                
+                return self.logdir + "/" + latest_file
             else:
                 print("No compatible bag file was found.")
         else:
