@@ -243,7 +243,7 @@ class catvehicle(layout, object):
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['constVel:='+str(leader_vel),'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
+            vel_args.append(['vel:='+str(leader_vel),'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
             velfile = [self.package_path + '/launch/stepvel.launch']
 
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
