@@ -170,7 +170,7 @@ class circle(layout, object):
        
         # initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
 
-        self.control(leader_vel = 3.5, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
+        self.control(leader_vel = 3.0, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
         #self.control(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
         self.rviz()
