@@ -595,7 +595,7 @@ class layout:
         n = 0
         # First Vehicle
         print('Vehicle Numer: {}'.format(n))
-        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=true', 'updateRate:='+   str(self.update_rate)])
+        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=false', 'updateRate:='+   str(self.update_rate)])
 
         print(cli_args[n][0:])
         spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
@@ -854,7 +854,7 @@ def main(argv):
         print("Also see: ./circle.py --help")
         return
 
-    simConfig = {"circumference": 450.0, "num_vehicle":  1, "update_rate": 25, "log_time": 120, "max_update_rate": 25, "time_step": 0.01, "laser": True, "description": "catlauch test run"}
+    simConfig = {"circumference": 450.0, "num_vehicle":  1, "update_rate": 25, "log_time": 120, "max_update_rate": 25, "time_step": 0.01, "laser": False, "description": "catlauch test run"}
 
     cl = layout(1, [10], [20], [0.023], **simConfig)
     print(cl.X)
