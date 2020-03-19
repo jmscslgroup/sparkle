@@ -5,11 +5,13 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Grid1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry1/Shape1
+        - /LaserScan1
       Splitter Ratio: 0.5
-    Tree Height: 624
+    Tree Height: 696
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -33,9 +35,9 @@ Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 1
+      Cell Size: 10
       Class: rviz/Grid
-      Color: 160; 160; 164
+      Color: 186; 189; 182
       Enabled: true
       Line Style:
         Line Width: 0.029999999329447746
@@ -104,11 +106,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: nebula/robot_description
       TF Prefix: nebula
@@ -143,95 +140,11 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        aitne/base_link:
-          Value: true
-        aitne/odom:
-          Value: true
-        arche/base_link:
-          Value: true
-        arche/odom:
-          Value: true
-        calista/base_link:
-          Value: true
-        calista/odom:
-          Value: true
-        carpo/base_link:
-          Value: true
-        carpo/odom:
-          Value: true
-        centauri/base_link:
-          Value: true
-        centauri/odom:
-          Value: true
-        elara/base_link:
-          Value: true
-        elara/odom:
-          Value: true
-        enceladus/base_link:
-          Value: true
-        enceladus/odom:
-          Value: true
-        europa/base_link:
-          Value: true
-        europa/odom:
-          Value: true
-        herse/base_link:
-          Value: true
-        herse/odom:
-          Value: true
-        himalia/base_link:
-          Value: true
-        himalia/odom:
-          Value: true
-        kalyke/base_link:
-          Value: true
-        kalyke/odom:
-          Value: true
         magna/base_link:
           Value: true
         magna/odom:
           Value: true
-        metis/base_link:
-          Value: true
-        metis/odom:
-          Value: true
-        mimas/base_link:
-          Value: true
-        mimas/odom:
-          Value: true
-        nebula/base_link:
-          Value: true
-        nebula/odom:
-          Value: true
-        proxima/base_link:
-          Value: true
-        proxima/odom:
-          Value: true
-        tethys/base_link:
-          Value: true
-        tethys/odom:
-          Value: true
-        thebe/base_link:
-          Value: true
-        thebe/odom:
-          Value: true
-        thyone/base_link:
-          Value: true
-        thyone/odom:
-          Value: true
         world:
-          Value: true
-        zel/base_link:
-          Value: true
-        zel/odom:
-          Value: true
-        zenith/base_link:
-          Value: true
-        zenith/odom:
-          Value: true
-        zephyr/base_link:
-          Value: true
-        zephyr/odom:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -240,71 +153,8 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
-          aitne/odom:
-            aitne/base_link:
-              {}
-          arche/odom:
-            arche/base_link:
-              {}
-          calista/odom:
-            calista/base_link:
-              {}
-          carpo/odom:
-            carpo/base_link:
-              {}
-          centauri/odom:
-            centauri/base_link:
-              {}
-          elara/odom:
-            elara/base_link:
-              {}
-          enceladus/odom:
-            enceladus/base_link:
-              {}
-          europa/odom:
-            europa/base_link:
-              {}
-          herse/odom:
-            herse/base_link:
-              {}
-          himalia/odom:
-            himalia/base_link:
-              {}
-          kalyke/odom:
-            kalyke/base_link:
-              {}
           magna/odom:
             magna/base_link:
-              {}
-          metis/odom:
-            metis/base_link:
-              {}
-          mimas/odom:
-            mimas/base_link:
-              {}
-          nebula/odom:
-            nebula/base_link:
-              {}
-          proxima/odom:
-            proxima/base_link:
-              {}
-          tethys/odom:
-            tethys/base_link:
-              {}
-          thebe/odom:
-            thebe/base_link:
-              {}
-          thyone/odom:
-            thyone/base_link:
-              {}
-          zel/odom:
-            zel/base_link:
-              {}
-          zenith/odom:
-            zenith/base_link:
-              {}
-          zephyr/odom:
-            zephyr/base_link:
               {}
       Update Interval: 0
       Value: true
@@ -359,11 +209,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: calista/robot_description
       TF Prefix: calista
@@ -437,11 +282,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: proxima/robot_description
       TF Prefix: proxima
@@ -515,11 +355,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zel/robot_description
       TF Prefix: zel
@@ -593,11 +428,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zephyr/robot_description
       TF Prefix: zephyr
@@ -671,11 +501,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: centauri/robot_description
       TF Prefix: centauri
@@ -749,11 +574,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: zenith/robot_description
       TF Prefix: zenith
@@ -827,11 +647,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: europa/robot_description
       TF Prefix: europa
@@ -871,11 +686,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: elara/robot_description
       TF Prefix: elara
@@ -949,11 +759,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: herse/robot_description
       TF Prefix: herse
@@ -1061,11 +866,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: thebe/robot_description
       TF Prefix: thebe
@@ -1139,11 +939,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: metis/robot_description
       TF Prefix: metis
@@ -1217,11 +1012,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: himalia/robot_description
       TF Prefix: himalia
@@ -1295,11 +1085,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: kalyke/robot_description
       TF Prefix: kalyke
@@ -1373,11 +1158,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: carpo/robot_description
       TF Prefix: carpo
@@ -1451,11 +1231,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: arche/robot_description
       TF Prefix: arche
@@ -1529,11 +1304,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: aitne/robot_description
       TF Prefix: aitne
@@ -1607,11 +1377,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: thyone/robot_description
       TF Prefix: thyone
@@ -1685,11 +1450,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: enceladus/robot_description
       TF Prefix: enceladus
@@ -1763,11 +1523,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: mimas/robot_description
       TF Prefix: mimas
@@ -1841,11 +1596,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
       Name: RobotModel
       Robot Description: tethys/robot_description
       TF Prefix: tethys
@@ -1909,9 +1659,39 @@ Visualization Manager:
       Topic: /tethys/odom
       Unreliable: false
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 18.633304595947266
+        Min Value: 18.596101760864258
+        Value: true
+      Axis: X
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: -999999
+      Min Color: 0; 0; 0
+      Min Intensity: 999999
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.5
+      Style: Spheres
+      Topic: /magna/front_laser_points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
-    Background Color: 211; 215; 207
+    Background Color: 255; 255; 255
     Default Light: true
     Fixed Frame: world
     Frame Rate: 30
@@ -1934,16 +1714,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 81.18193054199219
+      Distance: 97.16502380371094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.378139972686768
-        Y: -11.204367637634277
-        Z: 14.99109935760498
+        X: -1.0493547916412354
+        Y: -2.3525586128234863
+        Z: -2.4730753898620605
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -1952,23 +1732,23 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.513579845428467
+      Yaw: 3.1344738006591797
     Saved: ~
 Window Geometry:
-  "&Displays":
+  Displays:
     collapsed: false
-  "&Time":
-    collapsed: false
-  Height: 984
+  Height: 978
   Hide Left Dock: false
   Hide Right Dock: true
-  QMainWindow State: 000000ff00000000fd00000004000000000000023600000316fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006f01000005fb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004600000316000000eb01000005fb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000011200000328fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004600000328000000cd01000005fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000077e00000050fc0100000002fb0000000800540069006d006501000000000000077e000002e001000005fb0000000800540069006d00650100000000000004500000000000000000000005450000031600000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002b400000349fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000001600000349000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000011200000328fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000004600000328000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000050fc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000004c60000034900000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
   Selection:
+    collapsed: false
+  Time:
     collapsed: false
   Tool Properties:
     collapsed: false
   Views:
     collapsed: false
-  Width: 1918
+  Width: 1920
   X: 0
-  Y: 1
+  Y: 27
