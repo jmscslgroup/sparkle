@@ -266,7 +266,7 @@ class catvehicle(layout, object):
             self.callflag["startVel"] = True
 
     ## We will define some simulation sequence that can be called without fuss
-    def simulate(self,logdir):
+    def simulate(self, leader_vel, logdir):
         '''
         Class method `simulate` specifies state-based model for simulation of vehicles on circular trajectory.
 
@@ -299,7 +299,7 @@ class catvehicle(layout, object):
         
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
 
-        self.control(leader_vel = 3.0, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
+        self.control(leader_vel = leader_vel, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
         #self.control(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
         self.rviz(self.package_path + "/config/magna_multi.rviz")

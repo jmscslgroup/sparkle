@@ -135,7 +135,7 @@ class circle(layout, object):
         super(circle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
 
     ## We will define some simulation sequence that can be called without fuss
-    def simulate(self,logdir):
+    def simulate(self,leader_vel, logdir):
         '''
         Class method `simulate` specifies state-based model for simulation of vehicles on circular trajectory.
 
@@ -170,7 +170,7 @@ class circle(layout, object):
        
         # initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
 
-        self.control(leader_vel = 1.0, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
+        self.control(leader_vel = leader_vel, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
         #self.control(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
 
         self.rviz(self.package_path + "/config/magna.rviz")

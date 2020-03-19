@@ -18,7 +18,7 @@ from matplotlib import style
 import yaml
 from operator import add
 
-def animate_circle(circumference, n_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
     '''
     Sparkle Simulation API: `animate_circle`
 
@@ -64,7 +64,7 @@ def animate_circle(circumference, n_vehicles, publish_rate, max_update_rate, tim
     C = circle(**simConfig)
 
     # Start a simulation
-    bag = C.simulate(logdir=logdir)
+    bag = C.simulate(leader_vel, logdir=logdir)
 
     print("Bagfile recorded is {}".format(bag))
 
@@ -93,7 +93,7 @@ def animate_circle(circumference, n_vehicles, publish_rate, max_update_rate, tim
 
     return datafiles
 
-def animate_catvehicle(package_name, circumference, n_vehicles, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
     '''
     Sparkle Simulation API: `animate_catvehicle`
 
@@ -139,7 +139,7 @@ def animate_catvehicle(package_name, circumference, n_vehicles, publish_rate, ma
     C = catvehicle(**simConfig)
 
     # Start a simulation
-    bag = C.simulate(logdir=logdir)
+    bag = C.simulate(leader_vel = leader_vel, logdir=logdir)
 
     print("Bagfile recorded is {}".format(bag))
 
