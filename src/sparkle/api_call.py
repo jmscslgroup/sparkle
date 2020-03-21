@@ -28,9 +28,9 @@ directory = homedir + "/CyverseData/ProjectSparkle/Consolidated Plot"
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-vehicle = 1
+vehicle = 10
 for i in range(1):
-    datafile = animate_circle(circumference = 230, n_vehicles=vehicle, leader_vel= 8.0, publish_rate=20.0, max_update_rate=100.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = homedir +"/CyverseData/ProjectSparkle", description="CAT Vehicle Simulation:" + str(vehicle) + "Car, Iteration " + str(i) + " ID " + unique_runid)
+    datafile = animate_circle(circumference = 230, n_vehicles=vehicle, leader_vel= 8.0, publish_rate=20.0, max_update_rate=100.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = homedir +"/CyverseData/ProjectSparkle", description="Sparkle Simulation: " + str(vehicle) + " Car(s), Iteration " + str(i) + " ID " + unique_runid)
     Files.append(datafile)
     print("Data received is: {}".format(datafile))
 

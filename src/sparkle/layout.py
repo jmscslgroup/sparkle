@@ -335,7 +335,7 @@ class layout:
         '''
         self.logdir = logdir
         # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ " --all "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = ["rosbag "+ " record "+ " -e '(.*)cmd(.*)' '(.*)odom(.*)' '(.*)vel(.*)' "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
@@ -683,7 +683,7 @@ class layout:
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['constVel:='+str(leader_vel),'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
+            vel_args.append(['constVel:=0.0','strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
             velfile = [self.package_path + '/launch/vel.launch']
 
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -692,16 +692,22 @@ class layout:
             print('Velocity node ' + str(0) + '  started.')
             self.launchvel[0].start()
 
-            # We will start ROSBag record immediately
-            self.log(logdir=logdir, prefix=self.package_name)
             for n in range(1, self.n_vehicles):
-                vel_args.append(['constVel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
+                vel_args.append(['constVel:=0.0', 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
             for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
                 self.launchvel[n].start()
+
+            # We will start ROSBag record immediately
+            self.log(logdir=logdir, prefix=self.package_name)
+            
+            time.sleep(10)
+            
+            for n in range(0, self.n_vehicles):
+                rosparamset = subprocess.Popen(["rosparam set /" +self.name[n]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
             self.callflag["startVel"] = True
 

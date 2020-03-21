@@ -243,7 +243,7 @@ class catvehicle(layout, object):
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['vel:='+str(leader_vel),'strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
+            vel_args.append(['vel:=0.0','strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
             velfile = [self.package_path + '/launch/stepvel.launch']
 
             vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
@@ -252,18 +252,26 @@ class catvehicle(layout, object):
             print('Velocity node ' + str(0) + '  started.')
             self.launchvel[0].start()
 
-            # We will start ROSBag record immediately
-            self.log(logdir=logdir, prefix=self.package_name)
             for n in range(1, self.n_vehicles):
-                vel_args.append(['vel:='+str(follower_vel), 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
+                vel_args.append(['vel:=0.0', 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
                 vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
                 self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
 
             for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
                 self.launchvel[n].start()
+                
+            # We will start ROSBag record immediately
+            self.log(logdir=logdir, prefix=self.package_name)
+            
+            time.sleep(10)
+            
+            for n in range(0, self.n_vehicles):
+                rosparamset = subprocess.Popen(["rosparam set /" +self.name[n]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
             self.callflag["startVel"] = True
+
+
 
     ## We will define some simulation sequence that can be called without fuss
     def simulate(self, leader_vel, logdir):
