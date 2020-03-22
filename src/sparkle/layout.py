@@ -239,7 +239,9 @@ class layout:
                 'metis', 'himalia', 'kalyke', 'carpo', 'arche', 'aitne','thyone',
                 'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
                 'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos',
-                'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina']
+                'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina', 'sirius', 
+                'rigel', 'vega', 'altair', 'capella', 'alcor','whirlpool', 'andromeda', 'milkyway', 
+                'cygnus']
 
         # A boolean dictionary that will be set to true if correspondong function is called
         self.callflag = {"log": False, "roscore":  False, "physicsengine": False, "rviz": False, "startVel": False}
