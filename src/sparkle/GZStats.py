@@ -13,7 +13,8 @@ from matplotlib import style
 import numpy as np
 from matplotlib.pyplot import cm
 import pickle
-
+import bagpy
+import seaborn as sea
 
 class GZStats(object):
     '''
@@ -71,8 +72,10 @@ class GZStats(object):
         Factor = self.dataframe['Factor']
 
         pt.style.use('seaborn')
-        pt.rcParams["figure.figsize"] = (18,12)
-        params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
+        pt.rcParams["figure.figsize"] = (18,10)
+        pt.rcParams[ 'font.family'] = 'Roboto'
+        pt.rcParams[ 'font.weight'] = 'bold'
+        params = {'legend.fontsize': 12, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
         pt.rcParams.update(params)
         fig, (ax1, ax2) = pt.subplots(2, 1)
         
@@ -82,15 +85,13 @@ class GZStats(object):
         
         ax1.set_axisbelow(True)
         ax1.minorticks_on()
-        ax1.tick_params(axis="x", labelsize=16)
-        ax1.tick_params(axis="y", labelsize=16)
+        ax1.tick_params(axis="x", labelsize=14)
+        ax1.tick_params(axis="y", labelsize=14)
         pt.grid(True)
-        ax1.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax1.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax1.set_xlabel('Sim Time', fontsize=16)
-        ax1.set_ylabel('Real Time Factor', fontsize=16)
+        ax1.set_xlabel('Sim Time', fontsize=14)
+        ax1.set_ylabel('Real Time Factor', fontsize=14)
         ax1.legend(['Real time factor average: ' + str(self.rtf_avg) + ', std: ' + str(self.rtf_std)])
-        ax1.set_title( self.statfile[0:-4]+ "\n " + "Real Time Factor vs Sim Time")
+        ax1.set_title( self.statfile[0:-4]+ "\n " + "Real Time Factor vs Sim Time", fontsize=10)
         
         # Change the color and its transparency
         ax2.fill_between( RealTime, Factor, color="lightcoral", alpha=0.2)
@@ -98,24 +99,22 @@ class GZStats(object):
         
         ax2.set_axisbelow(True)
         ax2.minorticks_on()
-        ax2.tick_params(axis="x", labelsize=16)
-        ax2.tick_params(axis="y", labelsize=16)
-        ax2.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax2.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax2.set_xlabel('Real Time', fontsize=16)
-        ax2.set_ylabel('Real Time Factor', fontsize=16)
+        ax2.tick_params(axis="x", labelsize=14)
+        ax2.tick_params(axis="y", labelsize=14)
+        ax2.set_xlabel('Real Time', fontsize=14)
+        ax2.set_ylabel('Real Time Factor', fontsize=14)
         ax2.legend(['Real time factor average: ' + str(self.rtf_avg) + ', std: ' + str(self.rtf_std)])
-        ax2.set_title( self.statfile[0:-4]+ "\n" + "Real Time Factor vs Real Time")
+        ax2.set_title( self.statfile[0:-4]+ "\n" + "Real Time Factor vs Real Time", fontsize=10)
 
  
-
+	pt.tight_layout()
         if(save== True):
             current_fig = pt.gcf()
             fileToSave = self.statfile[0:-4]
             pickle.dump(fig,file(fileToSave + "_RTF.pickle",'w'))
             current_fig.savefig(fileToSave + "_RTF.pdf", dpi = 300) 
 
-        #pt.show()
+        pt.show()
         
     def plotSimStatus(self, save=True):
         SimTime = self.dataframe['SimTime']
@@ -123,7 +122,7 @@ class GZStats(object):
         SimStatus = self.dataframe['SimStatus']
 
         pt.style.use('seaborn')
-        pt.rcParams["figure.figsize"] = (18,12)
+        pt.rcParams["figure.figsize"] = (18,10)
         params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper left'}
         pt.rcParams.update(params)
         fig, (ax1, ax2) = pt.subplots(2, 1)
@@ -133,12 +132,10 @@ class GZStats(object):
         
         ax1.set_axisbelow(True)
         ax1.minorticks_on()
-        ax1.tick_params(axis="x", labelsize=16)
-        ax1.tick_params(axis="y", labelsize=16)
+        ax1.tick_params(axis="x", labelsize=14)
+        ax1.tick_params(axis="y", labelsize=14)
         pt.grid(True)
-        ax1.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax1.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax1.set_xlabel('Sim Time', fontsize=16)
+        ax1.set_xlabel('Sim Time', fontsize=14)
         ax1.set_ylabel('Gazebo Sim Pause Status', fontsize=16)
         ax1.legend(['Pause percentage: ' + str(self.pause_ratio*100)+ '%'])
         ax1.set_title( self.statfile[0:-4]+ "\n" + "Sim Status (Pause/Unpause) vs Sim Time")
@@ -148,12 +145,10 @@ class GZStats(object):
         
         ax2.set_axisbelow(True)
         ax2.minorticks_on()
-        ax2.tick_params(axis="x", labelsize=16)
-        ax2.tick_params(axis="y", labelsize=16)
-        ax2.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax2.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax2.set_xlabel('Real Time', fontsize=16)
-        ax2.set_ylabel('Gazebo Sim Pause Status', fontsize=16)
+        ax2.tick_params(axis="x", labelsize=14)
+        ax2.tick_params(axis="y", labelsize=14)
+        ax2.set_xlabel('Real Time', fontsize=14)
+        ax2.set_ylabel('Gazebo Sim Pause Status', fontsize=14)
         ax2.legend(['Pause percentage: ' + str(self.pause_ratio*100) + '%'])
         ax2.set_title( self.statfile[0:-4]+ "\n" + "Sim Status (Pause/Unpause) vs Real Time")
  

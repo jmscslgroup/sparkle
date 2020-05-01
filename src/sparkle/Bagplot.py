@@ -5,7 +5,7 @@
 # All rights reserved.
 
 import signal
-import matlab.engine
+import bagpy
 import pandas as pd
 import sys, math, time, datetime
 import matplotlib.pyplot as pt
@@ -31,24 +31,17 @@ class Bagplot(object):
         self.bagfile = bagfile
         self.ROSBagReaderPath = ROSBagReaderPath
         
-        # Start the matlab engine
-        self.engine = matlab.engine.start_matlab()
-        
-        # Add path of ROSBagReader to MATLAB enviornment so that MATLAB can find ROSBagReader definition
-        self.engine.addpath(ROSBagReaderPath)
-
-        self.BagReader = self.engine.ROSBagReader(bagfile)
+        self.bagreader = bagpy.bagreader(bagfile)
 
     '''
         Returns the list of Data files according to the file filter
 
     '''
     def getDataFile(self, fileFilter="magna-odom", msg_types = "odom"):
-        self.engine.workspace["BagReader"] = self.BagReader
         
         datafiles = []
         if msg_types == "odom":
-            datafiles = self.engine.eval("BagReader.extractOdometryData()")
+            datafiles = self.bagreader.odometry_data()
 
         # I want data files only of time *-odom
         for file in datafiles:
@@ -102,7 +95,7 @@ class Bagplot(object):
        #     std_dev.append(0)
 
         pt.style.use('seaborn')
-        pt.rcParams["font.family"] = "Times New Roman"
+        pt.rcParams["font.family"] = "Roboto"
         pt.rcParams["figure.figsize"] = (18,12)
         params = {'legend.fontsize': 16, 'legend.handlelength': 2, 'legend.loc': 'upper left'}
         pt.rcParams.update(params)
@@ -115,13 +108,10 @@ class Bagplot(object):
         
         ax1.set_axisbelow(True)
         ax1.minorticks_on()
-        ax1.tick_params(axis="x", labelsize=16)
-        ax1.tick_params(axis="y", labelsize=16)
-        pt.grid(True)
-        ax1.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax1.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax1.set_xlabel('Time Stamp', fontsize=16)
-        ax1.set_ylabel('Publish Rate/Frequency', fontsize=16)
+        ax1.tick_params(axis="x", labelsize=14)
+        ax1.tick_params(axis="y", labelsize=14)
+        ax1.set_xlabel('Time Stamp', fontsize=14)
+        ax1.set_ylabel('Publish Rate/Frequency', fontsize=14)
         ax1.set_title(datafile+ "\n" + "Publish Rate vs Time")
 
         # Change the color and its transparency
@@ -130,14 +120,13 @@ class Bagplot(object):
         
         ax2.set_axisbelow(True)
         ax2.minorticks_on()
-        ax2.tick_params(axis="x", labelsize=16)
-        ax2.tick_params(axis="y", labelsize=16)
-        ax2.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-        ax2.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-        ax2.set_xlabel('Time Stamp', fontsize=16)
-        ax2.set_ylabel('Standard Deviation of  time diff', fontsize=16)
+        ax2.tick_params(axis="x", labelsize=14)
+        ax2.tick_params(axis="y", labelsize=14)
+        ax2.set_xlabel('Time Stamp', fontsize=14)
+        ax2.set_ylabel('Standard Deviation of  time diff', fontsize=14)
         ax2.set_title(datafile+ "\n" + "Standard Deviation of time diff  vs Time")
 
+        pt.tight_layout()
         if(save== True):
             current_fig = pt.gcf()
             fileToSave = datafile[0:-4]
@@ -165,31 +154,23 @@ def plot_ts(datafiles, attribute, fileFilter='_',  Title=None):
             XArray.append(X)
             FileName.append(f)
 
-    pt.rcParams["figure.figsize"] = (16,8)
-    params = {'legend.fontsize': 10, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
+    pt.style.use('seaborn')
+    pt.rcParams["figure.figsize"] = (15,10)
+    pt.rcParams[ 'font.family'] = 'Roboto'
+    pt.rcParams[ 'font.weight'] = 'bold'
+    params = {'legend.fontsize': 7, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
     pt.rcParams.update(params)
-    pt.rcParams["font.family"] = "Times New Roman"
-    fig = pt.figure()
-    ax = fig.add_subplot(1,1,1)
-    ax.set_axisbelow(True)
-    ax.minorticks_on()
-    ax.tick_params(axis="x", labelsize=16)
-    ax.tick_params(axis="y", labelsize=16)
-    pt.grid(True)
-    ax.grid(which='major', linestyle='-', linewidth='0.5', color='skyblue')
-    ax.grid(which='minor', linestyle=':', linewidth='0.25', color='dimgray')
-    ax.set_xlabel('Time', fontsize=16)
-    ax.set_ylabel(attribute, fontsize=16)
-    
+    fig,ax = pt.subplots(1)
     colors=cm.rainbow(np.linspace(0,1,len(XArray)))
 
     for i in range(0, len(XArray)):
         c=colors[i]
         pt.plot(TimeArray[i] - TimeArray[i][0], XArray[i], color =c, linewidth = 1, linestyle=None, marker='.', markersize = 5)
     ax.legend(FileName)
+    ax.set_xlabel('Time', fontsize=12)
+    ax.set_ylabel(attribute, fontsize=12)
 
-
-    ax.set_title(Title)
+    ax.set_title(Title, fontsize=10)
     current_fig = pt.gcf()
     # pt.show()
     dt_object = datetime.datetime.fromtimestamp(time.time())

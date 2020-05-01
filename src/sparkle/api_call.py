@@ -28,30 +28,38 @@ directory = homedir + "/CyverseData/ProjectSparkle/Consolidated Plot"
 if not os.path.exists(directory):
     os.makedirs(directory)
 
-vehicle = 10
+vehicle = 4
 for i in range(1):
-    datafile = animate_circle(circumference = 230, n_vehicles=vehicle, leader_vel= 8.0, publish_rate=20.0, max_update_rate=100.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = homedir +"/CyverseData/ProjectSparkle", description="Sparkle Simulation: " + str(vehicle) + " Car(s), Iteration " + str(i) + " ID " + unique_runid)
+    datafile = animate_circle(circumference = 260, n_vehicles=vehicle, leader_vel= 8.0, publish_rate=20.0, max_update_rate=10.0, time_step=0.01, log_time=30.0, include_laser=False, logdir = homedir +"/CyverseData/ProjectSparkle", description="Sparkle Simulation: " + str(vehicle) + " Car(s), Iteration " + str(i) + " ID " + unique_runid)
     Files.append(datafile)
     print("Data received is: {}".format(datafile))
 
 Files = reduce(add, Files)
 
-plot_ts(Files, 'PoseY', Title=homedir+'/CyverseData/ProjectSparkle/Consolidated Plot', fileFilter='magna-setvel')
+plot_ts(Files, 'pose.y', Title=homedir+'/CyverseData/ProjectSparkle/Consolidated Plot', fileFilter='magna-setvel')
 
 print("Bag files captured in this run are:")
 print(Files)
 
 
 # Odom dataframe 
-fig, ax = plt.subplots(1,1)
-fig.tight_layout(pad=5.0)
+fig, ax = plt.subplots(1)
+
+plt.style.use('seaborn')
+plt.rcParams[ 'font.family'] = 'Roboto'
+plt.rcParams[ 'font.weight'] = 'bold'
+params = {'legend.fontsize': 7, 'legend.handlelength': 2, 'legend.loc': 'upper right'}
+plt.rcParams.update(params)
+plt.rcParams["figure.figsize"] = (8,8)
 for data in Files:
     odom_df = pd.read_csv(data)
-    plt.plot(odom_df['PoseX'],  odom_df['PoseY'], linewidth = 1, label = data)
+    plt.plot(odom_df['pose.x'],  odom_df['pose.y'], linewidth = 1, label = data)
 
-plt.title('Trajectory of CAT Vehicle During Simulation', fontsize= 24)
-ax.set_xlabel('x',fontsize=24)
-ax.set_ylabel('y', fontsize=24)
+plt.title('Trajectory of CAT Vehicle During Simulation', fontsize= 15)
+ax.set_xlabel('x',fontsize=14)
+ax.set_ylabel('y', fontsize=14)
+ax.set_aspect('equal', 'box')
+plt.tight_layout()
 plt.legend()
 plt.show()
 

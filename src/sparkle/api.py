@@ -78,7 +78,7 @@ def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_upd
     if bag is not None:
         Bag  = Bagplot(bag)
         datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
-        Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')
+        Bag.plot_timeseries(datafiles, 'pose.y', fileFilter='magna-setvel')
         Bag.plot_topic_hz(datafiles)
 
         configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
@@ -153,7 +153,7 @@ def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publ
     if bag is not None:
         Bag  = Bagplot(bag)
         datafiles = Bag.getDataFile(fileFilter="odom", msg_types = "odom")
-        Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='odoms')
+        Bag.plot_timeseries(datafiles, 'pose.y', fileFilter='odoms')
         Bag.plot_topic_hz(datafiles)
 
         configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"

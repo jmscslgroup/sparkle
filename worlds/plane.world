@@ -51,6 +51,7 @@
     </light>
 
     <model name='ground_plane'>
+      <pose>0 0 0 0 0 0</pose>
       <static>1</static>
       <link name='link'>
         <collision name='collision'>
