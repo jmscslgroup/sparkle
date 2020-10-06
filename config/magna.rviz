@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Grid1
+        - /RobotModel1
         - /TF1/Frames1
         - /TF1/Tree1
         - /Odometry1/Shape1
@@ -106,6 +107,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: nebula/robot_description
       TF Prefix: nebula
@@ -140,11 +146,35 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        calista/base_link:
+          Value: true
+        calista/odom:
+          Value: true
+        centauri/base_link:
+          Value: true
+        centauri/odom:
+          Value: true
         magna/base_link:
           Value: true
         magna/odom:
           Value: true
+        nebula/base_link:
+          Value: true
+        nebula/odom:
+          Value: true
+        proxima/base_link:
+          Value: true
+        proxima/odom:
+          Value: true
         world:
+          Value: true
+        zel/base_link:
+          Value: true
+        zel/odom:
+          Value: true
+        zephyr/base_link:
+          Value: true
+        zephyr/odom:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -153,8 +183,26 @@ Visualization Manager:
       Show Names: true
       Tree:
         world:
+          calista/odom:
+            calista/base_link:
+              {}
+          centauri/odom:
+            centauri/base_link:
+              {}
           magna/odom:
             magna/base_link:
+              {}
+          nebula/odom:
+            nebula/base_link:
+              {}
+          proxima/odom:
+            proxima/base_link:
+              {}
+          zel/odom:
+            zel/base_link:
+              {}
+          zephyr/odom:
+            zephyr/base_link:
               {}
       Update Interval: 0
       Value: true
@@ -209,6 +257,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: calista/robot_description
       TF Prefix: calista
@@ -282,6 +335,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: proxima/robot_description
       TF Prefix: proxima
@@ -355,6 +413,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: zel/robot_description
       TF Prefix: zel
@@ -428,6 +491,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: zephyr/robot_description
       TF Prefix: zephyr
@@ -501,6 +569,11 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Name: RobotModel
       Robot Description: centauri/robot_description
       TF Prefix: centauri
@@ -1714,25 +1787,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 97.16502380371094
+      Distance: 0.06918540596961975
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.0493547916412354
-        Y: -2.3525586128234863
-        Z: -2.4730753898620605
+        X: 100.7042007446289
+        Y: -18.35790252685547
+        Z: 40.23890686035156
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 0.8597975373268127
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1344738006591797
+      Yaw: 4.994468688964844
     Saved: ~
 Window Geometry:
   Displays:

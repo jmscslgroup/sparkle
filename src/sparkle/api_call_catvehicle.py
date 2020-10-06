@@ -55,7 +55,7 @@ for data in Files:
     odom_df = pd.read_csv(data)
     plt.plot(odom_df['pose.x'],  odom_df['pose.y'], linewidth = 1, label = data)
 
-plt.title('Trajectory of CAT Vehicle During Simulation', fontsize= 15)
+plt.title('Trajectory of Vehicles During Simulation', fontsize= 15)
 ax.set_xlabel('x',fontsize=14)
 ax.set_ylabel('y', fontsize=14)
 ax.set_aspect('equal', 'box')

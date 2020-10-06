@@ -7,10 +7,10 @@
     <arg name="this_name" default="moon"/>
     <arg name="initial_distance" default="12.0"/>
     <arg name="steering" default="0.3"/>
-    <arg name="leader_x_init" default="10.0"/>
-    <arg name="this_x_init" default="20.0"/>
-    <arg name="leader_y_init" default="20.0"/>
-    <arg name="this_y_init" default="10.0"/>
+    <arg name="leader_x_init" default="12.0"/>
+    <arg name="this_x_init" default="9.4"/>
+    <arg name="leader_y_init" default="3.0"/>
+    <arg name="this_y_init" default="8.6"/>
     
     <!-- optional arguments -->
     <arg name="this_sensor_distance_topic" default="/$(arg this_name)/distance/dist"/>

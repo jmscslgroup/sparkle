@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- Author: Rahul Bhadani -->
+
+<launch>
+
+    <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+    <arg name="robot" default="sparkle"/>
+    <arg name="laser_sensor" default="false"/>
+    <arg name="model" default="$(find sparkle)/urdf/sparkle.xacro roboname:='$(arg robot)' laser_sensor:='$(arg laser_sensor)'"/>
+    <arg name="X" default="0.0"/>
+    <arg name="Y" default="0.0"/>
+    <arg name="Z" default="0.006517"/>
+    <arg name="roll" default="0.0"/>
+    <arg name="pitch" default="0.0"/>
+    <arg name="yaw" default="0.0"/>
+
+    <param name="/$(arg robot)/windx" value="0.0"/>
+    <param name="/$(arg robot)/windy" value="0.0"/>
+    <param name="/$(arg robot)/psi_init" value="$(arg yaw)"/>
+    <param name="/$(arg robot)/x_init" value="$(arg X)"/>
+    <param name="/$(arg robot)/y_init" value="$(arg Y)"/>
+    <param name="/$(arg robot)/childFrameId" value="$(arg robot)/base_link"/>
+    <param name="/$(arg robot)/headerFrameId" value="$(arg robot)/odom"/>
+
+    <group ns="$(arg robot)">
+
+         <node pkg="threedof" type="threedof_node" name="threedof_node_$(arg robot)">
+         </node>
+
+    </group>
+
+</launch>

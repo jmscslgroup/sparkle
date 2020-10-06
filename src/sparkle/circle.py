@@ -4,7 +4,7 @@
 # Copyright (c)  Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-""" This script helps launch a fleet of n cars along x-axis. """
+""" This script helps launch a fleet of n cars along a circular track. """
 
 import roslaunch
 import rospy, rosbag
@@ -78,64 +78,47 @@ class circle(layout, object):
     def __init__(self, **kwargs):
 
         # Default args
-        self.circumference = 230.0
-        self.n_vehicles = 1
-
-        try:
-            self.circumference = kwargs["circumference"]
-        except KeyError as e:
-            pass
-        try:
-            self.n_vehicles = kwargs["n_vehicles"]
-        except KeyError as e:
-            pass    
-        
-        try:
-            self.include_laser = kwargs["include_laser"]
-        except KeyError as e:
-            pass
+        self.circumference = kwargs.get("circumference", 230.0)
+        self.n_vehicles = kwargs.get("n_vehicles", 1)
+        self.include_laser = kwargs.get("include_laser", False)
 
         """Generate coordinate on x-axis to place `n_vehicles`"""
         r = self.circumference/(2*np.pi) #Calculate the radius of the circle
         print('************ Radius of the circle is {} ************'.format(r))
         self.R = r
-
         self.car_to_bumper = 4.52
         self.L = 2.70002 #wheelbase
-
         theta = (2*3.14159265359)/self.n_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
         self.theta = theta
-
         print('Theta:{} radian.'.format(theta))
-
         self.const_angle = np.arctan(self.L/self.R)
-        print('Constant Steering Angle:={}'.format(self.const_angle))
+        print('Constant Steering Angle for driving in circle is:={}'.format(self.const_angle))
 
         X = [] # X-coordinates of cars on  the circle
         Y = [] # Y-coordinate of cars  on the circle
         Yaw = [] #Yaw of cars placed on the circle, with respect to the world frame
-
         # Calculate, X, Y and Yaw of each cars on the circle. They are assumed to be placed at a equal separation.
         for i in range(0, self.n_vehicles):
             theta_i = theta*i
-
             if math.fabs(theta_i) < 0.000001:
                 theta_i = 0.0
+
             x = r*math.cos(theta_i)
             if math.fabs(x) < 0.000001:
                 x = 0.0
+            
             X.append(x)
-
             y = r*math.sin(theta_i)
             if math.fabs(y) < 0.000001:
                 y = 0.0
+            
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
         super(circle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
 
     ## We will define some simulation sequence that can be called without fuss
-    def simulate(self,leader_vel, logdir):
+    def simulate(self,leader_vel, logdir, control_method = "uniform", **kwargs):
         '''
         Class method `simulate` specifies state-based model for simulation of vehicles on circular trajectory.
 
@@ -154,33 +137,23 @@ class circle(layout, object):
         -----------
         `string`:
             The full path of the bag file recorded for the simulation.
-
         '''
         self.create()
 
         # spawn all the vehicles
-        self.spawn() # spawn() calls relevant functions to start roscore, gzserver, gzclient and rviz.
+        self.spawn() # spawn calls relevant functions to start roscore, gzserver, gzclient and rviz.
         time.sleep(4)
-
         radius =  self.R
-       
         angle =  self.const_angle
         
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
-       
-        # initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
-
-        self.control(leader_vel = leader_vel, str_angle = angle, follower_vel_method="uniform", logdir=logdir)
-        #self.control(leader_vel=3.5, str_angle=angle, follower_vel_method="ovftl", initial_distance =initial_distance )
+        initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
+        # self.control(leader_vel = leader_vel, str_angle = angle, control_method="uniform", logdir=logdir)
+        self.control(leader_vel=3.5, str_angle=angle, control_method=control_method, logdir = logdir, initial_distance =initial_distance )
 
         self.rviz(self.package_path + "/config/magna.rviz")
-
         # Start Rosbag record for 60 seconds
         time.sleep(self.log_time)
-
         print('Simulation complete, time to terminate.')
         self.destroy(signal.SIGINT)
-        
-        bag = self.latesbag()
-
-        return bag
+        return self.bagfile

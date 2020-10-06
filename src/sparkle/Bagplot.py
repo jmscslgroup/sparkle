@@ -23,22 +23,23 @@ to create plots of required bag files
 
 class Bagplot(object):
     '''
-    __init__ takes bag file name (either relative path or full path) and optionally path to ROSBagReader in your system
-    __init__ also starts MATLAB's python engine
+    Plotting and analysis of Bag files saved at the end of the simulation
+
+    Parameters
+    ------------
+    
+    bagfile: `string`
+        Full path of the bafile
 
     '''
-    def __init__(self, bagfile, ROSBagReaderPath='/home/ivory/VersionControl/Jmscslgroup/ROSBagReader'):
-        self.bagfile = bagfile
-        self.ROSBagReaderPath = ROSBagReaderPath
-        
+    def __init__(self, bagfile):
+        self.bagfile = bagfile        
         self.bagreader = bagpy.bagreader(bagfile)
 
-    '''
+    def datafile(self, fileFilter="magna-odom", msg_types = "odom"):
+        '''
         Returns the list of Data files according to the file filter
-
-    '''
-    def getDataFile(self, fileFilter="magna-odom", msg_types = "odom"):
-        
+        '''
         datafiles = []
         if msg_types == "odom":
             datafiles = self.bagreader.odometry_data()
@@ -51,19 +52,19 @@ class Bagplot(object):
 
         return datafiles
         
-    '''
-    Plot specific single attributes from the array of files passed
-    '''
     def plot_timeseries(self, datafiles, attribute, fileFilter='_'):
+        '''
+        Plot specific single attributes from the array of files passed
+        '''
         Title = self.bagfile[0:-4]
 
         plot_ts(datafiles, attribute, fileFilter, Title)
 
-    '''
-    Plot the frequency / publish rateof timeseries data passed to the function
-    '''    
-    def plot_topic_hz(self, datafiles, window_size = 10, save = True):
-        
+    @staticmethod
+    def plot_topic_hz(datafiles, window_size = 10, save = True):
+        '''
+        Plot the frequency / publish rateof timeseries data passed to the function
+        '''            
         datafile = datafiles[0]
         Time = []
         if ".csv" in datafile:
@@ -78,7 +79,6 @@ class Bagplot(object):
         frequency = [] # Hz
         std_dev = [] # seconds
 
-
         for i in range(0,  window_size):
             frequency.append(0)
             std_dev.append(0)
@@ -89,10 +89,6 @@ class Bagplot(object):
             frequency.append(rate)
             std = np.std(time_diff[i-window_size:i])
             std_dev.append(std)
-
-       # for i in range( time_length - window_size,  time_length):
-       #     frequency.append(0)
-       #     std_dev.append(0)
 
         pt.style.use('seaborn')
         pt.rcParams["font.family"] = "Roboto"

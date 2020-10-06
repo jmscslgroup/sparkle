@@ -1,3 +1,4 @@
+
 <?xml version="1.0" ?>
 
 <sdf version='1.6'>
@@ -12,12 +13,12 @@
    <scene>
         <grid>true</grid>
         <origin_visual>true</origin_visual>
-        <ambient>0.4 0.4 0.4 1</ambient>
-        <background>0.7 0.7 0.7 1</background>
+        <ambient>0.592 0.624 0.635 1</ambient>
+        <background>0.35 0.35 0.35 1.0</background>
         <shadows>1</shadows>
         <sky>
             <clouds>
-                <speed>18</speed>
+                <speed>12</speed>
             </clouds>
         </sky>
    </scene>
@@ -36,68 +37,44 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     
-    <light name='sun' type='directional'>
+    
+    <!-- A global light source -->
+    <light type="directional" name="sun">
+      <pose>0 0 1000 0 0 0</pose>
       <cast_shadows>true</cast_shadows>
-      <pose>0 0 10 0 -0 0</pose>
       <diffuse>0.8 0.8 0.8 1</diffuse>
-      <specular>0.2 0.2 0.2 1</specular>
+      <specular>0.5 0.5 0.5 1</specular>
       <attenuation>
         <range>1000</range>
         <constant>0.9</constant>
         <linear>0.01</linear>
         <quadratic>0.001</quadratic>
       </attenuation>
-      <direction>-0.5 0.1 -0.9</direction>
+      <direction>-0.5 0.1 -0.4</direction>
     </light>
-
-    <model name='ground_plane'>
-      <pose>0 0 0 0 0 0</pose>
-      <static>1</static>
-      <link name='link'>
-        <collision name='collision'>
-          <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>1000 1000</size>
-            </plane>
-          </geometry>
-          <surface>
-            <friction>
-              <ode>
-                <mu>10000</mu>
-                <mu2>5000</mu2>
-              </ode>
-            </friction>
-            <bounce/>
-            <contact>
-              <ode/>
-            </contact>
-          </surface>
-          <max_contacts>10</max_contacts>
-        </collision>
-        <visual name='visual'>
-          <cast_shadows>0</cast_shadows>
-          <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>1000 1000</size>
-            </plane>
-          </geometry>
-          <material>
-            <script>
-              <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Residential</name>
-            </script>
-          </material>
-        </visual>
-        <velocity_decay>
-          <linear>0</linear>
-          <angular>0</angular>
-        </velocity_decay>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-    </model>
-  </world>
-</sdf>
+<model name='ground_plane_0'><pose>0 0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_1'><pose>1000.0 -1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_2'><pose>2000.0 -1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_3'><pose>1000.0 -2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_4'><pose>2000.0 -2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_5'><pose>-1000.0 -1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_6'><pose>-2000.0 -1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_7'><pose>-1000.0 -2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_8'><pose>-2000.0 -2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_9'><pose>-1000.0 1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_10'><pose>-2000.0 1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_11'><pose>-1000.0 2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_12'><pose>-2000.0 2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_13'><pose>1000.0 1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_14'><pose>2000.0 1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_15'><pose>1000.0 2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_16'><pose>2000.0 2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_17'><pose>0.0 1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_18'><pose>0.0 2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_19'><pose>0.0 -1000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_20'><pose>0.0 -2000.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_21'><pose>1000.0 0.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_22'><pose>2000.0 0.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_23'><pose>-1000.0 0.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<model name='ground_plane_24'><pose>-2000.0 0.0 -0.04 0 0 0</pose><static>true</static><link name='link'><visual name='visual'><cast_shadows>0</cast_shadows><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual><collision name='collision'><geometry><plane><normal>0 0 1</normal><size>1000 1000</size></plane></geometry><surface>             <friction><ode><mu>10000</mu>                  <mu2>5000</mu2>               </ode>             </friction>             <bounce/>             <contact>               <ode/>             </contact>           </surface><max_contacts>10</max_contacts></collision><self_collide>0</self_collide><kinematic>0</kinematic><gravity>1</gravity></link></model>
+<road name='road_y_1'><width>7.4</width><point>100 -1500 0.00</point><point>100 1500 0.00</point></road></world></sdf>

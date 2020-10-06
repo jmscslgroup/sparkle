@@ -34,31 +34,37 @@ int main(int argc, char** argv)
     
     nodeHandle.param("pub_rate", pub_rate, 10.0); 
     
-    nodeHandle.getParam("pub_rate", pub_rate);
+    ros::param::get("pub_rate", pub_rate);
 
     ROS_INFO_STREAM("Desired publish rate provided by the user is "<< pub_rate);
     
-    nodeHandle.setParam("do_publish", false);
+    ros::param::set("do_publish", false);
     
 //    nodeHandle.param("do_publish", do_publish, false);
 
     ros::Time lastTime = ros::Time::now();
 
     ROS_INFO_STREAM("Starting companion Time");
-    while(ros::ok())
+    do
     {
-        nodeHandle.setParam("do_publish",  false);
+        try{
+        ros::param::set("do_publish",  false);
+        }
+        catch(ros::Exception &e)
+        {
+            ROS_ERROR("Error occurred: %s", e.what());
+        }
         ros::Time newTime = ros::Time::now();
         ros::Duration duration = newTime - lastTime;
 
         if (duration.toSec() >= 1.0/pub_rate)
         {
             lastTime = newTime;
-            nodeHandle.setParam("do_publish",  true);
+            ros::param::set("do_publish",  true);
         }
         ros::spinOnce();
         loop_rate.sleep();
-    }
+    } while(ros::ok());
 
     ROS_INFO_STREAM("Shutting down...");
 

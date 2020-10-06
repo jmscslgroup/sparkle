@@ -27,6 +27,12 @@ Inherits from `layout`, performs simulation on circular trajectory.
 .. autoclass:: circle
     :members:
 
+Class `carfollowing`
+=====================================================================================
+
+.. autoclass:: carfollowing
+    :members:
+
 Functions
 =====================================================================================
 

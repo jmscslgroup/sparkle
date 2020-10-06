@@ -14,7 +14,6 @@ import rostopic
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties
 
-
 import sys, math, time
 import signal
 import subprocess, shlex
@@ -30,6 +29,9 @@ from multiprocessing.pool import Pool
 from multiprocessing import Process
 import multiprocessing
 
+from launch import launch
+from GZStats import GZStats
+from bagpy import bagreader
 '''
 Summary of Class `'layout'`:
 This class requires a ros package 'Sparkle'
@@ -157,64 +159,27 @@ class layout:
     -----------
     `layout`
         An instance of the object `sparkle.layout`
-
-
     '''
     def __init__(self,  n_vehicles=1, X=0, Y=0, Yaw=0.0, **kwargs):
         print("Sparkle layout instance created.")
         print("Number of CPU on this machine: {}".format(multiprocessing.cpu_count()))
+        
         # Define attributes for layout class
         self.n_vehicles = n_vehicles
-        
-        # X-Coordinates of all the vehicles.
-        self.X = X
-        # Y-Coordinates of all the vehicles.
-        self.Y = Y
-        #Yaw of all the vehicles.
-        self.Yaw = Yaw
-
-        self.max_update_rate = 100
-        self.time_step = 0.01
-        self.update_rate = 20.0
-        self.log_time = 60.0
-        self.description = "Sparkle simulation"
+        self.X = X # X-Coordinates of all the vehicles.
+        self.Y = Y # Y-Coordinates of all the vehicles.
+        self.Yaw = Yaw #Yaw of all the vehicles.
+        self.max_update_rate = kwargs.get("max_update_rate", 100)
+        self.time_step = kwargs.get("time_step", 0.01)
+        self.update_rate = kwargs.get("update_rate", 20.0)
+        self.log_time = kwargs.get("log_time", 60.0)
+        self.description = kwargs.get("description", "Sparkle simulation")
         self.logdir = "./"
-        
-        try:
-            # This will be used to set Gazebo physic properties
-            self.max_update_rate = kwargs["max_update_rate"]
-        except KeyError as e:
-            pass
-
-        try:
-            self.time_step = kwargs["time_step"]
-        except KeyError as e:
-            pass
-
-        try:
-            # update rate will decide how often new updated will be published for Gazebo to change the poses in the model.
-            self.update_rate =  kwargs["update_rate"]
-        except KeyError as e:
-            pass
-
-        try:        
-            self.log_time =  kwargs["log_time"]
-        except KeyError as e:
-            pass
-        
-        try:
-            self.description = kwargs["description"]
-        except KeyError as e:
-            pass
-
-        self.package_name = "sparkle"
-        try:
-            self.package_name = kwargs["package_name"]
-        except KeyError as e:
-            pass
-
-        print("PACKAGE NAME IS {}".format(self.package_name))
-        # Kill any existing ros and gzserver and gzclient
+        self.package_name = kwargs.get("package_name", "sparkle")
+        self.gzstatsfile = None
+        self.bagfile = None
+        print("PACKAGE NAME BEING EXECUTED IS {}".format(self.package_name))
+        # Kill any existing ROS and gzserver and gzclient
         call(["pkill", "ros"])
         call(["pkill", "gzserver"])
         call(["pkill", "gzclient"])
@@ -224,9 +189,7 @@ class layout:
 
         # get an instance of RosPack with the default search paths
         rospack = rospkg.RosPack()
-
         self.package_path = ''
-
         try:
             self.package_path = rospack.get_path(self.package_name)
         except rospkg.ResourceNotFound as s:
@@ -234,18 +197,13 @@ class layout:
             raise
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
-        self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',
-                'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
-                'metis', 'himalia', 'kalyke', 'carpo', 'arche', 'aitne','thyone',
-                'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
-                'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos',
-                'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina', 'sirius', 
-                'rigel', 'vega', 'altair', 'capella', 'alcor','whirlpool', 'andromeda', 'milkyway', 
-                'cygnus']
+        self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',  'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
+                'metis', 'himalia', 'kalyke', 'carpo', 'arche', 'aitne','thyone', 'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
+                'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos', 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina', 'sirius', 
+                'rigel', 'vega', 'altair', 'capella', 'alcor','whirlpool', 'andromeda', 'milkyway',  'cygnus']
 
         # A boolean dictionary that will be set to true if correspondong function is called
         self.callflag = {"log": False, "roscore":  False, "physicsengine": False, "rviz": False, "startVel": False}
-
         self.uuid = ""
 
     def roscore(self,  uri="localhost", port=11311):
@@ -337,7 +295,7 @@ class layout:
         '''
         self.logdir = logdir
         # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ " -e '(.*)cmd(.*)' '(.*)odom(.*)' '(.*)vel(.*)' "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = ["rosbag "+ " record "+ "-a "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
@@ -354,6 +312,7 @@ class layout:
 
         # The log call to true once log is called
         self.callflag["log"] = True
+        time.sleep(10 + self.n_vehicles/2)
 
     def stoplog(self):
         '''
@@ -365,15 +324,13 @@ class layout:
         The function also reindexes the bag file in case the rosbag record terminates prematurely.
         
         '''
-
         if self.callflag["log"]:
             print("Stopping ROSBAG Recorder.")
             self.rosbag_cmd.send_signal(subprocess.signal.SIGINT)
-
             bagkiller = subprocess.Popen(["rosnode kill /bagrecorder"], shell=True)
 
             ## Check of .bag.active is still being written
-            print("Retrieving latest bag file")
+            print("Retrieving the latest bag file")
             os.chdir(self.logdir)
             list_of_files1 = glob.glob('*.bag')
             list_of_files2 = glob.glob('*.bag.active')
@@ -387,12 +344,22 @@ class layout:
                     except OSError as err:
                         print("OS error: {0}".format(err))
                         sys.exit()
+                    counter = 0
                     while True:
+                        
                         try:
                             time.sleep(2)
                             newfilesize = os.path.getsize(latest_file)
                             byteswritten = newfilesize - filesize
-                            print("Bag file is still being written. Byes written: {}".format(byteswritten))
+                            if byteswritten == 0.0:
+                                counter = counter + 1
+                            
+                            print("Bag file is still being written. Bytes written: {}".format(byteswritten))
+                            
+                            if counter > 10:
+                                print("Something went wrong while saving the bag file, exiting. Please restart the simulation.")
+                                self.killroscore()
+                                sys.exit()
                         except OSError as err:
                             print('.active bag file is gone.')
                             list_of_files1 = glob.glob('*.bag')
@@ -417,8 +384,6 @@ class layout:
             print('rosnode kill: {}'.format(stdout))
             time.sleep(5+self.n_vehicles)
 
-            print(bagkiller)
-
             #check if bag file has been killed:
             psaef = subprocess.Popen(["ps -aef | grep bagrecorder"], shell=True)
             stdout = psaef.communicate()
@@ -432,9 +397,7 @@ class layout:
         """ 
         layout.killroscore()
 
-
         Class method `killroscore` terminates roscore
-
         """
 
         if self.callflag["roscore"]:
@@ -469,12 +432,14 @@ class layout:
         Sets the `layout.callflag["physicsengine"]` to `True`.
         '''
          #Object to launch empty world
-        launch = roslaunch.parent.ROSLaunchParent(self.uuid,[ self.package_path + "/launch/empty.launch"])
-        launch.start()
+        emptylaunch = launch(launchfile = self.package_path + "/launch/empty.launch")
+
+        emptylaunch.start()
+
         print('Empty world launched.')
         # The log call to true once log is called
         self.callflag["physicsengine"] = True
-        time.sleep(3)
+        time.sleep(5)
 
     def rviz(self, config = "/home/ivory/VersionControl/catvehicle_ws/src/sparkle/config/magna.rviz"):
         '''
@@ -536,7 +501,6 @@ class layout:
         physicsengine: starts a simulated physics world (e.g. Gazebo world)
 
         '''
-        
         # If roscore has not started yet, then start the roscore
         if not self.callflag["roscore"]:
             self.roscore(uri, port)
@@ -560,7 +524,6 @@ class layout:
 
         rospy.wait_for_service('gazebo/get_physics_properties')
         rospy.wait_for_service('gazebo/set_physics_properties')
-
 
         get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
         physics_properties = get_physics_properties_prox()
@@ -587,42 +550,19 @@ class layout:
         '''
         `layout.spawn()` spawns the simulated vehicles in the physics world.
         '''
-
-        #Object to spawn catvehicle in the empty world
-        cli_args = []
-        spawn_file = []
-        self.launchspawn = []
-        launchfile = [self.package_path + '/launch/sparkle_spawn.launch']
-
-        n = 0
-        # First Vehicle
-        print('Vehicle Numer: {}'.format(n))
-        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=false', 'updateRate:='+   str(self.update_rate)])
-
-        print(cli_args[n][0:])
-        spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
-
-        self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
-
-        for n in range(1, self.n_vehicles):
-            print('Vehicle Numer: {}'.format(n))
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n]),'laser_sensor:=false', 'updateRate:='+   str(self.update_rate)])
-
-            print(cli_args[n][0:])
-            spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
-
-            self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
-
-        time.sleep(5)
-
+        # #Object to spawn catvehicle in the empty world
+        self.launch_obj = []
         for n in range(0, self.n_vehicles):
-            print('Vehicle [' + str(n) + '] spawning.')
-            self.launchspawn[n].start()
-            time.sleep(5)
+            launch_itr = launch(launchfile=self.package_path + '/launch/sparkle_spawn.launch', \
+                X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = self.name[n], \
+                    laser_sensor = False, updateRate = self.update_rate)
+            self.launch_obj.append(launch_itr)
+        
+        for n in range(0, self.n_vehicles):
+            self.launch_obj[n].start()
 
     def control(self, **kwargs):
         '''
-
         Class methods specifies control algorithm for imparting velocity to the car.
         The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper or anything else.
 
@@ -652,61 +592,35 @@ class layout:
                 *"ovftl"*: Specifies Optimal-Velocity Follow-The-Leader model.
 
                 *"followerstopper"*: Followerstopper algorithm, not implemented yet.
-
         '''
+        leader_vel = kwargs.get("leader_vel", 3.0)
+        str_angle = kwargs.get("str_angle", 0.07)
+        control_method = kwargs.get("control_method", "uniform")
+        logdir = kwargs.get("logdir", "./")
 
-        leader_vel = 3.0
-        str_angle = 0.07
-        control_method = "uniform"
-        logdir = "./"
-        try:
-           leader_vel = kwargs["leader_vel"]
-        except KeyError as e:
-            pass
-        try:
-           control_method = kwargs["control_method"]
-        except KeyError as e:
-            pass
+        # We will start ROSBag record immediately
+        self.log(logdir=logdir, prefix=self.package_name)
 
-        try:
-           str_angle = kwargs["str_angle"]
-        except KeyError as e:
-            pass
-        
-        try:
-           logdir = kwargs["logdir"]
-        except KeyError as e:
-            pass            
-        vel_args = []
-        vel_file =  []
-        self.launchvel = []
-
+        self.launchvel_obj = [] # An array of launch object for starting and shutting down roslaunchs as required
 
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['constVel:=0.0','strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
-            velfile = [self.package_path + '/launch/vel.launch']
+            launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/vel.launch', \
+                constVel = 0.0, strAng = str_angle, robot = self.name[n])
 
-            vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-            self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
-
+            self.launchvel_obj.append(launchvel_itr_0)
             print('Velocity node ' + str(0) + '  started.')
-            self.launchvel[0].start()
+            self.launchvel_obj[0].start()
 
             for n in range(1, self.n_vehicles):
-                vel_args.append(['constVel:=0.0', 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
-                vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-                self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+                launchvel_itr = launch(launchfile= self.package_path + '/launch/vel.launch', \
+                constVel = 0.0, strAng = str_angle, robot = self.name[n])
+                self.launchvel_obj.append(launchvel_itr)
 
             for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
-                self.launchvel[n].start()
-
-            # We will start ROSBag record immediately
-            self.log(logdir=logdir, prefix=self.package_name)
-            
-            time.sleep(10)
+                self.launchvel_obj[n].start()
             
             for n in range(0, self.n_vehicles):
                 rosparamset = subprocess.Popen(["rosparam set /" +self.name[n]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
@@ -717,31 +631,34 @@ class layout:
             initial_distance = kwargs["initial_distance"]
             n= 0
 
-            print('self.name[self.n_vehicles - 1] : {}'.format(self.name[self.n_vehicles - 1]))
-            vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[self.n_vehicles - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle) , 'leader_x_init:='+str(self.X[self.n_vehicles-1]), 'leader_y_init:='+str(self.Y[self.n_vehicles-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[self.n_vehicles - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])
+            if self.__class__.__name__ == "circle":
+                print('self.name[self.n_vehicles - 1] : {}'.format(self.name[self.n_vehicles - 1]))
+                launchvel_itr_0 = launch(launchfile=self.package_path+'/launch/carfollowing.launch', this_name = self.name[n], \
+                    leader_name = self.name[self.n_vehicles - 1], initial_distance =initial_distance, steering = str_angle, \
+                         leader_x_init =self.X[self.n_vehicles-1], leader_y_init = self.Y[self.n_vehicles-1],  this_x_init =self.X[n], \
+                              this_y_init =self.Y[n],  leader_odom_topic  = '/' + self.name[self.n_vehicles - 1] + '/setvel', \
+                                  this_odom_topic = '/' + self.name[n] + '/setvel')
+                self.launchvel_obj.append(launchvel_itr_0)
 
-            velfile = [self.package_path+'/launch/carfollowing.launch']
+            elif self.__class__.__name__ == "lane":
+                launchvel_itr_0 = launch(launchfile=self.package_path+'/launch/bagplay.launch', robot = self.name[n])
+                self.launchvel_obj.append(launchvel_itr_0)
 
-            vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-            self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
-
-            print('Velocity node ' + str(0) + '  started.')
-            self.launchvel[0].start()
-
-            # We will start ROSBag record immediately
-            self.log(logdir=logdir)
             for n in range(1, self.n_vehicles):
-                vel_args.append(['this_name:='+self.name[n], 'leader_name:='+self.name[n - 1],  'initial_distance:='+str(initial_distance)  , 'steering:='+ str(str_angle), 'leader_x_init:='+str(self.X[n-1]), 'leader_y_init:='+str(self.Y[n-1]), 'this_x_init:='+str(self.X[n]),  'this_y_init:='+str(self.Y[n]), 'leader_odom_topic:=/' + self.name[n - 1] + '/setvel',  'this_odom_topic:=/' + self.name[n] + '/setvel'])
-                vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-                self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
+                launchvel_itr = launch(launchfile=self.package_path+'/launch/carfollowing.launch', this_name = self.name[n], \
+                    leader_name = self.name[n - 1], initial_distance =initial_distance, steering = str_angle, \
+                         leader_x_init =self.X[n-1], leader_y_init = self.Y[n-1],  this_x_init =self.X[n], \
+                              this_y_init =self.Y[n],  leader_odom_topic  = '/' + self.name[n - 1] + '/setvel', \
+                                  this_odom_topic = '/' + self.name[n] + '/setvel')
+                self.launchvel_obj.append(launchvel_itr)
 
             for n in range(1, self.n_vehicles):
                 print('Velocity node ' + str(n) + '  started.')
-                self.launchvel[n].start()
+                self.launchvel_obj[n].start()
+            self.launchvel_obj[0].start()
 
             self.callflag["startVel"] = True
-
-            time.sleep(3)
+            rosparamset = subprocess.Popen(["rosparam set /" +self.name[0]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
             call(["rosparam", "set", "/execute", "true"])
 
     def destroy(self, sig=signal.SIGINT):
@@ -752,15 +669,14 @@ class layout:
         --------------
         sig: `signal`
             Pressing CTRL-C or SIGINT invokes destroy function.
-
         '''
         time.sleep(5)
         print('SIGINT: Destroying the physics world and terminating the simulation.')
         print('Terminating spawn launches')
         for n in range(0, self.n_vehicles):
-            self.launchspawn[n].shutdown()
+            self.launch_obj[n].shutdown()
             if self.callflag["startVel"]:
-                self.launchvel[n].shutdown()
+                self.launchvel_obj[n].shutdown()
 
         if self.callflag["rviz"]:
             print("Destroying ros-rviz")
@@ -776,6 +692,7 @@ class layout:
         call(["pkill", "gzclient"])
 
         self.stoplog()
+        self.latesbag()
         self.killroscore()
 
         print("##### Simulation Terminated #####")
@@ -794,7 +711,7 @@ class layout:
             list_of_files1 = glob.glob('*.bag')
             list_of_files2 = glob.glob('*.bag.active')
             list_of_files = list_of_files1 + list_of_files2
-            print(list_of_files)
+            
             if len(list_of_files) != 0:
                 latest_file = max(list_of_files, key=os.path.getctime)
 
@@ -831,10 +748,31 @@ class layout:
                 return self.logdir + "/" + latest_file
             else:
                 print("No compatible bag file was found.")
+                return None
         else:
             print("No bag was recorded in the immediate run.")
             return None
 
+    def analyze(self):
+        """
+        Analyze and produce some insights into the simulation based on the log files (bagfiles, gazebo statistics, etc) recorded during this simulation
+        """
+        if self.gzstatsfile is None:
+            print("No GZstats found. Check log directory.")
+        else:
+            print("GZStat file is {}".format(self.gzstatsfile))
+            GZ = GZStats(self.gzstatsfile)
+            GZ.plotRTF()
+            GZ.plotSimStatus()
+
+        if self.bagfile is None:
+            print("No bag file was recorded in this session.")
+        else:
+            br = bagreader(self.bagfile)
+            br.plot_vel(save_fig = True)
+            br.plot_std(save_fig = True)
+            br.plot_odometry(save_fig = True)
+        
 
 def main(argv):
 

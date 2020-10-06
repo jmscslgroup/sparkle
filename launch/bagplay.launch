@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+
+
+<launch>
+    
+    
+    <arg name="robot" default="magna"/>
+    <group ns="$(arg robot)">
+        <node pkg="rosbag" type="play" name="player_$(arg robot)" output="screen" args="--clock /home/ivory/CyverseData/JmscslgroupData/ARED/2016-07-26/bagfiles/26thJulyOnSite_2016-07-26-09-15-37.bag --topics /catvehicle/vel --loop -q">
+            <remap from="/catvehicle/vel" to="/$(arg robot)/cmd_vel"/>
+        </node>
+        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
+            <param name="enableTwist" value="false"/>
+        </node>
+
+
+    </group>
+</launch>
