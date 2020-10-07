@@ -4,10 +4,10 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from api import animate_circle
+from .api import animate_circle
 from operator import add
-from Bagplot import plot_ts
-from plot_util import multi_plot
+from .Bagplot import plot_ts
+from .plot_util import multi_plot
 import uuid
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')

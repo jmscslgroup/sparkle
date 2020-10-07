@@ -4,17 +4,15 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-import signal
 import bagpy
 import pandas as pd
-import sys, math, time, datetime
+import time, datetime
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import numpy as np
 from matplotlib.pyplot import cm
 import pickle
-import bagpy
 from bagpy import bagreader
 
 '''

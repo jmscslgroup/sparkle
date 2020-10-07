@@ -19,8 +19,8 @@ import numpy as np
 import glob
 import os
 
-from layout import layout
-
+from .layout import layout
+from .launch import launch
 '''
 Summary of Class layout:
 This class requires a ros package 'Sparkle'
@@ -72,24 +72,10 @@ class catvehicle(layout, object):
     
     def __init__(self, **kwargs):
 
-        # Default args
-        self.circumference = 230.0
-        self.n_vehicles = 1
-
-        try:
-            self.circumference = kwargs["circumference"]
-        except KeyError as e:
-            pass
-        try:
-            self.n_vehicles = kwargs["n_vehicles"]
-        except KeyError as e:
-            pass    
-        
-        try:
-            self.include_laser = kwargs["include_laser"]
-        except KeyError as e:
-            pass
-
+        self.circumference = kwargs.get("circumference", 230.0)
+        self.n_vehicles = kwargs.get("n_vehicles", 1)
+        self.include_laser = kwargs.get("include_laser", False)
+    
         """Generate coordinate on x-axis to place `n_vehicles`"""
         r = self.circumference/(2*np.pi) #Calculate the radius of the circle
         print('************ Radius of the circle is {} ************'.format(r))
@@ -149,38 +135,16 @@ class catvehicle(layout, object):
         '''
         `layout.spawn()` spawns the simulated vehicles in the physics world.
         '''
-        
-        #Object to spawn catvehicle in the empty world
-        cli_args = []
-        spawn_file = []
-        self.launchspawn = []
-        launchfile = [self.package_path + '/launch/catvehicle_spawn.launch']
-
-        n = 0
-        # First Vehicle
-        print('Vehicle Numer: {}'.format(n))
-        cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
-
-        print(cli_args[n][0:])
-        spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
-
-        self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
-
-        for n in range(1, self.n_vehicles):
-            print('Vehicle Numer: {}'.format(n))
-            cli_args.append(['X:='+ str(self.X[n]), 'Y:='+ str(self.Y[n]),'yaw:='+ str(self.Yaw[n]),'robot:='+ str(self.name[n])])
-
-            print(cli_args[n][0:])
-            spawn_file.append([(roslaunch.rlutil.resolve_launch_arguments(launchfile)[0], cli_args[n])])
-
-            self.launchspawn.append(roslaunch.parent.ROSLaunchParent(self.uuid, spawn_file[n]))
-
-        time.sleep(5)
-
+        # #Object to spawn catvehicle in the empty world
+        self.launch_obj = []
         for n in range(0, self.n_vehicles):
-            print('Vehicle [' + str(n) + '] spawning.')
-            self.launchspawn[n].start()
-            time.sleep(5)
+            launch_itr = launch(launchfile=self.package_path + '/launch/catvehicle_spawn.launch', \
+                X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = self.name[n], \
+                    laser_sensor = False)
+            self.launch_obj.append(launch_itr)
+        
+        for n in range(0, self.n_vehicles):
+            self.launch_obj[n].start()
 
     def control(self, **kwargs):
         '''
@@ -188,89 +152,67 @@ class catvehicle(layout, object):
         Class methods specifies control algorithm for imparting velocity to the car.
         The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper or anything else.
 
-        kwargs
+        kwargs:
             variable keyword arguments
 
-            leader_vel: `double`
-                Leader's Initial velocity in m/s
-                
-                Default Value: 3.0 m/s
+        leader_vel: `double`
+            Leader's Initial velocity in m/s
+            
+            Default Value: 3.0 m/s
 
-            str_angle: `double`
-                Initial Steering Angle of the leader car
+        str_angle: `double`
+            Initial Steering Angle of the leader car
 
-                Default Value: 0.07 radian
+            Default Value: 0.07 radian
 
-            logdir: `string`
-                Specifies directory/path where bag files and other statistics corresponding to this simulation will saved.
+        logdir: `string`
+            Specifies directory/path where bag files and other statistics corresponding to this simulation will saved.
 
-                Default Value: "./"
+            Default Value: "./"
 
-            control_method: "uniform"
-                specifies **vehicle following algorithm** as control method.
+        control_method: "uniform" | "ovftl" | "followerstopper"
+            specifies **vehicle following algorithm** as control method.
 
-                *"uniform"*: All vehicles in the circuit will have same velocity and steering angle
+            *"uniform"*: All vehicles in the circuit will have same velocity and steering angle
+
+            *"ovftl"*: Specifies Optimal-Velocity Follow-The-Leader model.
+
+            *"followerstopper"*: Followerstopper algorithm, not implemented yet.
 
         '''
-
-        leader_vel = 3.0
-        str_angle = 0.07
-        control_method = "uniform"
-        logdir = "./"
-        try:
-           leader_vel = kwargs["leader_vel"]
-        except KeyError as e:
-            pass
-        try:
-           control_method = kwargs["control_method"]
-        except KeyError as e:
-            pass
-
-        try:
-           str_angle = kwargs["str_angle"]
-        except KeyError as e:
-            pass
+        leader_vel = kwargs.get("leader_vel", 3.0)
+        str_angle = kwargs.get("str_angle", 0.07)
+        control_method = kwargs.get("control_method", "uniform")
+        logdir = kwargs.get("logdir", "./")
         
-        try:
-           logdir = kwargs["logdir"]
-        except KeyError as e:
-            pass            
-        vel_args = []
-        vel_file =  []
-        self.launchvel = []
+        # We will start ROSBag record immediately
+        self.log(logdir=logdir, prefix=self.package_name)
 
+        self.launchvel_obj = [] # An array of launch object for starting and shutting down roslaunchs as required
 
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            vel_args.append(['vel:=0.0','strAng:='+str(str_angle),'robot:='+ str(self.name[n])])
-            velfile = [self.package_path + '/launch/stepvel.launch']
+            launchvel_itr_0 = launch(launchfile=self.package_path + '/launch/stepvel.launch',\
+                vel=0.0, strAng = str_angle, robot =self.name[n])
 
-            vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-            self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
-
+            self.launchvel_obj.append(launchvel_itr_0)
+            self.launchvel_obj[0].start()
             print('Velocity node ' + str(0) + '  started.')
-            self.launchvel[0].start()
 
             for n in range(1, self.n_vehicles):
-                vel_args.append(['vel:=0.0', 'strAng:=' + str(str_angle),'robot:='+ str(self.name[n])])
-                vel_file.append([(roslaunch.rlutil.resolve_launch_arguments(velfile)[0], vel_args[n])])
-                self.launchvel.append(roslaunch.parent.ROSLaunchParent(self.uuid, vel_file[n]))
-
-            for n in range(1, self.n_vehicles):
-                print('Velocity node ' + str(n) + '  started.')
-                self.launchvel[n].start()
+                launchvel_itr = launch(launchfile= self.package_path + '/launch/stepvel.launch', \
+                vel = 0.0, strAng = str_angle, robot = self.name[n])
+                self.launchvel_obj.append(launchvel_itr)
                 
-            # We will start ROSBag record immediately
-            self.log(logdir=logdir, prefix=self.package_name)
-            
-            time.sleep(10)
+            for n in range(1, self.n_vehicles):
+                self.launchvel_obj[n].start()
+                print('Velocity node ' + str(n) + '  started.')
             
             for n in range(0, self.n_vehicles):
                 rosparamset = subprocess.Popen(["rosparam set /" +self.name[n]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
             self.callflag["startVel"] = True
-
 
 
     ## We will define some simulation sequence that can be called without fuss

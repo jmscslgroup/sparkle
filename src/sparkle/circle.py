@@ -6,17 +6,11 @@
 
 """ This script helps launch a fleet of n cars along a circular track. """
 
-import roslaunch
-import rospy, rosbag
 import sys, math, time
 import signal
-import subprocess, shlex
-from subprocess import call
 import sys
 import signal
-import psutil
 import numpy as np
-import matlab.engine
 import glob
 import os
 

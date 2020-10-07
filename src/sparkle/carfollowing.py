@@ -5,11 +5,7 @@
 # All rights reserved.
 
 import rospy
-import sys, math, time, getopt
-import signal
-import subprocess, shlex
-from subprocess import call
-import psutil
+import sys, getopt
 import numpy as np
 import glob
 import os

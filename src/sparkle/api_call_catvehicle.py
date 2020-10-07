@@ -4,8 +4,8 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from api import animate_catvehicle
-from Bagplot import plot_ts
+from .api import animate_catvehicle
+from .Bagplot import plot_ts
 from operator import add
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')

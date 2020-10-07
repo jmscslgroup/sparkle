@@ -4,15 +4,12 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from circle import circle
-from Bagplot import plot_timeseries
-from Bagplot import Bagplot
-from GZStats import GZStats
-import signal
-import matlab.engine
+from .circle import circle
+from .Bagplot import plot_timeseries
+from .Bagplot import Bagplot
+from .GZStats import GZStats
 import pandas as pd
-import sys, math, time
-import matplotlib.pyplot as pt
+import time
 import matplotlib.animation as animation
 from matplotlib import style
 import yaml

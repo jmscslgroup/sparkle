@@ -4,8 +4,7 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from launch import launch
-import roslaunch
+from .launch import launch
 import rospy
 import time
 

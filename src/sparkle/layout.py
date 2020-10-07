@@ -7,30 +7,26 @@
 """ This script helps launch a fleet of n cars. """
 
 import roslaunch
-import rospy, rosbag
+import rospy
 import rospkg
 import rostopic
 
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties
 
-import sys, math, time
+import sys, time
 import signal
-import subprocess, shlex
+import subprocess
 from subprocess import call
 import psutil
 import numpy as np
-import matlab.engine
 import glob
 import datetime
 import os
-from functools import partial
-from multiprocessing.pool import Pool
-from multiprocessing import Process
 import multiprocessing
 
-from launch import launch
-from GZStats import GZStats
+from .launch import launch
+from .GZStats import GZStats
 from bagpy import bagreader
 '''
 Summary of Class `'layout'`:
@@ -294,6 +290,11 @@ class layout:
             A descriptive string to be prefixed at the beginning of bag file name.
         '''
         self.logdir = logdir
+
+        # if logdir path doesn't exist, then create
+        if not os.path.exists(self.logdir):
+            os.mkdir(self.logdir)
+
         # specify rosbag record command with different flags, etc.
         command = ["rosbag "+ " record "+ "-a "+ " -o " + logdir + "/" + prefix + "_n_" + str( self.n_vehicles) + '_update_rate_' + str(self.update_rate) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_logtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
@@ -566,32 +567,32 @@ class layout:
         Class methods specifies control algorithm for imparting velocity to the car.
         The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper or anything else.
 
-        kwargs
+        kwargs:
             variable keyword arguments
 
-            leader_vel: `double`
-                Leader's Initial velocity in m/s
-                
-                Default Value: 3.0 m/s
+        leader_vel: `double`
+            Leader's Initial velocity in m/s
+            
+            Default Value: 3.0 m/s
 
-            str_angle: `double`
-                Initial Steering Angle of the leader car
+        str_angle: `double`
+            Initial Steering Angle of the leader car
 
-                Default Value: 0.07 radian
+            Default Value: 0.07 radian
 
-            logdir: `string`
-                Specifies directory/path where bag files and other statistics corresponding to this simulation will saved.
+        logdir: `string`
+            Specifies directory/path where bag files and other statistics corresponding to this simulation will saved.
 
-                Default Value: "./"
+            Default Value: "./"
 
-            control_method: "uniform" | "ovftl" | "followerstopper"
-                specifies **vehicle following algorithm** as control method.
+        control_method: "uniform" | "ovftl" | "followerstopper"
+            specifies **vehicle following algorithm** as control method.
 
-                *"uniform"*: All vehicles in the circuit will have same velocity and steering angle
+            *"uniform"*: All vehicles in the circuit will have same velocity and steering angle
 
-                *"ovftl"*: Specifies Optimal-Velocity Follow-The-Leader model.
+            *"ovftl"*: Specifies Optimal-Velocity Follow-The-Leader model.
 
-                *"followerstopper"*: Followerstopper algorithm, not implemented yet.
+            *"followerstopper"*: Followerstopper algorithm, not implemented yet.
         '''
         leader_vel = kwargs.get("leader_vel", 3.0)
         str_angle = kwargs.get("str_angle", 0.07)
@@ -606,15 +607,15 @@ class layout:
         if control_method == "uniform":
             follower_vel = leader_vel
             n = 0
-            launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/vel.launch', \
+            launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/stepvel.launch', \
                 constVel = 0.0, strAng = str_angle, robot = self.name[n])
 
             self.launchvel_obj.append(launchvel_itr_0)
-            print('Velocity node ' + str(0) + '  started.')
             self.launchvel_obj[0].start()
+            print('Velocity node ' + str(0) + '  started.')
 
             for n in range(1, self.n_vehicles):
-                launchvel_itr = launch(launchfile= self.package_path + '/launch/vel.launch', \
+                launchvel_itr = launch(launchfile= self.package_path + '/launch/stepvel.launch', \
                 constVel = 0.0, strAng = str_angle, robot = self.name[n])
                 self.launchvel_obj.append(launchvel_itr)
 
@@ -641,7 +642,13 @@ class layout:
                 self.launchvel_obj.append(launchvel_itr_0)
 
             elif self.__class__.__name__ == "lane":
-                launchvel_itr_0 = launch(launchfile=self.package_path+'/launch/bagplay.launch', robot = self.name[n])
+
+                if not "leader_vel" in kwargs:
+                    launchvel_itr_0 = launch(launchfile=self.package_path+'/launch/bagplay.launch', robot = self.name[n])
+                else:
+                    launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/vel.launch', \
+                constVel = 0.0, strAng = 0.0, robot = self.name[0])
+
                 self.launchvel_obj.append(launchvel_itr_0)
 
             for n in range(1, self.n_vehicles):

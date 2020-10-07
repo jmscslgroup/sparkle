@@ -4,16 +4,14 @@
 # Copyright (c) 2019 Rahul Bhadani, Arizona Board of Regents
 # All rights reserved
 
-from circle import circle
-from catvehicle import catvehicle
-from lane import lane
-from plot_util import plot_topic_hz
+from .circle import circle
+from .catvehicle import catvehicle
+from .lane import lane
+from .plot_util import plot_topic_hz
 from bagpy import bagreader
-from GZStats import GZStats
-import signal
-import matlab.engine
+from .GZStats import GZStats
 import pandas as pd
-import sys, math, time
+import  time
 import matplotlib.pyplot as pt
 import matplotlib.animation as animation
 from matplotlib import style
@@ -135,7 +133,7 @@ def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_upd
     print("Simulation Ends.")
     return bag
 
-def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description="", plot=False, **kwargs):
     '''
     Sparkle Simulation API: `animate_catvehicle`
 
@@ -188,26 +186,26 @@ def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publ
     gz_stat_file = C.gzstatsfile
     print("GZStat file is {}".format(gz_stat_file))
     GZ = GZStats(gz_stat_file)
-    GZ.plotRTF()
-    GZ.plotSimStatus()
+    GZ.dataframe.to_csv(gz_stat_file[0:-4]+".csv")
 
-    datafiles = []
-    if bag is not None:
-        Bag  = Bagplot(bag)
-        datafiles = Bag.getDataFile(fileFilter="odom", msg_types = "odom")
-        Bag.plot_timeseries(datafiles, 'pose.y', fileFilter='odoms')
-        Bag.plot_topic_hz(datafiles)
+    if plot:
+        GZ.plotRTF()
+        GZ.plotSimStatus()
 
-        configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
+        if bag is not None:
+            br = bagreader(bag)
+            csvfiles = br.odometry_data()
+            plot_topic_hz(csvfiles)
 
-        with open(configfile, 'w') as file:
-            documents = yaml.dump(simConfig, file)
+    configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
+
+    with open(configfile, 'w') as file:
+        documents = yaml.dump(simConfig, file)
 
     time.sleep(6)
     pt.close('all')
 
-    print("Simulation Ends. Datafiles saved are {}".format(datafiles))
-
-    return datafiles
+    print("Simulation Ends.")
+    return bag
 
     

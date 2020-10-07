@@ -6,21 +6,15 @@
 
 """ This script helps launch a fleet of n cars along x-axis. """
 
-import roslaunch
-import rospy, rosbag
-import sys, math, time
+
+import time
 import signal
-import subprocess, shlex
-from subprocess import call
-import sys
+
 import signal
-import psutil
 import numpy as np
-import matlab.engine
 import glob
 import os
-
-from layout import layout
+from .layout import layout
 
 '''
 Summary of Class layout:
@@ -44,11 +38,13 @@ class lane(layout, object):
     -------------
     kwargs
             variable keyword arguments
-            
-                Default Value: 230 m
-            n_vehicles: `integer`
-                Number of vehicles on lane  in simulation
-                Default Value: 1
+
+    n_vehicles: `integer`
+        Keyword argument. 
+        
+        Number of vehicles on lane  in simulation
+        
+        Default Value: 1
 
     Attributes
     ------------
@@ -87,7 +83,7 @@ class lane(layout, object):
 
         super(lane, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
 
-    def simulate(self, leader_vel, logdir):
+    def simulate(self, leader_vel, logdir, **kwargs):
         '''
         Class method `simulate` specifies state-based model for simulation of vehicles on circular trajectory.
 
@@ -113,8 +109,9 @@ class lane(layout, object):
         self.spawn() # spawn calls relevant functions to start roscore, gzclient, and rviz
         time.sleep(4)
         initial_distance =    self.vehicle_spacing -  self.car_to_bumper 
+        control_method = kwargs.get("control_method", "ovftl")
         # self.control(leader_vel= leader_vel, str_angle = 0.0, control_method = "uniform" ,logdir=logdir)
-        self.control(leader_vel=leader_vel, str_angle=0.0 , control_method="ovftl", initial_distance =initial_distance , logdir = logdir, log=False)
+        self.control(leader_vel=leader_vel, str_angle=0.0 , control_method=control_method, initial_distance =initial_distance , logdir = logdir, log=False)
         self.rviz(self.package_path + "/config/magna.rviz")
         # start the rosbag record for 60 seconds
         time.sleep(self.log_time)
