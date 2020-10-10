@@ -4,7 +4,7 @@
 # Copyright (c) Rahul Bhadani, Arizona Board of Regents
 # All rights reserved.
 
-from .api import animate_catvehicle
+from .api import circle_catvehicle
 from .Bagplot import plot_ts
 from operator import add
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ if not os.path.exists(directory):
 
 vehicle = 33
 for i in range(1):
-    datafile = animate_catvehicle( package_name="catvehicle", circumference = 430, n_vehicles=vehicle, leader_vel= 8.0, publish_rate=100.0, max_update_rate=10.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = homedir + "/CyverseData/ProjectSparkle", description="CAT Vehicle Simulation: " + str(vehicle) + " Car(s), Iteration " + str(i) + " ID " + unique_runid)
+    datafile = circle_catvehicle( package_name="catvehicle", circumference = 430, n_vehicles=vehicle, leader_vel= 8.0, max_update_rate=10.0, time_step=0.01, log_time=300.0, include_laser=False, logdir = homedir + "/CyverseData/ProjectSparkle", description="CAT Vehicle Simulation: " + str(vehicle) + " Car(s), Iteration " + str(i) + " ID " + unique_runid)
     Files.append(datafile)
     print("Data received is: {}".format(datafile))
 

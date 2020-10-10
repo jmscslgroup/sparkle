@@ -133,9 +133,9 @@ def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_upd
     print("Simulation Ends.")
     return bag
 
-def animate_catvehicle(package_name, circumference, n_vehicles, leader_vel, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description="", plot=False, **kwargs):
+def circle_catvehicle(package_name, circumference, n_vehicles, leader_vel, publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description="", plot=False, **kwargs):
     '''
-    Sparkle Simulation API: `animate_catvehicle`
+    Sparkle Simulation API: `circle_catvehicle`
 
     Higher level API for performing simulation on a circular trajectory of CAT Vehicle
 

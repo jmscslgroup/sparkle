@@ -14,7 +14,7 @@ import numpy as np
 import glob
 import os
 
-from layout import layout
+from .layout import layout
 
 '''
 Summary of Class layout:

@@ -44,14 +44,14 @@ def multi_plot_csv(csvlist, signal_name1, signal_name2,  description = "multi_cs
     for i, f in enumerate(csvlist):
         df = pd.read_csv(f)
         if (signal_name1 in df.columns) and (signal_name2 in df.columns):
-            ax.scatter(x = signal_name1, y=signal_name2, data=df, marker='*',  linewidth=0.3, s = 9, color=color_long[i])
+            ax[0].scatter(x = signal_name1, y=signal_name2, data=df, marker='*',  linewidth=0.3, s = 9, color=color_long[i])
         else:
             print("Specified component/signal {} unavailable in {}. Aborting! ".format(signal_name, f))
             return
-    ax.legend(csvlist)
-    ax.set_title("{}: Timseries plot for {}/{}".format(description, signal_name1, signal_name2), fontsize=16)
-    ax.set_xlabel("Time", fontsize=14)
-    ax.set_ylabel("Time", fontsize=14)
+    ax[0].legend(csvlist)
+    ax[0].set_title("{}: Timseries plot for {}/{}".format(description, signal_name1, signal_name2), fontsize=16)
+    ax[0].set_xlabel(signal_name1, fontsize=14)
+    ax[0].set_ylabel(signal_name2, fontsize=14)
 
     current_fig = plt.gcf()
     dt_object = datetime.datetime.fromtimestamp(time.time())

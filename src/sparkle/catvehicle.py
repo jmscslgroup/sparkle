@@ -112,7 +112,7 @@ class catvehicle(layout, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-        super(catvehicle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], package_name = kwargs["package_name"], description = kwargs["description"])
+        super(catvehicle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], package_name = kwargs["package_name"], description = kwargs["description"])
 
     def physicsengine(self):
         '''
@@ -140,7 +140,7 @@ class catvehicle(layout, object):
         for n in range(0, self.n_vehicles):
             launch_itr = launch(launchfile=self.package_path + '/launch/catvehicle_spawn.launch', \
                 X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = self.name[n], \
-                    laser_sensor = False)
+                    laser_sensor = self.include_laser)
             self.launch_obj.append(launch_itr)
         
         for n in range(0, self.n_vehicles):
@@ -181,7 +181,7 @@ class catvehicle(layout, object):
 
         '''
         leader_vel = kwargs.get("leader_vel", 3.0)
-        str_angle = kwargs.get("str_angle", 0.07)
+        str_angle = kwargs.get("str_angle", self.const_angle)
         control_method = kwargs.get("control_method", "uniform")
         logdir = kwargs.get("logdir", "./")
         

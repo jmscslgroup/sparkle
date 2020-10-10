@@ -105,9 +105,9 @@ class GZStats(object):
         ax2.set_ylabel('Real Time Factor', fontsize=14)
         ax2.legend(['Real time factor average: ' + str(self.rtf_avg) + ', std: ' + str(self.rtf_std)])
         ax2.set_title( self.statfile[0:-4]+ "\n" + "Real Time Factor vs Real Time", fontsize=10)
+        
+        pt.tight_layout()
 
- 
-	pt.tight_layout()
         if(save== True):
             current_fig = pt.gcf()
             fileToSave = self.statfile[0:-4]
