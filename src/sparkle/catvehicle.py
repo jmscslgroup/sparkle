@@ -7,7 +7,7 @@
 """ This script helps launch a fleet of n cars along x-axis. """
 
 import roslaunch
-import rospy, rosbag
+import rospkg
 import sys, math, time
 import signal
 import subprocess, shlex
@@ -75,18 +75,13 @@ class catvehicle(layout, object):
         self.circumference = kwargs.get("circumference", 230.0)
         self.n_vehicles = kwargs.get("n_vehicles", 1)
         self.include_laser = kwargs.get("include_laser", False)
-    
+
+        self.L = kwargs.get("wheelbase", 2.82321111)  #wheelbase of the car
+
         """Generate coordinate on x-axis to place `n_vehicles`"""
-        r = self.circumference/(2*np.pi) #Calculate the radius of the circle
-        print('************ Radius of the circle is {} ************'.format(r))
-        self.R = r
+        print('************ Radius of the circle is {} ************'.format(self.R))
 
-        self.L = 2.62 #wheelbase
-
-        theta = (2*3.14159265359)/self.n_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
-        self.theta = theta
-
-        print('Theta:{} radian.'.format(theta))
+        print('Theta:{} radian.'.format(self.theta))
 
         self.const_angle = np.arctan(self.L/self.R)
         print('Constant Steering Angle:={}'.format(self.const_angle))
@@ -97,22 +92,32 @@ class catvehicle(layout, object):
 
         # Calculate, X, Y and Yaw of each cars on the circle. They are assumed to be placed at a equal separation.
         for i in range(0, self.n_vehicles):
-            theta_i = theta*i
+            theta_i = self.theta*i
 
             if math.fabs(theta_i) < 0.000001:
                 theta_i = 0.0
-            x = r*math.cos(theta_i)
+            x = self.R*math.cos(theta_i)
             if math.fabs(x) < 0.000001:
                 x = 0.0
             X.append(x)
 
-            y = r*math.sin(theta_i)
+            y = self.R*math.sin(theta_i)
             if math.fabs(y) < 0.000001:
                 y = 0.0
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
         super(catvehicle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], package_name = kwargs["package_name"], description = kwargs["description"])
+
+
+    @property
+    def R(self):
+        return self.circumference/(2*np.pi)
+
+    @property
+    def theta(self):
+         #calculate the minimum theta in polar coordinates for placing cars on the circle
+        return (2*3.14159265359)/self.n_vehicles
 
     def physicsengine(self):
         '''
@@ -170,10 +175,12 @@ class catvehicle(layout, object):
 
             Default Value: "./"
 
-        control_method: "uniform" | "ovftl" | "followerstopper"
+        control_method: "uniform" | "ovftl" | "followerstopper" | "injector"
             specifies **vehicle following algorithm** as control method.
 
             *"uniform"*: All vehicles in the circuit will have same velocity and steering angle
+
+            *"injector"*: Inject speed to every vehicle from a csv file
 
             *"ovftl"*: Specifies Optimal-Velocity Follow-The-Leader model.
 
@@ -213,6 +220,28 @@ class catvehicle(layout, object):
                 rosparamset = subprocess.Popen(["rosparam set /" +self.name[n]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
             self.callflag["startVel"] = True
+        elif control_method == "injector":
+            injection_files = kwargs.get("injection_files")
+            if len(injection_files) < self.n_vehicles:
+                raise ValueError("Number of speed profile provided to inject speed to each vehicle is less than the number vehicles")
+
+            time_col = kwargs.get("time_col")
+            vel_col = kwargs.get("vel_col")
+            rospack = rospkg.RosPack()
+            package_path = rospack.get_path("sparkle")
+            
+            for n in range(0, self.n_vehicles): 
+                launchvel_itr= launch(launchfile=package_path + '/launch/velinjector.launch', \
+                    csvfile = injection_files[n], time_col = time_col, vel_col = vel_col, robot = self.name[n], str_angle = str_angle)
+                self.launchvel_obj.append(launchvel_itr)
+            
+            for n in range(0, self.n_vehicles):
+                self.launchvel_obj[n].start()
+                print('Velocity node ' + str(n) + '  started.')
+
+            self.callflag["startVel"] = True
+            call(["rosparam", "set", "/execute", "true"])
+            
 
 
     ## We will define some simulation sequence that can be called without fuss
