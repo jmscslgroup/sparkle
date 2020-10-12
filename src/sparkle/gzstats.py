@@ -16,7 +16,7 @@ import pickle
 import bagpy
 import seaborn as sea
 
-class GZStats(object):
+class gzstats(object):
     '''
     __init__ takes  file name of gz stats dump (either relative path or full path) 
 

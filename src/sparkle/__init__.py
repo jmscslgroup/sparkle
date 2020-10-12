@@ -10,5 +10,5 @@ from .layout import terminate_ros_node
 from .circle import circle
 from .carfollowing import carfollowing
 from .launch import launch
-from .Bagplot import *
+from .bagplot import *
 from .api import *

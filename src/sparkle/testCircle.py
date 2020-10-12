@@ -20,7 +20,7 @@ import numpy as np
 import matlab.engine
 import glob
 import os
-from GZStats import GZStats
+from gzstats import gzstats
 from circle import circle
 # dt_object = datetime.datetime.fromtimestamp(time.time())
 # dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
@@ -43,7 +43,7 @@ from circle import circle
 
 # print("## terminated #.")
 
-#G = GZStats('Circle_Test_n_20_updateRate_1_2019-12-02-13-13-35_gzStats.txt')
+#G = gzstats('Circle_Test_n_20_updateRate_1_2019-12-02-13-13-35_gzStats.txt')
 #G.plotRTF()
 #G.plotSimStatus()
 

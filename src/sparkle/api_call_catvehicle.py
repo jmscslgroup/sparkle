@@ -5,7 +5,7 @@
 # All rights reserved.
 
 from .api import circle_catvehicle
-from .Bagplot import plot_ts
+from .bagplot import plot_ts
 from operator import add
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')

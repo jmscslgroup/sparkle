@@ -5,9 +5,9 @@
 # All rights reserved.
 
 from .circle import circle
-from .Bagplot import plot_timeseries
-from .Bagplot import Bagplot
-from .GZStats import GZStats
+from .bagplot import plot_timeseries
+from .bagplot import bagplot
+from .gzstats import gzstats
 import pandas as pd
 import time
 import matplotlib.animation as animation
@@ -44,12 +44,12 @@ for nn in NUM_VEHICLES:
 
         gz_stat_file = Circ.gzstatsFile
 
-        GZ = GZStats(gz_stat_file)
+        GZ = gzstats(gz_stat_file)
         GZ.plotRTF()
         GZ.plotSimStatus()
 
         if bagFile is not None:
-            Bag  = Bagplot(bagFile)
+            Bag  = bagplot(bagFile)
             datafiles = Bag.getDataFile(fileFilter="magna-setvel", msg_types = "odom")
             Files.append(datafiles)
             Bag.plot_timeseries(datafiles, 'PoseY', fileFilter='magna-setvel')

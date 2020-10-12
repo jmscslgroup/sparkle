@@ -6,7 +6,7 @@
 
 from api import animate_lane
 from operator import add
-from Bagplot import plot_ts
+from bagplot import plot_ts
 import uuid
 import matplotlib.pyplot as plt
 import pandas as pd

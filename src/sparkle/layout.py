@@ -26,7 +26,7 @@ import os
 import multiprocessing
 
 from .launch import launch
-from .GZStats import GZStats
+from .gzstats import gzstats
 from bagpy import bagreader
 '''
 Summary of Class `'layout'`:
@@ -563,7 +563,7 @@ class layout:
             self.launch_obj[n].start()
 
     def control(self, **kwargs):
-        '''
+        '''0
         Class methods specifies control algorithm for imparting velocity to the car.
         The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper or anything else.
 
@@ -768,7 +768,7 @@ class layout:
             print("No GZstats found. Check log directory.")
         else:
             print("GZStat file is {}".format(self.gzstatsfile))
-            GZ = GZStats(self.gzstatsfile)
+            GZ = gzstats(self.gzstatsfile)
             GZ.plotRTF()
             GZ.plotSimStatus()
 

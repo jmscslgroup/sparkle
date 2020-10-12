@@ -9,7 +9,7 @@ from .catvehicle import catvehicle
 from .lane import lane
 from .plot_util import plot_topic_hz
 from bagpy import bagreader
-from .GZStats import GZStats
+from .gzstats import gzstats
 import pandas as pd
 import  time
 import matplotlib.pyplot as pt
@@ -115,7 +115,7 @@ def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_upd
     C.analyze()
     # gz_stat_file = C.gzstatsfile
     # print("GZStat file is {}".format(gz_stat_file))
-    # GZ = GZStats(gz_stat_file)
+    # GZ = gzstats(gz_stat_file)
     # GZ.plotRTF()
     # GZ.plotSimStatus()
 
@@ -185,7 +185,7 @@ def circle_catvehicle(package_name, circumference, n_vehicles, leader_vel, publi
 
     gz_stat_file = C.gzstatsfile
     print("GZStat file is {}".format(gz_stat_file))
-    GZ = GZStats(gz_stat_file)
+    GZ = gzstats(gz_stat_file)
     GZ.dataframe.to_csv(gz_stat_file[0:-4]+".csv")
 
     if plot:

@@ -21,7 +21,7 @@ to create plots of required bag files
 
 '''
 
-class Bagplot(object):
+class bagplot(object):
     '''
     Plotting and analysis of Bag files saved at the end of the simulation
 
