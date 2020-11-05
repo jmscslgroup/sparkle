@@ -25,6 +25,7 @@
 
 using namespace std;
 
+// Convert ROLL PITCH YAW to QUETERNION
 geometry_msgs::Quaternion rpyToQuaternion(double roll, double pitch, double yaw)
 {
     double cy = cos(yaw * 0.5);

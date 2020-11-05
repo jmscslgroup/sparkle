@@ -68,7 +68,7 @@ class circle(layout, object):
     layout: superclass of `circle`
 
     '''
-    
+        
     def __init__(self, **kwargs):
 
         # Default args
@@ -77,14 +77,11 @@ class circle(layout, object):
         self.include_laser = kwargs.get("include_laser", False)
 
         """Generate coordinate on x-axis to place `n_vehicles`"""
-        r = self.circumference/(2*np.pi) #Calculate the radius of the circle
-        print('************ Radius of the circle is {} ************'.format(r))
-        self.R = r
+
         self.car_to_bumper = 4.52
         self.L = 2.70002 #wheelbase
-        theta = (2*3.14159265359)/self.n_vehicles #calculate the minimum theta in polar coordinates for placing cars on the circle
-        self.theta = theta
-        print('Theta:{} radian.'.format(theta))
+        
+        print('Theta:{} radian.'.format(self.theta))
         self.const_angle = np.arctan(self.L/self.R)
         print('Constant Steering Angle for driving in circle is:={}'.format(self.const_angle))
 
@@ -93,16 +90,16 @@ class circle(layout, object):
         Yaw = [] #Yaw of cars placed on the circle, with respect to the world frame
         # Calculate, X, Y and Yaw of each cars on the circle. They are assumed to be placed at a equal separation.
         for i in range(0, self.n_vehicles):
-            theta_i = theta*i
+            theta_i = self.theta*i
             if math.fabs(theta_i) < 0.000001:
                 theta_i = 0.0
 
-            x = r*math.cos(theta_i)
+            x = self.R*math.cos(theta_i)
             if math.fabs(x) < 0.000001:
                 x = 0.0
             
             X.append(x)
-            y = r*math.sin(theta_i)
+            y = self.R*math.sin(theta_i)
             if math.fabs(y) < 0.000001:
                 y = 0.0
             
@@ -110,6 +107,15 @@ class circle(layout, object):
             Yaw.append(theta_i + (3.14159265359/2))
 
         super(circle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
+
+    @property
+    def theta(self):
+        #calculate the minimum theta in polar coordinates for placing cars on the circle
+        return (2*3.14159265359)/self.n_vehicles
+
+    @property
+    def R(self):
+        return self.circumference/(2*np.pi) #Calculate the radius of the circle
 
     ## We will define some simulation sequence that can be called without fuss
     def simulate(self,leader_vel, logdir, control_method = "uniform", **kwargs):
@@ -137,13 +143,16 @@ class circle(layout, object):
         # spawn all the vehicles
         self.spawn() # spawn calls relevant functions to start roscore, gzserver, gzclient and rviz.
         time.sleep(4)
-        radius =  self.R
         angle =  self.const_angle
         
         #Car's length, value reported here is the length of bounding box along the longitudinal direction of the car
-        initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
+        if self.n_vehicles > 1:
+            initial_distance =    (self.circumference - self.n_vehicles*self.car_to_bumper )/ (self.n_vehicles - 1)
+        else:
+            initial_distance  = 10
+
         # self.control(leader_vel = leader_vel, str_angle = angle, control_method="uniform", logdir=logdir)
-        self.control(leader_vel=3.5, str_angle=angle, control_method=control_method, logdir = logdir, initial_distance =initial_distance )
+        self.control(leader_vel=leader_vel, str_angle=angle, control_method=control_method, logdir = logdir, initial_distance =initial_distance )
 
         self.rviz(self.package_path + "/config/magna.rviz")
         # Start Rosbag record for 60 seconds

@@ -300,6 +300,7 @@ class layout:
 
         # Start Ros bag record
         print("Starting Rosbag record:{} ".format(command))
+        rospy.loginfo("Rosbag record started")
         self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
         self.rosbagPID = self.rosbag_cmd.pid
         time.sleep(5)
@@ -561,6 +562,7 @@ class layout:
         
         for n in range(0, self.n_vehicles):
             self.launch_obj[n].start()
+            call(["rosparam", "set", "/director/"+self.name[n], "false"])
 
     def control(self, **kwargs):
         '''0
@@ -595,8 +597,11 @@ class layout:
             *"followerstopper"*: Followerstopper algorithm, not implemented yet.
         '''
         leader_vel = kwargs.get("leader_vel", 3.0)
-        str_angle = kwargs.get("str_angle", 0.07)
+        str_angle = kwargs.get("str_angle", self.const_angle)
         control_method = kwargs.get("control_method", "uniform")
+
+
+
         logdir = kwargs.get("logdir", "./")
 
         # We will start ROSBag record immediately
@@ -668,6 +673,30 @@ class layout:
             rosparamset = subprocess.Popen(["rosparam set /" +self.name[0]+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
             call(["rosparam", "set", "/execute", "true"])
 
+        elif control_method == "injector":
+            print("Injection control begin ...")
+            injection_files = kwargs.get("injection_files")
+            if len(injection_files) < self.n_vehicles:
+                raise ValueError("Number of speed profile provided to inject speed to each vehicle is less than the number vehicles")
+
+            time_col = kwargs.get("time_col")
+            vel_col = kwargs.get("vel_col")
+            rospack = rospkg.RosPack()
+            package_path = rospack.get_path("sparkle")
+            for n in range(0, self.n_vehicles): 
+                launchvel_itr= launch(launchfile=package_path + '/launch/velinjector.launch', \
+                    csvfile = injection_files[n], time_col = time_col, vel_col = vel_col, robot = self.name[n], str_angle = str_angle, decoupled = True)
+
+                self.launchvel_obj.append(launchvel_itr)
+            
+            for n in range(0, self.n_vehicles):
+                self.launchvel_obj[n].start()
+                rospy.loginfo('Velocity node ' + str(n) + '  started.')
+                print('Velocity node ' + str(n) + '  started.')
+
+            self.callflag["startVel"] = True
+            call(["rosparam", "set", "/execute", "true"])
+
     def destroy(self, sig=signal.SIGINT):
         '''
         Class method `destroy` terminates the simulation in the stack order of the various states of simulation were created.
@@ -681,9 +710,10 @@ class layout:
         print('SIGINT: Destroying the physics world and terminating the simulation.')
         print('Terminating spawn launches')
         for n in range(0, self.n_vehicles):
-            self.launch_obj[n].shutdown()
             if self.callflag["startVel"]:
                 self.launchvel_obj[n].shutdown()
+                rospy.loginfo("Control for vehicle %s terminated", self.name[n])
+            self.launch_obj[n].shutdown()
 
         if self.callflag["rviz"]:
             print("Destroying ros-rviz")

@@ -6,10 +6,17 @@
 <arg name="time_col" default="Time"/>
 <arg name="vel_col" default="Speed"/>
 <arg name="str_angle" default="2.82321111"/>
+<arg name="decoupled" default="false"/>
 <group ns="$(arg robot)">
     <!-- load the predict rospy class-->
     <node pkg="sparkle" type="velinjector.py" name="velinjector_$(arg robot)" output="screen" required="true" args="$(arg csvfile) $(arg time_col) $(arg vel_col) $(arg str_angle)">
     </node>
+    
+    <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(arg decoupled)">
+            <param name="enableTwist" value="false"/>
+    </node>
+
+
 </group>
 
 </launch>

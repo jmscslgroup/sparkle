@@ -64,7 +64,7 @@ def animate_lane(vehicle_spacing,  n_vehicles, leader_vel,  publish_rate, max_up
     print("Bagfile recorded is {}".format(bag))
     return bag
 
-def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description=""):
+def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_update_rate, time_step, log_time, include_laser, logdir, description="", plot=False, **kwargs):
     '''
     Sparkle Simulation API: `animate_circle`
 
@@ -112,22 +112,31 @@ def animate_circle(circumference, n_vehicles, leader_vel,  publish_rate, max_upd
     bag = C.simulate(leader_vel, logdir=logdir)
     print("Bagfile recorded is {}".format(bag))
 
-    C.analyze()
+    # C.analyze()
     # gz_stat_file = C.gzstatsfile
     # print("GZStat file is {}".format(gz_stat_file))
     # GZ = gzstats(gz_stat_file)
     # GZ.plotRTF()
     # GZ.plotSimStatus()
 
-    csvfiles = []
-    if bag is not None:
-        br = bagreader(bag)
-        csvfiles = br.odometry_data()
-        plot_topic_hz(csvfiles)
-        configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
+    
+    gz_stat_file = C.gzstatsfile
+    print("GZStat file is {}".format(gz_stat_file))
+    GZ = gzstats(gz_stat_file)
+    GZ.dataframe.to_csv(gz_stat_file[0:-4]+".csv")
 
-        with open(configfile, 'w') as file:
-            documents = yaml.dump(simConfig, file)
+    csvfiles = []
+    if plot:
+        if bag is not None:
+            br = bagreader(bag)
+            csvfiles = br.odometry_data()
+            plot_topic_hz(csvfiles)
+
+
+    configfile =  C.bagfile[0:-4] + "/" + "simConfig.yaml"
+
+    with open(configfile, 'w') as file:
+        documents = yaml.dump(simConfig, file)
     time.sleep(6)
     pt.close('all')
     print("Simulation Ends.")
