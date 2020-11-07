@@ -26,7 +26,7 @@
  
     <group ns="$(arg robot)">
         <param name="tf_prefix" value="$(arg robot)"/>
-        <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+        <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
         <node name="urdf_spawner_$(arg robot)" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-x $(arg X) -y $(arg Y) -z $(arg Z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -unpause -urdf -model $(arg robot) -param robot_description" output="screen" />
         <!-- establish this vehicle's place in the global frame for tf transforms -->
         <node pkg="tf" type="static_transform_publisher" name="global_frame_tf_$(arg robot)" 
