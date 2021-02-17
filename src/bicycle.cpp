@@ -48,6 +48,32 @@ double x, y, str, yaw;
 
 double u2;
 
+// Convert ROLL PITCH YAW to QUETERNION
+geometry_msgs::Quaternion rpyToQuaternion(double roll, double pitch, double yaw)
+{
+    double cy = cos(yaw * 0.5);
+    double sy = sin(yaw * 0.5);
+    double cp = cos(pitch * 0.5);
+    double sp = sin(pitch * 0.5);
+    double cr = cos(roll * 0.5);
+    double sr = sin(roll * 0.5);
+
+
+    double w = cy * cp * cr + sy * sp * sr;
+    double x = cy * cp * sr - sy * sp * cr;
+    double y = sy * cp * sr + cy * sp * cr;
+    double z = sy * cp * cr - cy * sp * sr;
+
+    geometry_msgs::Quaternion quat;
+    quat.x = x;
+    quat.y = y;
+    quat.z = z;
+    quat.w = w;
+
+    return quat;
+}
+
+
 // This very simple callback looks through the data array, and then
 // returns the value (not the index) of that distance
 void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
@@ -104,7 +130,7 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
 
     newVel.linear.x = xdot;
     newVel.linear.y = ydot;
-    newVel.angular.z = yaw;
+    newVel.angular.z = 0.0;
 
 
     newOdom.header.stamp = current_time;
@@ -114,12 +140,14 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
     newOdom.child_frame_id = ns + "/base_link";
     newOdom.pose.pose.position.x = x;
     newOdom.pose.pose.position.y = y;
-    newOdom.pose.pose.position.z = 0.006517;
+    newOdom.pose.pose.position.z = 0.006510;
+        
 
-    newOdom.pose.pose.orientation.x = 0.0;
-    newOdom.pose.pose.orientation.y = 0.0;
-    newOdom.pose.pose.orientation.z = yaw;
-    newOdom.pose.pose.orientation.w = 0.0;
+    newOdom.pose.pose.orientation = rpyToQuaternion(0.0,0.0,yaw);
+    //newOdom.pose.pose.orientation.x = 0.0;
+   // newOdom.pose.pose.orientation.y = 0.0;
+    //newOdom.pose.pose.orientation.z = yaw;
+    //newOdom.pose.pose.orientation.w = 0.0;
 
     newOdom.twist.twist.linear.x = xdot;
     newOdom.twist.twist.linear.y = ydot;

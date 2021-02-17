@@ -66,6 +66,8 @@ class SetModelPose
         
         // A flag to enable sending twist along with poses.
         bool enableTwist;
+
+        bool enablePos;
         // Get the namespace (value in the group tag)
         string ns;
         
@@ -84,6 +86,7 @@ class SetModelPose
             this->rosnode = new ros::NodeHandle(""); 
             this->newMessage = false;
             this->enableTwist = false;
+            this->enablePos = false;
             this->isSubscribed = false;
             
             this->ns = ros::this_node::getNamespace();
@@ -94,6 +97,7 @@ class SetModelPose
             this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);          
             // Initialize the message variable
             this->pose.x = this->pose.y = this->pose.z = 0.0;
+            this->pose.z = 0.006510;
             this->orientation.x = this->orientation.y =  this->orientation.z = this->orientation.w = 0.0;
             memset(&(this->modelState), 0, sizeof(this->modelState));
             memset(&(this->modelState), 0, sizeof(this->modelState));
@@ -118,18 +122,29 @@ class SetModelPose
             this->pose.x = _msg->pose.pose.position.x;
             this->pose.y = _msg->pose.pose.position.y;
             this->pose.z = _msg->pose.pose.position.z;
-
+            //ROS_INFO_STREAM("New pos is = x: "<<this->pose.x << " y: "<< this->pose.y);
+            
+            /*
             this->orientation = rpyToQuaternion(_msg->pose.pose.orientation.x,
                                                         _msg->pose.pose.orientation.y,
                                                         _msg->pose.pose.orientation.z);    
+            */
+            this->orientation = _msg->pose.pose.orientation;
             this->newMessage = true;
 
             this->twist = _msg->twist.twist;
             
+
+            //ROS_INFO_STREAM("New vel is = linear.x: "<<this->twist.linear.x);
             this->modelState.model_name = this->ns;
-            this->modelState.pose.position = pose ;//getModelState.response.pose.position;
-            this->modelState.pose.orientation = orientation; //getModelState.response.pose.orientation;
             
+            this->rosnode->param(this->nodename +"/"+"enablePos", this->enablePos, true);
+
+            if (this->enablePos)
+            {
+                this->modelState.pose.position = this->pose ;//getModelState.response.pose.position;
+                this->modelState.pose.orientation = this->orientation; //getModelState.response.pose.orientation;
+            }
             this->rosnode->param(this->nodename +"/"+"enableTwist", this->enableTwist, false);
             
             
@@ -165,6 +180,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "SparkleSetPose");
     
     std::string enableTwist;
+    std::string enablePos;
     
 
     //Create an object of type `SetModelPose`
