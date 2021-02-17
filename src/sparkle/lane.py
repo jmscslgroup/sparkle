@@ -70,7 +70,8 @@ class lane(layout, object):
         self.vehicle_spacing = kwargs.get("vehicle_spacing", 15.0)
         self.include_laser = kwargs.get("include_laser", False)
         self.car_to_bumper = 4.52
-
+        self.const_angle = 0.0
+        
         # set spatial positions of vehicles to be spawned
         Y = [0.0]
         X = [100.0]*self.n_vehicles
@@ -110,8 +111,11 @@ class lane(layout, object):
         time.sleep(4)
         initial_distance =    self.vehicle_spacing -  self.car_to_bumper 
         control_method = kwargs.get("control_method", "ovftl")
+        logdata = kwargs.get("logdata", False)
+
+
         # self.control(leader_vel= leader_vel, str_angle = 0.0, control_method = "uniform" ,logdir=logdir)
-        self.control(leader_vel=leader_vel, str_angle=0.0 , control_method=control_method, initial_distance =initial_distance , logdir = logdir, log=False)
+        self.control(leader_vel=leader_vel, str_angle=0.0 , control_method=control_method, initial_distance =initial_distance , logdir = logdir, logdata=logdata)
         self.rviz(self.package_path + "/config/magna.rviz")
         # start the rosbag record for 60 seconds
         time.sleep(self.log_time)
