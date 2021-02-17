@@ -54,15 +54,15 @@ class carfollowing(object):
         self.accel = rospy.get_param('accel_init',0.0) #  # initialize the vehicle's acceleration
         self.str_angle = rospy.get_param('str_angle', 0.0) #steering angle
         
-        print(self.leaderposY)
-        print(self.posY)
+        #print(self.leaderposY)
+        #print(self.posY)
 
         if self.useSensorDistance:
             self.distance = rospy.get_param('distance_init', 9.45) #initialize the distance between the vehicle and its leader
         else:
             self.distance = np.sqrt( (self.leaderposX - self.posX)**2 + (self.leaderposY - self.posY)**2   )
 
-        print("self.distance: {}".format(self.distance))
+        #print("self.distance: {}".format(self.distance))
 
         V_init = self.V(self.distance)
         self.leadervel = 0.0 #V_init#initialize leader's velocity 
@@ -154,7 +154,7 @@ class carfollowing(object):
 
         agent = args[0]
         carfollowingmodel = args[1]
-        print("carfollowingmodel: {}".format(carfollowingmodel))
+        #print("carfollowingmodel: {}".format(carfollowingmodel))
         
         if 'oldTime' not in self.__dict__:
             self.oldTime =  rospy.Time.now()
@@ -163,17 +163,17 @@ class carfollowing(object):
         newTime = rospy.Time.now()
         deltaT = newTime - self.oldTime
         deltaT = deltaT.to_sec()
-        print("callback deltaT: {}".format(deltaT))
+        #print("callback deltaT: {}".format(deltaT))
         net_deltaT = newTime - self.FirstTime
         net_deltaT = net_deltaT.to_sec()
         self.oldTime = newTime
      
         self.agentdata[agent] = data
         
-        print("\n-----------")
-        print("Agent is {}".format(agent))
-        print("Data: {}".format(data))
-        print("Args: {}".format(args))
+        #print("\n-----------")
+        #print("Agent is {}".format(agent))
+        #print("Data: {}".format(data))
+        #print("Args: {}".format(args))
 
         if self.useSensorDistance:
             self.distance = self.agentdata["distance"]
@@ -185,8 +185,8 @@ class carfollowing(object):
 
         # if all true in first message dictionary, then set self init to true
         if all(x is True for x in self.firstMessage.values()) and not self.init:
-            print("self.init: {}".format(self.init))
-            print('deltaT: {}'.format(deltaT))
+            #print("self.init: {}".format(self.init))
+            #print('deltaT: {}'.format(deltaT))
             self.init = True
             return
 
@@ -319,17 +319,17 @@ class carfollowing(object):
         a = 0.5  #  [1/s],  optimal velocity strength
         nu = 2.0 #power of distance in denominator of follow-the-leader term
 
-        print("cf_algorithm leadervel: {}".format(leadervel))
-        print("cf_algorithm vel: {}".format(vel))
-        print("cf_algorithm distance: {}".format(distance))
+        #print("cf_algorithm leadervel: {}".format(leadervel))
+        #print("cf_algorithm vel: {}".format(vel))
+        #print("cf_algorithm distance: {}".format(distance))
 
         accel = (b*(leadervel - vel)/(distance**nu)) + a*(self.V(distance) - vel)
-        print("cf_algorithm new acceleration: {}".format(accel))
+        #print("cf_algorithm new acceleration: {}".format(accel))
         # print("cf_algorithm deltaT: {}".format(deltaT))
         deltaT = 0.01
         deltav = accel*deltaT
         newvelocity = vel + deltav           
-        print("cf_algorithm New Velocity : {}".format(newvelocity))
+        #print("cf_algorithm New Velocity : {}".format(newvelocity))
 
         return newvelocity, accel
 
@@ -356,7 +356,7 @@ def usage():
     print("carfollowing -t nebula -l magna -r 50.0")
 
 def main(argv):
-    print("Main of carfollowing")
+    #print("Main of carfollowing")
     thisvehicle='nebula'
     leadervehicle='magna'
     rate=20.0
