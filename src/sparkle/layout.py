@@ -309,7 +309,7 @@ class layout:
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
 
         # log the gz stats
-        self.gzstatsfile =self.logdir + '/gz_stats_' + dt + '.txt'
+        self.gzstatsfile =self.logdir + '/gzstats_' + dt + '.txt'
         self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsfile ], shell=True)
 
         # The log call to true once log is called
@@ -447,7 +447,7 @@ class layout:
         '''
         layout.rviz()
 
-        Class method `rviz` starts the rosr-rviz for visualizing vehicle's path, point cloud, etc.
+        Class method `rviz` starts the ros-rviz for visualizing vehicle's path, point cloud, etc.
 
         Sets the `layout.callflag["rviz"]` to `True`.
 
@@ -463,8 +463,8 @@ class layout:
 
         '''
         print("Start ros-rviz")
-        self.rviz = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d " +config], stdout=subprocess.PIPE, shell=True)
-        self.rviz_pid = self.rviz.pid
+        self.rviz_process = subprocess.Popen(["sleep 3; rosrun rviz rviz  -d " +config], stdout=subprocess.PIPE, shell=True)
+        self.rviz_pid = self.rviz_process.pid
         self.callflag["rviz"] = True
 
     def create(self, uri="localhost", port=11311):
@@ -565,7 +565,7 @@ class layout:
             call(["rosparam", "set", "/director/"+self.name[n], "false"])
 
     def control(self, **kwargs):
-        '''0
+        '''
         Class methods specifies control algorithm for imparting velocity to the car.
         The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper or anything else.
 
@@ -597,15 +597,16 @@ class layout:
             *"followerstopper"*: Followerstopper algorithm, not implemented yet.
         '''
         leader_vel = kwargs.get("leader_vel", 3.0)
-        str_angle = kwargs.get("str_angle", self.const_angle)
+        str_angle = kwargs.get("str_angle", 0.0)
         control_method = kwargs.get("control_method", "uniform")
+        logdata = kwargs.get("logdata", False)
 
 
+        if logdata:
+            logdir = kwargs.get("logdir", "./")
 
-        logdir = kwargs.get("logdir", "./")
-
-        # We will start ROSBag record immediately
-        self.log(logdir=logdir, prefix=self.package_name)
+            # We will start ROSBag record immediately
+            self.log(logdir=logdir, prefix=self.package_name)
 
         self.launchvel_obj = [] # An array of launch object for starting and shutting down roslaunchs as required
 
@@ -651,7 +652,7 @@ class layout:
                 if not "leader_vel" in kwargs:
                     launchvel_itr_0 = launch(launchfile=self.package_path+'/launch/bagplay.launch', robot = self.name[n])
                 else:
-                    launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/vel.launch', \
+                    launchvel_itr_0 = launch(launchfile= self.package_path + '/launch/stepvel.launch', \
                 constVel = 0.0, strAng = 0.0, robot = self.name[0])
 
                 self.launchvel_obj.append(launchvel_itr_0)
@@ -717,7 +718,7 @@ class layout:
 
         if self.callflag["rviz"]:
             print("Destroying ros-rviz")
-            self.rviz.terminate()
+            self.rviz_process.terminate()
             call(["pkill", "rviz"])
 
         print('Destroying physics world')
@@ -780,7 +781,7 @@ class layout:
                 move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsfile + " "+  fileName+"/" + fileName + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
                 stdout = move_cmd.communicate()
                 print('mv STDOUT:{}'.format(stdout))
-                self.gzstatsfile = fileName+"/" +fileName + "_gzStats.txt"
+                self.gzstatsfile = fileName+"/" +fileName + "_gzstats.txt"
                 
                 return self.logdir + "/" + latest_file
             else:
