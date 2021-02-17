@@ -40,6 +40,11 @@
 
         <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen">
         </node>
+        
+        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
+            <param name="enableTwist" value="true"/>
+            <param name="enablePos" value="true"/>
+        </node>
 
 
         <!--node pkg="sparklev2" type="sparklev2_node" name="sparklev2_node_$(arg robot)"  output="screen" required="true"/-->

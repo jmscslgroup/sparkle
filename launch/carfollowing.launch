@@ -63,9 +63,9 @@
            
         </node>
         
-        <node name="model_state_$(arg this_name)" pkg="sparkle" type="model_state" output="screen">
+        <!--node name="model_state_$(arg this_name)" pkg="sparkle" type="model_state" output="screen">
             <param name="enableTwist" value="false"/>
-        </node>
+        </node-->
     </group>
     
 

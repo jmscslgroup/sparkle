@@ -12,9 +12,9 @@
     <node pkg="sparkle" type="velinjector.py" name="velinjector_$(arg robot)" output="screen" required="true" args="$(arg csvfile) $(arg time_col) $(arg vel_col) $(arg str_angle)">
     </node>
     
-    <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(arg decoupled)">
+    <!--node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(arg decoupled)">
             <param name="enableTwist" value="false"/>
-    </node>
+    </node-->
 
 
 </group>

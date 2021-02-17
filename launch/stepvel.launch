@@ -5,7 +5,7 @@
     
     
     <arg name="robot" default="magna"/>
-    <arg name="strAng" default="0.0595"/>
+    <arg name="strAng" default="0.0"/>
     <arg name="constVel" default="8.0"/>
     <param name="/$(arg robot)/constVel" value="$(arg constVel)"/>
     <param name="/$(arg robot)/strAngle" value="$(arg strAng)"/>
@@ -16,8 +16,8 @@
         <!--node name="hoffmansubsystem_$(arg robot)" pkg="hoffmansubsystem" type="hoffmansubsystem_node" output="screen">
 
         </node-->
-        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
+        <!--node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen">
             <param name="enableTwist" value="false"/>
-        </node>
+        </node-->
     </group>
 </launch>
