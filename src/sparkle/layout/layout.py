@@ -654,7 +654,7 @@ class layout:
         leader_vel = kwargs.get("leader_vel", 3.0)
         str_angle = kwargs.get("str_angle", 0.0)
         control_method = kwargs.get("control_method", "uniform")
-        route = kwargs.get("route", "linear")
+
         rlpolicy_model = kwargs.get("rlpolicy_model")
         rlvf_model = kwargs.get("rlvf_model")
         logdata = kwargs.get("logdata", False)
@@ -665,9 +665,10 @@ class layout:
             # We will start ROSBag record immediately
             self.logdata(logdir=logdir, prefix=self.package_name)
 
+        route = self.__class__.__name__
 
-        if route not in ["linear", "circular"]:
-            _LOGGER.error("Two types of routes are supported: circular and linear")
+        if route not in ["lane", "circle"]:
+            _LOGGER.error("Two types of routes are supported: circle and lane")
 
         # control_method is a single string to denote types
         # convert single string to a list to apply to all vehicles
@@ -705,10 +706,32 @@ class layout:
             launchobj = launch(launchfile=self.package_path+'/launch/stepvel.launch',
             constVel = 0.0, strAng = str_angle, robot ="sparkle_{:03d}".format(i))
             self.launchcontrol_obj.append(launchobj)
+        
+        elif control_method[0].lower() == "ovftl":
+            
+            if route == "circle":
+                print('self.name[self.n_vehicles - 1] : {}'.format(self.name[self.n_vehicles - 1]))
+                launchobj = launch(launchfile=self.package_path+'/launch/carfollowing.launch', this_name = "sparkle_{:03d}".format(0), \
+                    leader_name = "sparkle_{:03d}".format(self.n_vehicles - 1), initial_distance =initial_distance, steering = str_angle, \
+                         leader_x_init =self.X[self.n_vehicles-1], leader_y_init = self.Y[self.n_vehicles-1],  this_x_init =self.X[0], \
+                              this_y_init =self.Y[0],  leader_odom_topic  = '/' + "sparkle_{:03d}".format(self.n_vehicles - 1) + '/setvel', \
+                                  this_odom_topic = '/' + "sparkle_{:03d}".format(0) + '/setvel')
+                
+                self.launchcontrol_obj.append(launchobj)
+            
+            elif route == "lane":
+
+                _LOGGER.error("With {} route, control method for leader vehicle in the platoon only works with uniform and injector control method. Ignore ovftl control method for leader and falling back to uniform ".format(route))
+                control_method[0] = "uniform"
+
+                launchobj = launch(launchfile= self.package_path + '/launch/stepvel.launch', \
+                constVel = 0.0, strAng = 0.0, robot = "sparkle_{:03d}".format(0))
+                self.launchcontrol_obj.append(launchobj)
+
 
         else:
-            if route == "linear":
-                _LOGGER.error("With linear route, control method for leader vehicle in the platoon only works with uniform and injector control method. ")
+            if route == "lane":
+                _LOGGER.error("With {} route, control method for leader vehicle in the platoon only works with uniform and injector control method. ".format(route))
 
             else:
                 if control_method[0].lower() == "idm":
@@ -775,6 +798,15 @@ class layout:
 
                 self.launchcontrol_obj.append(launchobj)
 
+            elif control_method[i].lower() == "ovftl":
+                launchobj = launch(launchfile=self.package_path+'/launch/carfollowing.launch', this_name = "sparkle_{:03d}".format(i), \
+                    leader_name = "sparkle_{:03d}".format(i-1), initial_distance =initial_distance, steering = str_angle, \
+                         leader_x_init =self.X[i-1], leader_y_init = self.Y[i-1],  this_x_init =self.X[i], \
+                              this_y_init =self.Y[i],  leader_odom_topic  = '/' + "sparkle_{:03d}".format(i-1) + '/setvel', \
+                                  this_odom_topic = '/' + "sparkle_{:03d}".format(i) + '/setvel')
+                self.launchcontrol_obj.append(launchobj)
+
+
             elif control_method[i].lower() == "followerstopper":
                 launchobj = launch(launchfile=self.package_path+'/launch/followerstopper.launch',
                     robot ="sparkle_{:03d}".format(i),
@@ -799,6 +831,9 @@ class layout:
             
 
         
+        print("Number of vehicles:{}".format(self.n_vehicles))
+
+        print("Number of launch control objects: {}".format(len(self.launchcontrol_obj)))
         for n in range(1, self.n_vehicles):
             _LOGGER.info("Control node with index {} started".format(n))
             self.launchcontrol_obj[n].start()
@@ -808,7 +843,7 @@ class layout:
         
         
         for n in range(0, self.n_vehicles):
-            if control_method[0] == "uniform":
+            if control_method[n] == "uniform":
                 rosparamset = subprocess.Popen(["rosparam set /" +"sparkle_{:03d}".format(n)+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
         

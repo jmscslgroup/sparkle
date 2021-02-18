@@ -5,6 +5,7 @@
 # All rights reserved.
 
 from .layout import layout
+from .layout import lane
 from .layout import circle
 from .control import carfollowing
 from .launch import launch

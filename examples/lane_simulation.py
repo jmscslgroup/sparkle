@@ -9,8 +9,6 @@ import uuid
 import time
 import signal
 
-from sparkle import api
-from sparkle import gzstats
 from sparkle import lane
 
 homedir = os.path.expanduser("~")

@@ -116,7 +116,7 @@ class lane(layout, object):
 
         # self.control(leader_vel= leader_vel, str_angle = 0.0, control_method = "uniform" ,logdir=logdir)
         self.control(leader_vel=leader_vel, str_angle=0.0 , control_method=control_method, initial_distance =initial_distance , logdir = logdir, logdata=logdata)
-        self.rviz(self.package_path + "/config/magna.rviz")
+        self.rviz()
         # start the rosbag record for 60 seconds
         time.sleep(self.log_time)
         print('Simulation complete, time to terminate')
