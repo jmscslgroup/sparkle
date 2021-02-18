@@ -6,13 +6,11 @@
 
 """ This script helps launch a fleet of n cars along a circular track. """
 
-import sys, math, time
+import math, time
 import signal
 import sys
 import signal
 import numpy as np
-import glob
-import os
 
 from .layout import layout
 
@@ -76,7 +74,7 @@ class circle(layout, object):
         self.n_vehicles = kwargs.get("n_vehicles", 1)
         self.include_laser = kwargs.get("include_laser", False)
 
-        """Generate coordinate on x-axis to place `n_vehicles`"""
+        # Generate coordinate on x-axis to place `n_vehicles`
 
         self.car_to_bumper = 4.52
         self.L = 2.70002 #wheelbase
@@ -106,7 +104,12 @@ class circle(layout, object):
             Y.append(y)
             Yaw.append(theta_i + (3.14159265359/2))
 
-        super(circle, self).__init__(self.n_vehicles, X, Y, Yaw, max_update_rate =  kwargs["max_update_rate"] , time_step = kwargs["time_step"], update_rate = kwargs["update_rate"], log_time = kwargs["log_time"], include_laser=kwargs["include_laser"], description = kwargs["description"])
+        super(circle, self).__init__(self.n_vehicles, X, Y, Yaw, 
+                                                max_update_rate =  kwargs["max_update_rate"] , 
+                                                time_step = kwargs["time_step"], 
+                                                update_rate = kwargs["update_rate"], 
+                                                log_time = kwargs["log_time"], 
+                                                description = kwargs["description"])
 
     @property
     def theta(self):
@@ -154,7 +157,7 @@ class circle(layout, object):
         # self.control(leader_vel = leader_vel, str_angle = angle, control_method="uniform", logdir=logdir)
         self.control(leader_vel=leader_vel, str_angle=angle, control_method=control_method, logdir = logdir, initial_distance =initial_distance )
 
-        self.rviz(self.package_path + "/config/magna.rviz")
+        self.rviz(config = self.package_path + "/config/magna.rviz")
         # Start Rosbag record for 60 seconds
         time.sleep(self.log_time)
         print('Simulation complete, time to terminate.')
