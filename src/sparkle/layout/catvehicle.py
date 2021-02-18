@@ -20,7 +20,7 @@ import glob
 import os
 
 from .layout import layout
-from .launch import launch
+from ..launch import launch
 '''
 Summary of Class layout:
 This class requires a ros package 'Sparkle'

@@ -326,7 +326,7 @@ class carfollowing(object):
         accel = (b*(leadervel - vel)/(distance**nu)) + a*(self.V(distance) - vel)
         #print("cf_algorithm new acceleration: {}".format(accel))
         # print("cf_algorithm deltaT: {}".format(deltaT))
-        deltaT = 0.01
+        #deltaT = 0.01
         deltav = accel*deltaT
         newvelocity = vel + deltav           
         #print("cf_algorithm New Velocity : {}".format(newvelocity))

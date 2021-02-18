@@ -8,8 +8,6 @@ import uuid
 import time
 import signal
 
-from sparkle import api
-from sparkle import gzstats
 from sparkle import circle
 
 
@@ -55,7 +53,7 @@ C.spawn()
 C.control(leader_vel=leader_vel, logdir = datadir, str_angle = C.const_angle, logdata = False)
 
 # Start visualization
-C.rviz(C.package_path + "/config/magna.rviz")
+C.rviz(config = C.package_path + "/config/magna.rviz")
 
 # Run the simulation for`log_time`
 time.sleep(log_time)

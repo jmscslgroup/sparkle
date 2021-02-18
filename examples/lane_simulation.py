@@ -23,8 +23,8 @@ include_laser = False
 vehicle_spacing = 20.0
 max_update_rate = 100.0 # for gazebo
 time_step = 0.01 # for gazebo
-leader_vel = 2.0
-log_time = 55.0
+leader_vel = 5.0
+log_time = 155.0
 update_rate = 20.0 # for throttling
 unique_runid = str(uuid.uuid4())
 description = "Lane Trajectory, Sparkle, Unique run ID = " + unique_runid
