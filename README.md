@@ -1,7 +1,8 @@
-# sparkle
+<h1 align="center">Sparkle</h1>
 
-**ROS package enabling multi-vehicle simulation at large-scale**
+<h3 align="center">ROS package enabling multi-vehicle simulation at large-scale</h3>
 
-<img src="https://github.com/jmscslgroup/sparkle/blob/master/sparkle.png" alt="Strym Logo" align="center" width=400/>
+<h4 align="center">
+<img src="https://github.com/jmscslgroup/sparkle/blob/master/sparkle_new.png" alt="Strym Logo" align="center" width=600/>
+</h4>
 
-The readme will be updated soon.
