@@ -28,3 +28,11 @@
 * callflag: A dictionary to keep track for calls to various functions and utilities
 * bagdir: A directory where bagfiles will be stored
 * gzstatsfile: File path of simulation statistics file
+
+## `lane` class
+`lane` class is a subclass of `layout` class that creates a platoon of vehicles in a straightline separated by equal distance in the beginning. Following parameters are important for `lane` class:
+
+* n_vehicles: The number of vehicles to simulate
+* vehicle_spacing: Initial spacing between vehicles
+* include_laser: A bool array specifying whether to include front mounted laser on each car or not
+
