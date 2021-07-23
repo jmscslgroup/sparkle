@@ -41,8 +41,8 @@ import pandas as pd
 import rospy
 import sys, time
 import numpy as np
-import strym
-from strym import strymread
+# import strym
+# from strym import strymread
 import ntpath
 
 
@@ -115,19 +115,19 @@ class velinjector():
             if not np.all(time_diff) >= 0:
                 raise ValueError("Time is not monotonically increasing in the provided dataset")
 
-        elif input_type == "CAN":
-            rospy.loginfo("Reading data from {}. Please wait for a while ...".format(ntpath.basename(csvfile)))
-            r = strymread(csvfile=csvfile)
-            if not r.success:
-                raise ValueError("There was some issue reading the input CAN bus csvfile")
+        # elif input_type == "CAN":
+        #     rospy.loginfo("Reading data from {}. Please wait for a while ...".format(ntpath.basename(csvfile)))
+        #     r = strymread(csvfile=csvfile)
+        #     if not r.success:
+        #         raise ValueError("There was some issue reading the input CAN bus csvfile")
             
             
-            speed = r.speed()
-            speed['Message'] = speed['Message']*0.277778 # convert to m/s
-            rospy.loginfo("Speed retrieved from {} ".format(ntpath.basename(csvfile)))
-            # remove zero values from the beginning so that car moves immediately
-            positive_vales = ego_speed[ego_speed['Message'] > 0.0]
-            self.speed = ego_speed[positive_vales.index[0]:]
+        #     speed = r.speed()
+        #     speed['Message'] = speed['Message']*0.277778 # convert to m/s
+        #     rospy.loginfo("Speed retrieved from {} ".format(ntpath.basename(csvfile)))
+        #     # remove zero values from the beginning so that car moves immediately
+        #     positive_vales = ego_speed[ego_speed['Message'] > 0.0]
+        #     self.speed = ego_speed[positive_vales.index[0]:]
 
         self.current_time = None
         self.next_time = None

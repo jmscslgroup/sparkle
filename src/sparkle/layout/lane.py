@@ -40,11 +40,21 @@ class lane(layout, object):
             variable keyword arguments
 
     n_vehicles: `integer`
-        Keyword argument. 
         
         Number of vehicles on lane  in simulation
         
         Default Value: 1
+    
+    vehicle_spacing: `double`
+        
+        Space between two vehicles
+
+
+    include_laser: `bool array`
+
+        Whether to include laser sensor or not
+
+    
 
     Attributes
     ------------

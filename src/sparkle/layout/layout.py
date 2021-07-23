@@ -120,7 +120,7 @@ class layout:
         Filepath of the rosbag saved at the end of the simulation.
         
     """
-    def __init__(self, n_vehicles=1, X=0, Y=0, Yaw=0.0, **kwargs) -> None:
+    def __init__(self, n_vehicles=1, X=0, Y=0, Yaw=0.0, **kwargs):
 
         # Kill any existing ROS and gzserver and gzclient
         call(["pkill", "ros"])
@@ -131,7 +131,7 @@ class layout:
         time.sleep(1)
 
         
-        _LOGGER.info("Creating simulation layout")
+        _LOGGER.info("Creating simulation layout ...")
         # Define attributes for layout class
         self.n_vehicles = n_vehicles
         self.X = X # X-Coordinates of all the vehicles.
