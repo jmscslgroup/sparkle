@@ -13,8 +13,13 @@
 	<arg name='ego_pos4' default='0.0'/>
 	<arg name='laser_sensor' default='false'/>
 	<arg name="bagfile" default="start_at_0mph.bag"/>
+        <arg name="max_update_rate" default="100.0"/>
+        <arg name="time_step" default="0.01"/>
 
-	<include file="$(find steer)/launch/threelanes.launch"/>
+	<include file="$(find sparkle)/launch/threelanes.launch">
+		<arg name="max_update_rate" value="$(arg max_update_rate)"/>
+		<arg name="time_step" value="$(arg time_step)"/>	
+	</include>
 	<include file="$(find sparkle)/launch/spawn.launch">
         	<arg name="robot" value="$(arg leader)"/>
 		<arg name="X" value="$(arg leader_pos)"/>
