@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+	
+	<arg name='leader' default='leader'/> 
+	<arg name='ego1' default='ego1'/>
+	<arg name='ego2' default='ego2'/>
+	<arg name='ego3' default='ego3'/>
+	<arg name='ego4' default='ego4'/>
+	<arg name='leader_pos' default='120.0'/>
+	<arg name='ego_pos1' default='90.0'/>
+	<arg name='ego_pos2' default='60.0'/>
+	<arg name='ego_pos3' default='30.0'/>
+	<arg name='ego_pos4' default='0.0'/>
+	<arg name='laser_sensor' default='false'/>
+	<arg name="bagfile" default="start_at_0mph.bag"/>
+
+	<include file="$(find steer)/launch/threelanes.launch"/>
+	<include file="$(find sparkle)/launch/spawn.launch">
+        	<arg name="robot" value="$(arg leader)"/>
+		<arg name="X" value="$(arg leader_pos)"/>
+        </include>
+	
+	<include file="$(find sparkle)/launch/spawn.launch">
+        	<arg name="robot" value="$(arg ego1)"/>
+		<arg name="X" value="$(arg ego_pos1)"/>
+		<arg name="laser_sensor" value="$(arg laser_sensor)"/>
+	</include>
+
+	<include file="$(find sparkle)/launch/spawn.launch">
+        	<arg name="robot" value="$(arg ego2)"/>
+		<arg name="X" value="$(arg ego_pos2)"/>
+		<arg name="laser_sensor" value="$(arg laser_sensor)"/>
+	</include>
+
+	<include file="$(find sparkle)/launch/spawn.launch">
+        	<arg name="robot" value="$(arg ego3)"/>
+		<arg name="X" value="$(arg ego_pos3)"/>
+		<arg name="laser_sensor" value="$(arg laser_sensor)"/>
+	</include>
+
+	<include file="$(find sparkle)/launch/spawn.launch">
+        	<arg name="robot" value="$(arg ego4)"/>
+		<arg name="X" value="$(arg ego_pos4)"/>
+		<arg name="laser_sensor" value="$(arg laser_sensor)"/>
+	</include>
+
+	 <group ns="$(arg leader)">
+                <node pkg="rosbag" type="play" name="player" output="screen" args="$(find transfer_pkg)/launch/$(arg bagfile) --topics /ghost/vel">
+                        <remap from="/ghost/vel" to="cmd_vel"/>
+                </node>
+         </group>
+
+
+</launch>

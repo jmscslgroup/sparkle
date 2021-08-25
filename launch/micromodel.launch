@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+  
+
+<launch>
+	
+	<arg name='ego' default='ego'/>
+	<arg name='leader' default='leader'/>
+	<arg name='leadervel_topic' default = '/$(arg leader)/vel'/> 
+	<arg name='relative_vel_topic' default = '/$(arg ego)/rel_vel'/> 
+	<arg name='headway_topic' default = '/$(arg leader)/lead_dist'/> 
+		
+	<param name='/$(arg ego)/leader_vel_topic' value='$(arg leadervel_topic)'/>
+	<param name='/$(arg ego)/ego_odom' value='/$(arg ego)/odom'/>
+	<param name='/$(arg ego)/leader_odom' value='/$(arg leader)/odom'/>
+	<param name='/$(arg ego)/publish_cmdvel' value='true'/>
+	<param name='/$(arg ego)/use_odom' value='false'/>
+	<param name='/$(arg ego)/use_leadervel' value='false'/>
+	<group ns="$(arg ego)">
+		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">
+			
+		</node>
+	</group>
+
+</launch>

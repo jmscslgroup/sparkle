@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+  
+
+<launch>
+	
+	<arg name='ego1' default='ego1'/>
+	<arg name='ego2' default='ego2'/>
+	<arg name='ego3' default='ego3'/>
+	<arg name='ego4' default='ego4'/>
+	<arg name='leader' default='leader'/>
+	<arg name='leadervel_topic' default = '/$(arg leader)/vel'/> 
+	<arg name='relative_vel_topic' default = '/$(arg ego1)/rel_vel'/> 
+	<arg name='headway_topic' default = '/$(arg leader)/lead_dist'/> 
+		
+	<param name='/$(arg ego1)/leader_vel_topic' value='$(arg leadervel_topic)'/>
+	<param name='/$(arg ego1)/ego_odom' value='/$(arg ego1)/odom'/>
+	<param name='/$(arg ego1)/leader_odom' value='/$(arg leader)/odom'/>
+	<param name='/$(arg ego1)/publish_cmdvel' value='true'/>
+	<param name='/$(arg ego1)/use_odom' value='false'/>
+	<param name='/$(arg ego1)/use_leadervel' value='false'/>
+	<group ns="$(arg ego1)">
+		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">	
+		</node>
+	</group>
+	
+	<param name='/$(arg ego2)/leader_vel_topic' value='/$(arg ego1)/vel'/>
+	<param name='/$(arg ego2)/ego_odom' value='/$(arg ego2)/odom'/>
+	<param name='/$(arg ego2)/leader_odom' value='/$(arg ego1)/odom'/>
+	<param name='/$(arg ego2)/publish_cmdvel' value='true'/>
+	<param name='/$(arg ego2)/use_odom' value='false'/>
+	<param name='/$(arg ego2)/use_leadervel' value='false'/>
+	<group ns="$(arg ego2)">
+		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">	
+		</node>
+	</group>
+	
+	<param name='/$(arg ego3)/leader_vel_topic' value='/$(arg ego2)/vel'/>
+	<param name='/$(arg ego3)/ego_odom' value='/$(arg ego3)/odom'/>
+	<param name='/$(arg ego3)/leader_odom' value='/$(arg ego2)/odom'/>
+	<param name='/$(arg ego3)/publish_cmdvel' value='true'/>
+	<param name='/$(arg ego3)/use_odom' value='false'/>
+	<param name='/$(arg ego3)/use_leadervel' value='false'/>
+	<group ns="$(arg ego3)">
+		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">	
+		</node>
+	</group>
+	
+	<param name='/$(arg ego4)/leader_vel_topic' value='/$(arg ego3)/vel'/>
+	<param name='/$(arg ego4)/ego_odom' value='/$(arg ego4)/odom'/>
+	<param name='/$(arg ego4)/leader_odom' value='/$(arg ego3)/odom'/>
+	<param name='/$(arg ego4)/publish_cmdvel' value='true'/>
+	<param name='/$(arg ego4)/use_odom' value='false'/>
+	<param name='/$(arg ego4)/use_leadervel' value='false'/>
+	<group ns="$(arg ego4)">
+		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">	
+		</node>
+	</group>
+	
+
+</launch>
