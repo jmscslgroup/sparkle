@@ -24,7 +24,41 @@ find_package(catkin REQUIRED COMPONENTS
   velodyne_pointcloud
 )
 
+
+set(ROS_FOUND FALSE)
+if(DEFINED ENV{ROS_DISTRO})
+  set(FOUND_ROS_DISTRO $ENV{ROS_DISTRO})
+  set(ROS_FOUND TRUE)
+else()
+  message("ROS distro variable not set. Trying to figure it out...")
+  set(AVAILABLE_ROS_VERSIONS "noetic;melodic;lunar;kinetic;jade;indigo")
+  set(ROS_FOUND FALSE)
+  foreach(version ${AVAILABLE_ROS_VERSIONS})
+    if(NOT ROS_FOUND)
+      find_path(ROS_H ros.h PATHS /opt/ros/${version}/include/ros)
+      if(ROS_H)
+        message("Found ros version ${version}")
+        set(FOUND_ROS_DISTRO ${version})
+        set(ROS_FOUND TRUE)
+      endif()
+    endif()
+  endforeach()
+endif()
+
+if(ROS_FOUND)
+  if($ENV{ROS_DISTRO} STREQUAL "noetic")
+	  message("Using ROS Noetic")
+    # Do stuff specific to Kinetic
+    find_package(gazebo 11 REQUIRED)
+    #find_package(ignition-msgs6 REQUIRED)
+  endif()
+else()
+  message("ROS distro is unknown.")
+endif()
+
+
 ## System dependencies are found with CMake's conventions
+
 find_package(Boost REQUIRED COMPONENTS system)
 
 # Need to have these in order to find/include boost stuff
@@ -116,6 +150,14 @@ target_link_libraries( transform_sparkle ${catkin_LIBRARIES} )
 
 add_executable( companion_timer src/companion_timer.cpp )
 target_link_libraries(companion_timer ${catkin_LIBRARIES} )
+
+add_executable( micromodel 
+	src/controller.cc
+	src/micromodel_controller.cc )
+target_link_libraries(micromodel ${catkin_LIBRARIES} )
+
+add_executable( relativevel src/relvel.cpp )
+target_link_libraries( relativevel ${catkin_LIBRARIES} )
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
