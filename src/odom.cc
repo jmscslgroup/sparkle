@@ -37,8 +37,8 @@ namespace gazebo
             string model_state_topic; // What is my model state topic?
             
             physics::ModelPtr model; // Model Pointer
-            ignition::math::Box bounding_box_model; //Bounding Box of the model
-            ignition::math::Box collision_box_model; // Bounding Box of the collision of the model
+            ignition::math::AxisAlignedBox bounding_box_model; //Bounding Box of the model
+            ignition::math::AxisAlignedBox collision_box_model; // Bounding Box of the collision of the model
             ignition::math::Pose3d model_poses;
             ignition::math::Vector3<double> model_linear_vel;
             ignition::math::Vector3<double> model_angular_vel;
