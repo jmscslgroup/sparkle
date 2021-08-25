@@ -1,3 +1,7 @@
+/* ----- Copyright Rahul Bhadani
+ * Maintainer Email: rahulbhadani@email.arizona.edu
+ * ----------*/
+
 #include <boost/bind.hpp>
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
