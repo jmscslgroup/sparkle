@@ -13,3 +13,4 @@ from .viz import *
 from .recipe import *
 from .log import configure_logworker
 _LOGGER = configure_logworker()
+__version__ = "0.1.0"
