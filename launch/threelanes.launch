@@ -9,10 +9,6 @@
       <arg name="gui" default="false"/>
       <arg name="headless" default="false"/>
       <arg name="debug" default="false"/>
-
-      <arg name="max_update_rate" default="100.0"/>
-      <arg name="time_step" default="0.01"/>
-
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="verbose" value="true"/>
     <arg name="world_name" value="$(find steer)/worlds/threelane.world"/>
@@ -23,8 +19,5 @@
     <arg name="headless" value="$(arg headless)"/>
 
   </include>
-
-
-  <node name="gazebo_rtf" pkg="sparkle" type="gazebo_rtf.py" respawn="true" output="screen" args="$(arg max_update_rate) $(arg time_step)"/>
 
 </launch>
