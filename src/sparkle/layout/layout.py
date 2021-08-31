@@ -11,7 +11,8 @@ __email__  = 'rahulbhadani@email.arizona.edu'
 
 from datetime import timedelta
 import logging
-_LOGGER= logging.getLogger(__name__)
+from ..log import configure_logworker
+_LOGGER = configure_logworker()
 
 import sys, time, subprocess, os, datetime, glob, psutil, signal
 from subprocess import call
@@ -19,7 +20,7 @@ from subprocess import call
 import rospkg, rostopic, roslaunch, rospy
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties
-
+import ntpath
 from ..launch import launch
 class layout:
     """
@@ -275,7 +276,11 @@ class layout:
 
 
         """
-        self.logdir = kwargs.get("logdir", "./")
+        
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
+        self.logdir = kwargs.get("logdir", self.logdir)
         self.log_time = kwargs.get("log_time", 60.0)
         # if logdir path doesn't exist, then create
         if not os.path.exists(self.logdir):
@@ -292,7 +297,8 @@ class layout:
         # Write Gazebo stats
         dt_object = datetime.datetime.fromtimestamp(time.time())
         dt = dt_object.strftime('%Y-%m-%d-%H-%M-%S-%f')
-        self.gzstatsfile = self.logdir + "/gzstats_" + dt  + ".txt"
+        self.gzstatsfile = self.logdir + "gzstats_" + dt  + ".txt"
+        _LOGGER.info('Gzstat file recorded being recorded is at [{}]'.format(self.gzstatsfile))
         self.gzstats = subprocess.Popen(["gz stats > " + self.gzstatsfile ], shell=True)
 
         self.callflag["logdata"] = True
@@ -308,6 +314,9 @@ class layout:
         The function also reindexes the bag file in case the rosbag record terminates prematurely.
 
         """
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
         if not self.callflag["logdata"]:
             return
 
@@ -316,11 +325,13 @@ class layout:
         bagkiller = subprocess.Popen(["rosnode kill /bagrecorder"], shell=True)
 
         ## Check of .bag.active is still being written
-        print("Retrieving the latest bag file")
-        current_path = os.getcwd()
-        os.chdir(self.logdir)
-        list_of_files1 = glob.glob('*.bag')
-        list_of_files2 = glob.glob('*.bag.active')
+        print("Checking if the bag file is saved successfully.")
+        # current_path = os.getcwd()
+
+        # Changing directory to logdir directory
+        # os.chdir(self.logdir)
+        list_of_files1 = glob.glob(self.logdir + '*.bag')
+        list_of_files2 = glob.glob(self.logdir + '*.bag.active')
         list_of_files = list_of_files1 + list_of_files2
         bagconverted = False
         if len(list_of_files) != 0:
@@ -348,8 +359,8 @@ class layout:
                                 sys.exit()
                         except OSError as err:
                             print('.active bag file is gone.')
-                            list_of_files1 = glob.glob('*.bag')
-                            list_of_files2 = glob.glob('*.bag.active')
+                            list_of_files1 = glob.glob(self.logdir +'*.bag')
+                            list_of_files2 = glob.glob(self.logdir + '*.bag.active')
                             list_of_files = list_of_files1 + list_of_files2
                             latest_file_written = max(list_of_files, key=os.path.getctime)
                             if (latest_file_written[:-4] == latest_file[:-11]):
@@ -375,13 +386,15 @@ class layout:
         call(["pkill", "rosbag"])
         call(["pkill", "record"])
         self.gzstats.terminate()
-        os.chdir(current_path)
+        # os.chdir(current_path)
 
     def killroscore(self):
         """
         Terminates roscore
 
         """
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
         if not self.callflag["roscore"]:
             return
 
@@ -427,12 +440,15 @@ class layout:
         Sets the `layout.callflag["rviz"]` to `True`.
 
         """
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
         _LOGGER.info("Starting RVIZ.")
         self.rviz_process = subprocess.Popen(["sleep 3; rosrun rviz rviz -d {}".format(self.package_path + "/config/sparkle.rviz")], stdout=subprocess.PIPE, shell=True)
         self.rviz_pid = self.rviz_process.pid
         self.callflag["rviz"] = True
 
-    def create(self, uri="localhost", port=11311):
+    def create(self, uri="localhost", port=11311, **kwargs):
         """
         layout.create(uri="localhost", port=11311)
 
@@ -452,6 +468,9 @@ class layout:
             A valid port ranges from 0 to 65535 but note that not all port numbers are allowed.
 
         """
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
         # If roscore has not started yet, then start the roscore
         if not self.callflag["roscore"]:
             self.roscore(uri, port)
@@ -466,7 +485,8 @@ class layout:
         print(self.callflag)
         if not self.callflag["physics_engine"]:
             time.sleep(3)
-            self.physicsengine()
+            initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
+            self.physicsengine(initial_world= initial_world)
 
         self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
         self.gzclient_pid = self.gzclient.pid
@@ -527,7 +547,7 @@ class layout:
 
         self.launch_obj = []
         for n in range(0, self.n_vehicles):
-            launch_itr = launch(launchfile=self.package_path + '/launch/sparkle_spawn.launch', X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
+            launch_itr = launch(launchfile=self.package_path + '/launch/spawn.launch', X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
             laser_sensor =laser_flag[n], updateRate = self.update_rate)
             self.launch_obj.append(launch_itr)
 
@@ -544,6 +564,9 @@ class layout:
         sig: `signal`
             Pressing CTRL-C or SIGINT invokes destroy function.
         '''
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
         time.sleep(5)
         _LOGGER.info('SIGINT: Destroying the physics world and terminating the simulation.')
         _LOGGER.info('Terminating spawn launches')
@@ -581,10 +604,13 @@ class layout:
         string:
             Path of the bag file.
         '''
+        # It looks at some place else, log level is being reset, so I am just reinstantiating here
+        _LOGGER = configure_logworker()
+
         _LOGGER.info("Retrieving latest bag file")
         if self.callflag["logdata"]:
-            list_of_files1 = glob.glob('*.bag')
-            list_of_files2 = glob.glob('*.bag.active')
+            list_of_files1 = glob.glob(self.logdir + '*.bag')
+            list_of_files2 = glob.glob(self.logdir + '*.bag.active')
             list_of_files = list_of_files1 + list_of_files2
 
             if len(list_of_files) != 0:
@@ -611,15 +637,20 @@ class layout:
                 self.bagfile = latest_file
 
                 filename = self.bagfile[0:-4]
+                prefix = ntpath.basename(self.bagfile)
+                prefix = prefix[0:-4]
                 create_dir = subprocess.Popen(["mkdir -v " +  filename],   stdout=subprocess.PIPE, shell=True)
                 stdout = create_dir.communicate()
                 print('mkdir STDOUT:{}'.format(stdout))
                 print("Renaming GZStat log file [{}] to retain bag file information".format(self.gzstatsfile))
-                move_cmd = subprocess.Popen(["mv -v  " + self.gzstatsfile + " "+  filename+"/" + filename + "_gzStats.txt"],   stdout=subprocess.PIPE, shell=True)
+                move_cmd = ["mv -v  " + self.gzstatsfile + " "+  filename + '/' + prefix  + "_gzStats.txt"]
+
+                _LOGGER.info('Move Command: {}'.format(move_cmd))
+                move_cmd = subprocess.Popen(move_cmd,   stdout=subprocess.PIPE, shell=True)
                 stdout = move_cmd.communicate()
                 print('mv STDOUT:{}'.format(stdout))
-                self.gzstatsfile = filename+"/" +filename + "_gzstats.txt"
-                return self.logdir + "/" + latest_file
+                self.gzstatsfile = filename +  '/' + prefix  + "_gzStats.txt"
+                return latest_file
             else:
                 print("No compatible bag file was found.")
                 return None
@@ -667,8 +698,14 @@ class layout:
 
         route = self.__class__.__name__
 
+        # base class calling
+        if route == 'layout':
+            route  = 'lane'
+
+        _LOGGER.info('Route is {}'.format(route))
         if route not in ["lane", "circle"]:
             _LOGGER.error("Two types of routes are supported: circle and lane")
+
 
         # control_method is a single string to denote types
         # convert single string to a list to apply to all vehicles
@@ -681,7 +718,7 @@ class layout:
         if isinstance(initial_distance, float):
             initial_distance = [initial_distance]*self.n_vehicles
 
-        available_control_method = ["uniform", "ovftl", "idm", "injector", "rl"]
+        available_control_method = ["uniform", "ovftl", "idm", "injector", "rl", "launch", "followerstopper", "micromodel"]
 
         if not all(item in available_control_method for item in control_method):
             _LOGGER.error("Unsupported vehicle control method specified. Exiting the simulation")
@@ -704,7 +741,12 @@ class layout:
 
         elif control_method[0].lower() == "uniform":
             launchobj = launch(launchfile=self.package_path+'/launch/stepvel.launch',
-            constVel = 0.0, strAng = str_angle, robot ="sparkle_{:03d}".format(i))
+                constVel = 0.0, strAng = str_angle, robot ="sparkle_{:03d}".format(i))
+            self.launchcontrol_obj.append(launchobj)
+        
+        elif control_method[0].lower() == "launch":
+            launchobj = launch(launchfile=self.package_path+'/launch/leadervel.launch',
+                leader ="sparkle_{:03d}".format(i))
             self.launchcontrol_obj.append(launchobj)
         
         elif control_method[0].lower() == "ovftl":
@@ -811,6 +853,19 @@ class layout:
                 launchobj = launch(launchfile=self.package_path+'/launch/followerstopper.launch',
                     robot ="sparkle_{:03d}".format(i),
                     leader_name = "sparkle_{:03d}".format(i-1),
+                    str_angle = str_angle,
+                    initial_distance = initial_distance[i],
+                    leader_x_init = self.X[i-1],
+                    leader_y_init = self.Y[i-1],
+                    ego_x_init = self.X[i],
+                    ego_y_init = self.Y[i]
+                    )
+                self.launchcontrol_obj.append(launchobj)
+
+            elif control_method[i].lower() == "micromodel":
+                launchobj = launch(launchfile=self.package_path+'/launch/micromodel.launch',
+                    ego ="sparkle_{:03d}".format(i),
+                    leader = "sparkle_{:03d}".format(i-1),
                     str_angle = str_angle,
                     initial_distance = initial_distance[i],
                     leader_x_init = self.X[i-1],
