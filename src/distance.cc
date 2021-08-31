@@ -135,12 +135,12 @@ namespace gazebo
 				this->distance_publisher.publish(this->minimum_distance);
 				this->angle_publisher.publish(this->angle_of_min_distance);
 
-				/*
+				
 				for (int i = old_relvel.size() - 2; i >=0; --i)
 				{
 					old_relvel.at(i+1) = old_relvel.at(i);
 				}
-				old_relvel.at(0) = (min_dist - this->old_dist.data)/nanoSecs;
+				old_relvel.at(0) = (min_dist - this->old_dist.data)/elapsedTime;
 				
 				if(rv_length < 32)
 				{
@@ -152,9 +152,11 @@ namespace gazebo
                 		{
                         		sum = sum + old_relvel.at(i);
                 		}
-				*/
+				
 				/*  Note: onNewScan gets called at half the rate of specified laser frequency */
-				this->relvel_data.linear.z = (min_dist - this->old_dist.data)*15.0;  //sum/rv_length;
+				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)*15.0;  //sum/rv_length;
+				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)/elapsedTime;  //sum/rv_length;
+				this->relvel_data.linear.z = sum/rv_length;
 				this->relvel_publisher.publish(this->relvel_data);
 				this->old_dist.data = min_dist;
 			}
