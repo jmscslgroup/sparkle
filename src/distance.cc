@@ -34,6 +34,9 @@ points from front laser points
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <Eigen/Dense>
+#include <Eigen/QR>
+
 using namespace std;
 
 namespace gazebo
@@ -66,9 +69,11 @@ namespace gazebo
 			gazebo::transport::SubscriberPtr laser_scan_sub;
 
 			ros::Time lastUpdate;
-                        std_msgs::Float64 old_dist;
+			std_msgs::Float64 old_dist;
 			vector<double> old_relvel;
+			vector<double> old_time;
 			int rv_length;
+			const unsigned int N_POINTS = 32;
 		public:
 
 			distance()
@@ -82,15 +87,80 @@ namespace gazebo
 				this->old_dist.data = 0.0;
 				lastUpdate = ros::Time();
 				rv_length = 0;
-				
-				old_relvel = vector<double>(32);
 
+				old_relvel = vector<double>(N_POINTS);
+				old_time = vector<double>(N_POINTS);
 				for (int i = 0; i < old_relvel.size() ; ++i)
-                                {
-                                        old_relvel.at(i) = 0.0;
-                                }
+				{
+					old_relvel.at(i) = 0.0;
+					old_time.at(i) = 0.0;
+				}
+
+			}
+
+			void polyfit(	const std::vector<double> &t,
+					const std::vector<double> &v,
+					std::vector<double> &coeff,
+					int order
+
+				    )
+			{
+				if(rv_length < N_POINTS)
+				{
+					return;
+				}
 
 
+				// Create Matrix Placeholder of size n x k, n= number of datapoints, k = order of polynomial, for exame k = 3 for cubic polynomial
+				Eigen::MatrixXd T(t.size(), order + 1);
+				Eigen::VectorXd V = Eigen::VectorXd::Map(&v.front(), v.size());
+				Eigen::VectorXd result;
+
+				// check to make sure inputs are correct
+				assert(t.size() == v.size());
+				assert(t.size() >= order + 1);
+				// Populate the matrix
+				for(size_t i = 0 ; i < t.size(); ++i)
+				{
+					for(size_t j = 0; j < order + 1; ++j)
+					{
+						T(i, j) = pow(t.at(i) - t.at(0), j);
+					}
+				}
+				//std::cout<<T<<std::endl;
+
+				// Solve for linear least square fit
+				result  = T.householderQr().solve(V);
+				coeff.resize(order+1);
+				for (int k = 0; k < order+1; k++)
+				{
+					coeff[k] = result[k];
+				}
+
+			}	
+
+			/* Returns nth point as average of the last n points, no argument is passed since it uses class variables*/ 
+			void movingAverage(int n_iterations)
+			{
+				if(rv_length < N_POINTS)
+				{
+					return;
+				}
+				double sum = 0.0;
+				for (int i = 0; i < old_relvel.size() ; ++i)
+				{
+					sum = sum + old_relvel.at(i);
+
+				}
+				old_relvel.at( old_relvel.size() -1 ) =  sum/rv_length;
+				if (n_iterations <= 1)
+				{
+					return;
+				}
+				else
+				{
+					movingAverage(n_iterations - 1);
+				}
 
 			}
 
@@ -105,12 +175,10 @@ namespace gazebo
 
 				double min_dist = this->parent_sensor->RangeMax();
 				double range_min = this->parent_sensor->RangeMin();
-
 				double min_angle = this->parent_sensor->AngleMin()();
-
 				double angle_tmp = min_angle;
 				double angle_incr = this->parent_sensor->AngleResolution();
-		
+
 				for(vector<double>::const_iterator it = allranges.begin(); it != allranges.end(); it++, angle_tmp += angle_incr)
 				{
 					if(min_dist > *it && *it > range_min && angle_tmp > this->angle_min && angle_tmp < this->angle_max)
@@ -122,41 +190,76 @@ namespace gazebo
 
 				this->minimum_distance.data = min_dist;
 				this->angle_of_min_distance.data = min_angle;
-				
+
 				ros::Time nowtime = ros::Time::now();
-        			ros::Duration diff = nowtime - lastUpdate;
-        			double elapsedTime = diff.toSec();
-        			double nanoSecs = diff.toNSec()*1e-9;
-        			elapsedTime = elapsedTime + nanoSecs;
-        			lastUpdate = nowtime;
-				
-		//		ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
+				ros::Duration diff = nowtime - lastUpdate;
+				double elapsedTime = diff.toSec();
+				double nanoSecs = diff.toNSec()*1e-9;
+				elapsedTime = elapsedTime + nanoSecs;
+				lastUpdate = nowtime;
+
+				//		ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
 
 				this->distance_publisher.publish(this->minimum_distance);
 				this->angle_publisher.publish(this->angle_of_min_distance);
+				
+				// Check if the old time is same as new time.
+				
+				double oldtimedata = old_time.at(old_relvel.size() -1);
 
-				
-				for (int i = old_relvel.size() - 2; i >=0; --i)
+				/* Store the data point old_relvel array */
+				if (oldtimedata != nowtime.toSec())
 				{
-					old_relvel.at(i+1) = old_relvel.at(i);
+					for (int i = 1; i <= old_relvel.size() -1; ++i)
+					{
+						old_relvel.at(i-1) = old_relvel.at(i);
+						old_time.at(i-1) = old_time.at(i);
+					}
+					old_relvel.at(old_relvel.size() -1) = (min_dist - this->old_dist.data)/elapsedTime;
+					old_time.at(old_relvel.size() -1) = nowtime.toSec();
 				}
-				old_relvel.at(0) = (min_dist - this->old_dist.data)/elapsedTime;
-				
-				if(rv_length < 32)
+
+				if(rv_length < N_POINTS)
 				{
 					rv_length = rv_length + 1;
 				}
 
-				double sum = 0.0;
-        		        for (int i = 0; i < old_relvel.size() ; ++i)
-                		{
-                        		sum = sum + old_relvel.at(i);
-                		}
-				
+
+				double acceleration = (old_relvel.at(old_relvel.size() -1) - old_relvel.at(old_relvel.size() -2) )/elapsedTime;
+
+				// cap the relative acceleration to be within +- 3.0 m/s^2
+				if(abs(acceleration) > 3.0)
+				{
+					old_relvel.at(old_relvel.size() -1) = old_relvel.at(old_relvel.size() -2) + copysign(3.0*elapsedTime, acceleration);
+				}
+
+				/* Store ends */
+
 				/*  Note: onNewScan gets called at half the rate of specified laser frequency */
 				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)*15.0;  //sum/rv_length;
 				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)/elapsedTime;  //sum/rv_length;
-				this->relvel_data.linear.z = sum/rv_length;
+
+				//movingAverage(5); // 5 times movies average
+				// placeholder for storing polynomial coefficient
+				std::vector<double> coeff;
+
+				if(rv_length >= N_POINTS)
+				{
+					polyfit(old_time, old_relvel, coeff, 3);	
+					
+			//		std::cout <<"Coefficients are "<< coeff[0] <<", "<<coeff[1] <<", "<<coeff[2] <<", "<<coeff[3]<<std::endl;   
+					for(int p = 0; p < old_time.size(); ++ p)
+					{
+						double vfitted = coeff[0] + coeff[1]*(old_time.at(p)-old_time.at(0))    + coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) +coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
+		//				std::cout << "Old = "<< old_relvel.at(p) <<", new ="<<vfitted<<std::endl;
+						old_relvel.at(p) = vfitted;
+					}
+
+					//double vfitted = coeff[0] + coeff[1]*old_time.at( old_relvel.size() -1  ) + coeff[2]*(pow(old_time.at( old_relvel.size() -1 ), 2)) +coeff[3]*(pow(old_time.at( old_relvel.size() -1 ), 3)) ;	
+					//old_relvel.at( old_relvel.size() -1 )  = vfitted;
+				}
+
+				this->relvel_data.linear.z = old_relvel.at( old_relvel.size() -1 ) ;
 				this->relvel_publisher.publish(this->relvel_data);
 				this->old_dist.data = min_dist;
 			}

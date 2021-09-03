@@ -27,11 +27,11 @@ TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 -->
 <robot>
 
-<gazebo>
-    <plugin name="odom_publisher_$(arg roboname)" filename="libsparkle_odom.so">
-    </plugin>
-</gazebo>
+	<gazebo>
+		<plugin name="odom_publisher_$(arg roboname)" filename="libsparkle_odom.so">
+		</plugin>
+		<static>true</static>
 
-
+	</gazebo>
 
 </robot>

@@ -114,7 +114,9 @@ include_directories(include include/sparkle)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-
+include_directories(
+   /usr/include/eigen3
+ )
 ## Declare a C++ library
 add_library(sparkle_odom SHARED src/odom.cc)
 
