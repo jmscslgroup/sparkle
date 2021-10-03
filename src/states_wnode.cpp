@@ -61,9 +61,25 @@ class UpdateStates
         std::vector<std::string> robotNodeList;
 
         // Key = /robot/setvel
-        std::map<std::string, std::tuple<bool, geometry_msgs::Point, geometry_msgs::Quaternion, geometry_msgs::Twist, int>> states;
+        //std::map<std::string, std::tuple<bool, px, py, pz, qx, qy, qz, qw, vx, vy, vz, ax, ay, az, int>> states;
+        // std::map<std::string, std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int>> states;
 
+        std::vector<bool> status_list;
+        std::vector<double> posx_list;
+        std::vector<double> posy_list;
+        std::vector<double> posz_list;
+        std::vector<double> Qx_list;
+        std::vector<double> Qy_list;
+        std::vector<double> Qz_list;
+        std::vector<double> Qw_list;
+        std::vector<double> linearx_list;
+        std::vector<double> lineary_list;
+        std::vector<double> linearz_list;
+        std::vector<double> angularx_list;
+        std::vector<double> angulary_list;
+        std::vector<double> angularz_list;
         
+
 
     public:
         UpdateStates(std::string robot_model_name = "bicycle")
@@ -91,12 +107,45 @@ class UpdateStates
             this->rosnode = new ros::NodeHandle("");
             this->enableTwist = false;
             this->enablePos = false;
+
+            ROS_INFO_STREAM("Robot Indices size = "<<robot_indices.size());
+            ROS_INFO_STREAM("Namespace size = "<<namespaces.size());
             
             this->v_isSubscribed = std::vector<bool>(robot_indices.size());
+            this->status_list = std::vector<bool>(robot_indices.size());
+            this->posx_list = std::vector<double>(robot_indices.size());
+            this->posy_list = std::vector<double>(robot_indices.size());
+            this->posz_list = std::vector<double>(robot_indices.size());
+            this->Qx_list = std::vector<double>(robot_indices.size());
+            this->Qy_list = std::vector<double>(robot_indices.size());
+            this->Qz_list = std::vector<double>(robot_indices.size());
+            this->Qw_list = std::vector<double>(robot_indices.size());
+            this->linearx_list = std::vector<double>(robot_indices.size());
+            this->lineary_list = std::vector<double>(robot_indices.size());
+            this->linearz_list = std::vector<double>(robot_indices.size());
+            this->angularx_list = std::vector<double>(robot_indices.size());
+            this->angulary_list = std::vector<double>(robot_indices.size());
+            this->angularz_list = std::vector<double>(robot_indices.size());
 
-            for (int f=0; f < this->v_isSubscribed.size() ; ++f)
+
+            for (int hh=0; hh < this->v_isSubscribed.size() ; ++hh)
             {
-                this->v_isSubscribed.at(f) = false;
+                this->v_isSubscribed.at(hh) = false;
+                this->posx_list.at(hh) = 0.0;
+                this->status_list.at(hh) = false;
+                this->posx_list.at(hh) = 0.0;
+                this->posy_list.at(hh) = 0.0;
+                this->posz_list.at(hh) = 0.0;
+                this->Qx_list.at(hh) = 0.0;
+                this->Qy_list.at(hh) = 0.0;
+                this->Qz_list.at(hh) = 0.0;
+                this->Qw_list.at(hh) = 0.0;
+                this->linearx_list.at(hh) = 0.0;
+                this->lineary_list.at(hh) = 0.0;
+                this->linearz_list.at(hh) = 0.0;
+                this->angularx_list.at(hh) = 0.0;
+                this->angulary_list.at(hh) = 0.0;
+                this->angularz_list.at(hh) = 0.0;
             }
 
             this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);
@@ -106,13 +155,24 @@ class UpdateStates
         
         void setVelCallBack(const boost::shared_ptr<nav_msgs::Odometry const>& _msg, std::string topic_name)
         {
-            std::tuple<bool, geometry_msgs::Point, geometry_msgs::Quaternion, geometry_msgs::Twist, int> state_entry = this->states.at(topic_name);
-            if( std::get<0>(state_entry) )
-            {
-                ROS_INFO_STREAM("Returned");
-                return;
-            }
+            // std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int> state_entry = this->states.at(topic_name);
+            // if( std::get<0>(state_entry) )
+            // {
+            //     ROS_INFO_STREAM("Returned");
+            //     return;
+            // }
 
+
+            for(int hh = 0; hh < this->namespaces.size(); ++hh)
+            {
+                if(this->namespaces.at(hh) == topic_name.substr(0, topic_name.substr(1, topic_name.length()-1).find(std::string("/")) +1 ))
+                {
+                    if(this->status_list.at(hh))
+                    {
+                        ROS_INFO_STREAM("Returned");
+                    }
+                }
+            }
             geometry_msgs::Point pose;
             geometry_msgs::Quaternion orientation;
             geometry_msgs::Twist twist;
@@ -123,13 +183,60 @@ class UpdateStates
             orientation = _msg->pose.pose.orientation;
 
             twist = _msg->twist.twist;
-            
-            this->states.emplace(topic_name, std::make_tuple( true, pose, orientation, twist, 22) );
-            for(const auto& elem : this->states)
+            // ROS_INFO_STREAM("Size of the map is "<<this->states.size());
+            // this->states.emplace(topic_name, std::make_tuple( true, _msg->pose.pose.position.x, 
+            //                                                         _msg->pose.pose.position.y,
+            //                                                         _msg->pose.pose.position.z,
+            //                                                         _msg->pose.pose.orientation.x,
+            //                                                         _msg->pose.pose.orientation.y, 
+            //                                                         _msg->pose.pose.orientation.z,
+            //                                                         _msg->pose.pose.orientation.w,
+            //                                                         _msg->twist.twist.linear.x,
+            //                                                         _msg->twist.twist.linear.y, 
+            //                                                         _msg->twist.twist.linear.z, 
+            //                                                         _msg->twist.twist.angular.x,
+            //                                                         _msg->twist.twist.angular.y,
+            //                                                         _msg->twist.twist.angular.z, 
+            //                                                         22) );
+
+
+            //for(const auto& elem : this->states)
+
+            for(int hh = 0; hh < this->namespaces.size(); ++hh)
             {
-                geometry_msgs::Point tpose = std::get<1>(elem.second);
-                ROS_INFO_STREAM("key = "<< elem.first<<", status = "<<std::get<0>(elem.second) << " x = "<< tpose.x<<", dummy="<<std::get<4>(elem.second));
+                if(this->namespaces.at(hh) == topic_name.substr(0, topic_name.substr(1, topic_name.length()-1).find(std::string("/")) +1 ))
+                {
+                    this->status_list.at(hh) = true;
+                    this->posx_list.at(hh) = _msg->pose.pose.position.x;
+                    this->posy_list.at(hh) = _msg->pose.pose.position.y;
+                    this->posz_list.at(hh) = _msg->pose.pose.position.z;
+                    this->Qx_list.at(hh) = _msg->pose.pose.orientation.x;
+                    this->Qy_list.at(hh) = _msg->pose.pose.orientation.y; 
+                    this->Qz_list.at(hh) = _msg->pose.pose.orientation.z;
+                    this->Qw_list.at(hh) = _msg->pose.pose.orientation.w;
+                    this->linearx_list.at(hh) = _msg->pose.pose.orientation.z;
+                    this->lineary_list.at(hh) = _msg->twist.twist.linear.x;
+                    this->linearz_list.at(hh) = _msg->twist.twist.linear.y; 
+                    this->angularx_list.at(hh) = _msg->twist.twist.linear.z; 
+                    this->angulary_list.at(hh) = _msg->twist.twist.angular.x;
+                    this->angularz_list.at(hh) = _msg->twist.twist.angular.y;
+                }
             }
+            
+            for(int hh = 0; hh < this->namespaces.size(); ++hh)
+            {
+                ROS_INFO_STREAM(this->namespaces.at(hh) << " ] X  = "<< this->posx_list.at(hh));
+                ROS_INFO_STREAM(this->namespaces.at(hh) << " ] Status  = "<< this->status_list.at(hh));
+            }
+            // auto it = this->states.begin();
+
+            // for(int i = 0; i < static_cast<int>(this->states.size()); i++)
+            // {
+            //     double x = std::get<1>(it->second);
+            //     ROS_INFO_STREAM("key = "<< it->first<<", status = "<<std::get<0>(it->second) << " x = "<< x<<", dummy="<<std::get<14>(it->second));
+            //     it++;
+            //     ROS_INFO_STREAM(this->namespaces.at(i) << " ] X  = "<< this->posx_list.at(i));
+            // }
 
         }
 
@@ -143,11 +250,11 @@ class UpdateStates
                 this->v_subs.push_back( this->rosnode->subscribe(so) );
                 this->v_isSubscribed.at(pp) = true;
 
-                geometry_msgs::Point pose;
-                pose.x = 442.0;
-                geometry_msgs::Quaternion orientation;
-                geometry_msgs::Twist twist;
-                this->states.emplace(this->namespaces.at(pp) + "/"+ odomVelTopic, std::make_tuple(false, pose, orientation, twist, 28) );
+                // geometry_msgs::Point pose;
+                // pose.x = 442.0;
+                // geometry_msgs::Quaternion orientation;
+                // geometry_msgs::Twist twist;
+                // this->states.emplace(this->namespaces.at(pp) + "/"+ odomVelTopic, std::make_tuple(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28) );
             }
         }
 
@@ -176,42 +283,114 @@ class UpdateStates
             unsigned int n_states = 0;
             std::vector<gazebo_msgs::ModelState> modelStates;
             
-            geometry_msgs::Point dummy_pose;
-            geometry_msgs::Quaternion dummy_orientation;
-            geometry_msgs::Twist dummy_twist;
-
             this->rosnode->param(this->nodename +"/"+"enablePos", this->enablePos, true);
             this->rosnode->param(this->nodename +"/"+"enableTwist", this->enableTwist, false);
             
+            // for(int yy  = 0; yy < this->namespaces.size(); ++yy)
+            // {
+            //     std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int> state_entry = this->states.at(this->namespaces.at(yy) + "/"+ this->odomVelTopic);
+            //     if( std::get<0>(state_entry) )
+            //     {
+            //         n_states++;
+            //         gazebo_msgs::ModelState t_modelstate;
+            //         t_modelstate.model_name = this->namespaces.at(yy);
+            //         if (this->enablePos)
+            //         {
+            //             t_modelstate.pose.position.x = std::get<1>(state_entry);
+            //             t_modelstate.pose.position.y = std::get<2>(state_entry);
+            //             t_modelstate.pose.position.z = std::get<3>(state_entry);
+            //             t_modelstate.pose.orientation.x = std::get<4>(state_entry);
+            //             t_modelstate.pose.orientation.y = std::get<5>(state_entry);
+            //             t_modelstate.pose.orientation.z = std::get<6>(state_entry);
+            //             t_modelstate.pose.orientation.w = std::get<7>(state_entry);
+            //         }
+            //         if(this->enableTwist)
+            //         {
+            //             t_modelstate.twist.linear.x = std::get<8>(state_entry);
+            //             t_modelstate.twist.linear.y = std::get<9>(state_entry);
+            //             t_modelstate.twist.linear.z = std::get<10>(state_entry);
+            //             t_modelstate.twist.angular.x = std::get<11>(state_entry);
+            //             t_modelstate.twist.angular.y = std::get<12>(state_entry);
+            //             t_modelstate.twist.angular.z = std::get<13>(state_entry);
+                        
+            //         }
+            //         t_modelstate.reference_frame = "world";
+            //         modelStates.push_back(t_modelstate);
+
+            //     }
+            // }
+            
             for(int yy  = 0; yy < this->namespaces.size(); ++yy)
             {
-                std::tuple<bool, geometry_msgs::Point, geometry_msgs::Quaternion, geometry_msgs::Twist, int> state_entry = this->states.at(this->namespaces.at(yy) + "/"+ this->odomVelTopic);
-                if( std::get<0>(state_entry) )
+                if(status_list.at(yy))
                 {
                     n_states++;
                     gazebo_msgs::ModelState t_modelstate;
                     t_modelstate.model_name = this->namespaces.at(yy);
+                    t_modelstate.model_name = t_modelstate.model_name.substr(1, t_modelstate.model_name.length()-1);
                     if (this->enablePos)
                     {
-                        t_modelstate.pose.position = std::get<1>(state_entry);
-                        t_modelstate.pose.orientation = std::get<2>(state_entry);
+                        t_modelstate.pose.position.x = this->posx_list.at(yy);
+                        t_modelstate.pose.position.y = this->posy_list.at(yy);
+                        t_modelstate.pose.position.z = this->posz_list.at(yy);
+                        t_modelstate.pose.orientation.x = this->Qx_list.at(yy);
+                        t_modelstate.pose.orientation.y = this->Qy_list.at(yy);
+                        t_modelstate.pose.orientation.z = this->Qz_list.at(yy);
+                        t_modelstate.pose.orientation.w = this->Qw_list.at(yy);
                     }
                     if(this->enableTwist)
                     {
-                        t_modelstate.twist = std::get<3>(state_entry);
+                        t_modelstate.twist.linear.x = this->linearx_list.at(yy);
+                        t_modelstate.twist.linear.y = this->lineary_list.at(yy);
+                        t_modelstate.twist.linear.z = this->linearz_list.at(yy);
+                        t_modelstate.twist.angular.x = this->angularx_list.at(yy);
+                        t_modelstate.twist.angular.y = this->angulary_list.at(yy);
+                        t_modelstate.twist.angular.z = this->angularz_list.at(yy);
+                        
                     }
                     t_modelstate.reference_frame = "world";
                     modelStates.push_back(t_modelstate);
-
                 }
             }
+
             ROS_INFO_STREAM("Number of vehicles = "<<n_states);
             if(n_states == this->namespaces.size())
             {
                 for(int yy  = 0; yy<this->namespaces.size(); ++yy)
                 {
+                    ROS_INFO_STREAM("Published................................................................................");
                     this->pub.publish(modelStates.at(yy));
-                    this->states.emplace(this->namespaces.at(yy) + "/"+ this->odomVelTopic, std::make_tuple(false, dummy_pose, dummy_orientation, dummy_twist, 34) );
+                    // this->states.emplace(this->namespaces.at(yy) + "/"+ this->odomVelTopic, std::make_tuple(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 34) );
+                }
+            }
+            else
+            {
+                ROS_INFO_STREAM("Not gonna publish");
+            }
+
+            //Reset
+
+
+            if(n_states == this->namespaces.size())
+            {
+                for(int hh  = 0; hh<this->namespaces.size(); ++hh)
+                {
+                    this->v_isSubscribed.at(hh) = false;
+                    this->posx_list.at(hh) = 0.0;
+                    this->status_list.at(hh) = false;
+                    this->posx_list.at(hh) = 0.0;
+                    this->posy_list.at(hh) = 0.0;
+                    this->posz_list.at(hh) = 0.0;
+                    this->Qx_list.at(hh) = 0.0;
+                    this->Qy_list.at(hh) = 0.0;
+                    this->Qz_list.at(hh) = 0.0;
+                    this->Qw_list.at(hh) = 0.0;
+                    this->linearx_list.at(hh) = 0.0;
+                    this->lineary_list.at(hh) = 0.0;
+                    this->linearz_list.at(hh) = 0.0;
+                    this->angularx_list.at(hh) = 0.0;
+                    this->angulary_list.at(hh) = 0.0;
+                    this->angularz_list.at(hh) = 0.0;
                 }
             }
 
