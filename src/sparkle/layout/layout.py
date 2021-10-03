@@ -15,12 +15,13 @@ from ..log import configure_logworker
 _LOGGER = configure_logworker()
 
 import sys, time, subprocess, os, datetime, glob, psutil, signal
+import ntpath
 from subprocess import call
 
 import rospkg, rostopic, roslaunch, rospy
 from gazebo_msgs.srv import GetPhysicsProperties
 from gazebo_msgs.srv import SetPhysicsProperties
-import ntpath
+
 from ..launch import launch
 class layout:
     """
@@ -164,6 +165,7 @@ class layout:
             "physics_engine": False,
             "rviz": False,
             "control": False,
+            "spawn": False
         }
         self.rviz_process = None
         self.gzstats = None
@@ -330,12 +332,14 @@ class layout:
 
         # Changing directory to logdir directory
         # os.chdir(self.logdir)
+        time.sleep(10)
         list_of_files1 = glob.glob(self.logdir + '*.bag')
         list_of_files2 = glob.glob(self.logdir + '*.bag.active')
         list_of_files = list_of_files1 + list_of_files2
         bagconverted = False
         if len(list_of_files) != 0:
             latest_file = max(list_of_files, key=os.path.getctime)
+            
             if "bag.active" in latest_file[-10:]:
                     try:
                         filesize = os.path.getsize(latest_file)
@@ -409,8 +413,10 @@ class layout:
         print(children)
         for process in children:
             print("Attempted to kill child: " + str(process))
-            process.send_signal(signal.SIGTERM)
-
+            try:
+                process.send_signal(signal.SIGTERM)
+            except psutil.NoSuchProcess:
+                pass
         #kill the roscore
         self.roscore.terminate()
         #Wait to prevent the creation of zombie processes.
@@ -500,19 +506,22 @@ class layout:
         get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
         physics_properties = get_physics_properties_prox()
 
-        physics_properties.max_update_rate = self.max_update_rate
-        physics_properties.time_step = self.time_step
-
-        set_physics_properties_prox = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
-        set_physics_properties_prox(physics_properties.time_step,
-                                    physics_properties.max_update_rate,
-                                    physics_properties.gravity,
-                                    physics_properties.ode_config)
         time.sleep(4)
+
+        while(physics_properties.max_update_rate != self.max_update_rate):
+            print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
+            physics_properties.max_update_rate = self.max_update_rate
+            physics_properties.time_step = self.time_step
+
+            set_physics_properties_prox = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
+            set_physics_properties_prox(physics_properties.time_step,
+                                        physics_properties.max_update_rate,
+                                        physics_properties.gravity,
+                                        physics_properties.ode_config)
 
         get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
         physics_properties = get_physics_properties_prox()
-        print("Current  max_update_rate is {}".format( physics_properties.max_update_rate))
+        print("New  max_update_rate is {}".format( physics_properties.max_update_rate))
 
         if physics_properties.max_update_rate != self.max_update_rate:
             print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
@@ -554,6 +563,8 @@ class layout:
         for n in range(0, self.n_vehicles):
             self.launch_obj[n].start()
             call(["rosparam", "set", "/director/"+self.name[n], "false"])
+
+        self.callflag["spawn"] = True
 
     def destroy(self, sig = signal.SIGINT):
         '''
@@ -877,10 +888,8 @@ class layout:
 
             elif control_method[i].lower() == "rl":
                 launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
-                    robot="sparkle_{:03d}".format(i),
-                    leader = "sparkle_{:03d}".format(i-1),
-                    policy_model = rlpolicy_model,
-                    vf_model = rlvf_model
+                    ego="sparkle_{:03d}".format(i),
+                    leader = "sparkle_{:03d}".format(i-1)
                     )
                 self.launchcontrol_obj.append(launchobj)
             
