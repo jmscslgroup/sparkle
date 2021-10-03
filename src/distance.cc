@@ -71,6 +71,7 @@ namespace gazebo
 			ros::Time lastUpdate;
 			std_msgs::Float64 old_dist;
 			vector<double> old_relvel;
+			vector<double> old_distance;
 			vector<double> old_time;
 			int rv_length;
 			const unsigned int N_POINTS = 32;
@@ -90,9 +91,11 @@ namespace gazebo
 
 				old_relvel = vector<double>(N_POINTS);
 				old_time = vector<double>(N_POINTS);
+				old_distance = vector<double>(N_POINTS);
 				for (int i = 0; i < old_relvel.size() ; ++i)
 				{
 					old_relvel.at(i) = 0.0;
+					old_distance.at(i) = 0.0;
 					old_time.at(i) = 0.0;
 				}
 
@@ -166,6 +169,8 @@ namespace gazebo
 
 			void OnNewScan(ConstLaserScanStampedPtr &_msg)
 			{
+				ROS_INFO_STREAM("New Scan called");
+				sleep(3);
 				vector<double> allranges;
 				this->parent_sensor->Ranges(allranges);
 
@@ -179,16 +184,26 @@ namespace gazebo
 				double angle_tmp = min_angle;
 				double angle_incr = this->parent_sensor->AngleResolution();
 
+				double temp_val = 180.0;
 				for(vector<double>::const_iterator it = allranges.begin(); it != allranges.end(); it++, angle_tmp += angle_incr)
 				{
-					if(min_dist > *it && *it > range_min && angle_tmp > this->angle_min && angle_tmp < this->angle_max)
+				        if(!isinf(*it))
 					{
-						min_dist = *it;
+						temp_val = *it;
+					}
+					else
+					{
+						temp_val = 180;
+					}
+					if(min_dist > temp_val && temp_val > range_min && angle_tmp > this->angle_min && angle_tmp < this->angle_max)
+					{
+						min_dist = temp_val;
 						min_angle = angle_tmp;
 					}
 				}
 
 				this->minimum_distance.data = min_dist;
+				ROS_INFO_STREAM("min dist "<<min_dist);
 				this->angle_of_min_distance.data = min_angle;
 
 				ros::Time nowtime = ros::Time::now();
@@ -198,10 +213,8 @@ namespace gazebo
 				elapsedTime = elapsedTime + nanoSecs;
 				lastUpdate = nowtime;
 
-				//		ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
+						ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
 
-				this->distance_publisher.publish(this->minimum_distance);
-				this->angle_publisher.publish(this->angle_of_min_distance);
 				
 				// Check if the old time is same as new time.
 				
@@ -212,9 +225,11 @@ namespace gazebo
 				{
 					for (int i = 1; i <= old_relvel.size() -1; ++i)
 					{
+						old_distance.at(i-1) = old_distance.at(i);
 						old_relvel.at(i-1) = old_relvel.at(i);
 						old_time.at(i-1) = old_time.at(i);
 					}
+					old_distance.at(old_relvel.size() - 1) = min_dist;
 					old_relvel.at(old_relvel.size() -1) = (min_dist - this->old_dist.data)/elapsedTime;
 					old_time.at(old_relvel.size() -1) = nowtime.toSec();
 				}
@@ -224,42 +239,56 @@ namespace gazebo
 					rv_length = rv_length + 1;
 				}
 
-
-				double acceleration = (old_relvel.at(old_relvel.size() -1) - old_relvel.at(old_relvel.size() -2) )/elapsedTime;
-
-				// cap the relative acceleration to be within +- 3.0 m/s^2
-				if(abs(acceleration) > 3.0)
+				
+				if (rv_length > 2)
 				{
-					old_relvel.at(old_relvel.size() -1) = old_relvel.at(old_relvel.size() -2) + copysign(3.0*elapsedTime, acceleration);
+					double acceleration = (old_relvel.at(rv_length -1) - old_relvel.at(rv_length -2) )/elapsedTime;
+
+					// cap the relative acceleration to be within +- 3.0 m/s^2
+					if(abs(acceleration) > 3.0)
+					{
+						old_relvel.at(old_relvel.size() -1) = old_relvel.at(old_relvel.size() -2) + copysign(3.0*elapsedTime, acceleration);
+					}
 				}
-
 				/* Store ends */
-
-				/*  Note: onNewScan gets called at half the rate of specified laser frequency */
-				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)*15.0;  //sum/rv_length;
-				//this->relvel_data.linear.z = (min_dist - this->old_dist.data)/elapsedTime;  //sum/rv_length;
 
 				//movingAverage(5); // 5 times movies average
 				// placeholder for storing polynomial coefficient
 				std::vector<double> coeff;
+				std::vector<double> dist_coeff;
+				
+				double vfitted = 0.0;
+				double dfitted = 0.0;
 
 				if(rv_length >= N_POINTS)
 				{
 					polyfit(old_time, old_relvel, coeff, 3);	
+					polyfit(old_time, old_distance, dist_coeff, 3);	
 					
 			//		std::cout <<"Coefficients are "<< coeff[0] <<", "<<coeff[1] <<", "<<coeff[2] <<", "<<coeff[3]<<std::endl;   
 					for(int p = 0; p < old_time.size(); ++ p)
 					{
-						double vfitted = coeff[0] + coeff[1]*(old_time.at(p)-old_time.at(0))    + coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) +coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
-		//				std::cout << "Old = "<< old_relvel.at(p) <<", new ="<<vfitted<<std::endl;
+						double vfitted = coeff[0] + coeff[1]*(old_time.at(p)-old_time.at(0))  + coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) + coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
+						double dfitted = dist_coeff[0] + dist_coeff[1]*(old_time.at(p)-old_time.at(0)) + dist_coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) + dist_coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
+						//std::cout << "Old = "<< old_relvel.at(p) <<", new ="<<vfitted<<std::endl;
 						old_relvel.at(p) = vfitted;
+						old_distance.at(p) = dfitted;
 					}
 
-					//double vfitted = coeff[0] + coeff[1]*old_time.at( old_relvel.size() -1  ) + coeff[2]*(pow(old_time.at( old_relvel.size() -1 ), 2)) +coeff[3]*(pow(old_time.at( old_relvel.size() -1 ), 3)) ;	
-					//old_relvel.at( old_relvel.size() -1 )  = vfitted;
 				}
-
-				this->relvel_data.linear.z = old_relvel.at( old_relvel.size() -1 ) ;
+				
+				if(rv_length >= N_POINTS)
+				{
+					vfitted = coeff[0] + coeff[1]*(old_time.at( rv_length -1 )-old_time.at(0)) + coeff[2]*(pow(old_time.at( rv_length -1) -old_time.at(0) , 2)) + coeff[3]*(pow(old_time.at( rv_length -1 ) - old_time.at(0), 3)) ;
+					dfitted = dist_coeff[0] + dist_coeff[1]*(old_time.at( rv_length -1 )-old_time.at(0)) + dist_coeff[2]*(pow(old_time.at( rv_length -1) -old_time.at(0) , 2)) + dist_coeff[3]*(pow(old_time.at( rv_length -1 ) - old_time.at(0), 3)) ;
+				}
+						
+				//this->relvel_data.linear.z = vfitted; // old_relvel.at( rv_length -1 ) ;
+				this->relvel_data.linear.z = old_relvel.at( rv_length -1 ) ;
+				//this->minimum_distance.data = dfitted;	
+				this->minimum_distance.data = old_distance.at( rv_length -1 ) ;;	
+				this->distance_publisher.publish(this->minimum_distance);
+				this->angle_publisher.publish(this->angle_of_min_distance);	
 				this->relvel_publisher.publish(this->relvel_data);
 				this->old_dist.data = min_dist;
 			}
@@ -317,7 +346,7 @@ namespace gazebo
 
 				// Subscribe Gazebo-topic and work on laser data and produce minimum of all distances.
 				this->laser_scan_sub = this->gazebo_node->Subscribe(this->parent_sensor->Topic(), &distance::OnNewScan, this);
-
+				ROS_INFO_STREAM("SENSOR PLUGIN LOADED");
 			}
 	};
 	GZ_REGISTER_SENSOR_PLUGIN(distance)
