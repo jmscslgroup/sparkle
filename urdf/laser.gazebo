@@ -33,10 +33,12 @@
 			        <gaussianNoise>0.02</gaussianNoise><!--  No longer works for ROS Melodic, see the source code: http://docs.ros.org/melodic/api/gazebo_plugins/html/gazebo__ros__laser_8cpp_source.html s-->
                  </plugin>
                  <plugin name="distance_estimator" filename="libmin_distance.so">
-                    <angleMin>-1.57079632679
-</angleMin>
-                    <angleMax>1.57079632679
-</angleMax>
+			 <angleMin>
+				 -1.57079632679
+		 	</angleMin>
+			<angleMax>
+				1.57079632679
+			</angleMax>
                  </plugin>
                  
       </sensor>
