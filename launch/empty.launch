@@ -47,7 +47,7 @@ TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
     <arg name="headless" value="$(arg headless)"/>
   </include>
        
-  <node name="gazebo_rtf" pkg="sparkle" type="gazebo_rtf.py" respawn="true" output="screen" args="$(arg max_update_rate) $(arg time_step)"/>
+  <node name="gazebo_rtf" pkg="sparkle" type="gazebo_rtf.py" respawn="false" output="screen" args="$(arg max_update_rate) $(arg time_step)"/>
 
 </launch>
 
