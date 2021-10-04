@@ -4,6 +4,6 @@
       <arg name="max_update_rate" default="100.0"/>
       <arg name="time_step" default="0.01"/>
 
-      <node name="gazebo_rtf" pkg="sparkle" type="gazebo_rtf.py" respawn="true" output="screen" args="$(arg max_update_rate) $(arg time_step)"/>
+      <node name="gazebo_rtf" pkg="sparkle" type="gazebo_rtf.py" respawn="false" output="screen" args="$(arg max_update_rate) $(arg time_step)"/>
 
 </launch>
