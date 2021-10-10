@@ -38,8 +38,9 @@ This class implements a Gazebo World plugin to update models
 
 class UpdateStates
 {
-	private:
+	public:
 		ros::NodeHandle* rosnode; //Create ROS Node Handle
+    private:
         std::vector <ros::Subscriber> v_subs; // A vector of subscribers to topics that produces Odometry information.
         ros::Publisher pub; // This will always be /gazebo/set_model_state
         
@@ -169,7 +170,7 @@ class UpdateStates
                 {
                     if(this->status_list.at(hh))
                     {
-                        ROS_INFO_STREAM("Returned");
+                        //ROS_INFO_STREAM("Returned");
                     }
                 }
             }
@@ -178,7 +179,7 @@ class UpdateStates
             geometry_msgs::Twist twist;
             pose.x = _msg->pose.pose.position.x;
             pose.y = _msg->pose.pose.position.y;
-            ROS_INFO_STREAM("Topic_name: "<<topic_name<<", x="<<pose.x<<" y="<<pose.y);
+            //ROS_INFO_STREAM("Topic_name: "<<topic_name<<", x="<<pose.x<<" y="<<pose.y);
             pose.z = _msg->pose.pose.position.z;
             orientation = _msg->pose.pose.orientation;
 
@@ -223,11 +224,12 @@ class UpdateStates
                 }
             }
             
-            for(int hh = 0; hh < this->namespaces.size(); ++hh)
+           /* for(int hh = 0; hh < this->namespaces.size(); ++hh)
             {
                 ROS_INFO_STREAM(this->namespaces.at(hh) << " ] X  = "<< this->posx_list.at(hh));
                 ROS_INFO_STREAM(this->namespaces.at(hh) << " ] Status  = "<< this->status_list.at(hh));
             }
+            */
             // auto it = this->states.begin();
 
             // for(int i = 0; i < static_cast<int>(this->states.size()); i++)
@@ -272,7 +274,7 @@ class UpdateStates
             }
             else
             {
-                ROS_INFO_STREAM("Number of subscribes are "<<n_subs <<" which is less than total number of robots.");
+                //ROS_INFO_STREAM("Number of subscribes are "<<n_subs <<" which is less than total number of robots.");
                 return false;
             }
 
@@ -353,7 +355,15 @@ class UpdateStates
                 }
             }
 
-            ROS_INFO_STREAM("Number of vehicles = "<<n_states);
+            //ROS_INFO_STREAM("Number of vehicles = "<<n_states);
+            /*
+            1. Pause Gazebo
+            2. Set static variable to the current size of the queue
+            3. When model state is received by publisher, decrement static variable
+            4. If static variable is zero then unpause the Gazebo
+            5. For receipt confirmation, change publisher to rosservice call back. Question: if Gazebo is paused, then will rosservice call send receipt.
+            6. Metric Assessment
+            */
             if(n_states == this->namespaces.size())
             {
                 for(int yy  = 0; yy<this->namespaces.size(); ++yy)
@@ -363,6 +373,7 @@ class UpdateStates
                     // this->states.emplace(this->namespaces.at(yy) + "/"+ this->odomVelTopic, std::make_tuple(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 34) );
                 }
             }
+            
             else
             {
                 ROS_INFO_STREAM("Not gonna publish");
@@ -404,8 +415,11 @@ int main(int argc, char **argv)
     // Create an object of type `UpdateStates`
     UpdateStates *multiModelUpdate = new UpdateStates();
     multiModelUpdate->createSubscribers();
-
-    ros::Rate loop_rate(100);
+    
+    double rate;
+    multiModelUpdate->rosnode->param("rate", rate, 20.0);
+    ROS_INFO_STREAM("Rate at which model will be updated is "<<rate);
+    ros::Rate loop_rate(rate);
     if (multiModelUpdate->subscribed() )
     {
         while( ros::ok() )
