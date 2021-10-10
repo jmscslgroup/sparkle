@@ -32,6 +32,9 @@ This class implements a Gazebo World plugin to update models
 #include<ignition/math/Box.hh>
 #include<map>
 #include<tuple>
+#include "gazebo_msgs/SetModelState.h"
+#include <std_srvs/Empty.h>
+
 
 #include "mymath.cc"
 
@@ -42,11 +45,17 @@ class UpdateStates
 		ros::NodeHandle* rosnode; //Create ROS Node Handle
     private:
         std::vector <ros::Subscriber> v_subs; // A vector of subscribers to topics that produces Odometry information.
-        ros::Publisher pub; // This will always be /gazebo/set_model_state
-        
+        //ros::Publisher pub; // This will always be /gazebo/set_model_state        
         std::vector <bool> v_isSubscribed;// check if subscribers have been created
+    
+        // ROS Service Client Object
+        ros::ServiceClient pauseGazebo;
+        ros::ServiceClient unpauseGazebo;
+        ros::ServiceClient stateClient;
+        std_srvs::Empty emptySrv;
 
-        
+        gazebo_msgs::SetModelState setmodelstate;
+
         bool enableTwist;
         bool enablePos;
         // Get the node name
@@ -56,14 +65,9 @@ class UpdateStates
         std::vector<std::string> namespaces;
         std::vector<std::string> nodenames;
 
-        gazebo_msgs::ModelState modelState;
         
         // get the list model(car) nodes
         std::vector<std::string> robotNodeList;
-
-        // Key = /robot/setvel
-        //std::map<std::string, std::tuple<bool, px, py, pz, qx, qy, qz, qw, vx, vy, vz, ax, ay, az, int>> states;
-        // std::map<std::string, std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int>> states;
 
         std::vector<bool> status_list;
         std::vector<double> posx_list;
@@ -79,8 +83,6 @@ class UpdateStates
         std::vector<double> angularx_list;
         std::vector<double> angulary_list;
         std::vector<double> angularz_list;
-        
-
 
     public:
         UpdateStates(std::string robot_model_name = "bicycle")
@@ -106,6 +108,11 @@ class UpdateStates
             }
 
             this->rosnode = new ros::NodeHandle("");
+            this->pauseGazebo = this->rosnode->serviceClient<std_srvs::Empty>("/gazebo/pause_physics");
+            this->unpauseGazebo = this->rosnode->serviceClient<std_srvs::Empty>("/gazebo/unpause_physics");
+            this->stateClient = this->rosnode->serviceClient<gazebo_msgs::SetModelState>("/gazebo/set_model_state");
+            
+
             this->enableTwist = false;
             this->enablePos = false;
 
@@ -128,7 +135,6 @@ class UpdateStates
             this->angulary_list = std::vector<double>(robot_indices.size());
             this->angularz_list = std::vector<double>(robot_indices.size());
 
-
             for (int hh=0; hh < this->v_isSubscribed.size() ; ++hh)
             {
                 this->v_isSubscribed.at(hh) = false;
@@ -149,21 +155,12 @@ class UpdateStates
                 this->angularz_list.at(hh) = 0.0;
             }
 
-            this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);
-
-
+            //this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);
         }
         
         void setVelCallBack(const boost::shared_ptr<nav_msgs::Odometry const>& _msg, std::string topic_name)
         {
-            // std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int> state_entry = this->states.at(topic_name);
-            // if( std::get<0>(state_entry) )
-            // {
-            //     ROS_INFO_STREAM("Returned");
-            //     return;
-            // }
-
-
+            #if 0
             for(int hh = 0; hh < this->namespaces.size(); ++hh)
             {
                 if(this->namespaces.at(hh) == topic_name.substr(0, topic_name.substr(1, topic_name.length()-1).find(std::string("/")) +1 ))
@@ -174,6 +171,8 @@ class UpdateStates
                     }
                 }
             }
+            #endif
+            
             geometry_msgs::Point pose;
             geometry_msgs::Quaternion orientation;
             geometry_msgs::Twist twist;
@@ -184,24 +183,6 @@ class UpdateStates
             orientation = _msg->pose.pose.orientation;
 
             twist = _msg->twist.twist;
-            // ROS_INFO_STREAM("Size of the map is "<<this->states.size());
-            // this->states.emplace(topic_name, std::make_tuple( true, _msg->pose.pose.position.x, 
-            //                                                         _msg->pose.pose.position.y,
-            //                                                         _msg->pose.pose.position.z,
-            //                                                         _msg->pose.pose.orientation.x,
-            //                                                         _msg->pose.pose.orientation.y, 
-            //                                                         _msg->pose.pose.orientation.z,
-            //                                                         _msg->pose.pose.orientation.w,
-            //                                                         _msg->twist.twist.linear.x,
-            //                                                         _msg->twist.twist.linear.y, 
-            //                                                         _msg->twist.twist.linear.z, 
-            //                                                         _msg->twist.twist.angular.x,
-            //                                                         _msg->twist.twist.angular.y,
-            //                                                         _msg->twist.twist.angular.z, 
-            //                                                         22) );
-
-
-            //for(const auto& elem : this->states)
 
             for(int hh = 0; hh < this->namespaces.size(); ++hh)
             {
@@ -223,23 +204,6 @@ class UpdateStates
                     this->angularz_list.at(hh) = _msg->twist.twist.angular.y;
                 }
             }
-            
-           /* for(int hh = 0; hh < this->namespaces.size(); ++hh)
-            {
-                ROS_INFO_STREAM(this->namespaces.at(hh) << " ] X  = "<< this->posx_list.at(hh));
-                ROS_INFO_STREAM(this->namespaces.at(hh) << " ] Status  = "<< this->status_list.at(hh));
-            }
-            */
-            // auto it = this->states.begin();
-
-            // for(int i = 0; i < static_cast<int>(this->states.size()); i++)
-            // {
-            //     double x = std::get<1>(it->second);
-            //     ROS_INFO_STREAM("key = "<< it->first<<", status = "<<std::get<0>(it->second) << " x = "<< x<<", dummy="<<std::get<14>(it->second));
-            //     it++;
-            //     ROS_INFO_STREAM(this->namespaces.at(i) << " ] X  = "<< this->posx_list.at(i));
-            // }
-
         }
 
         void createSubscribers(std::string odomVelTopic = std::string("setvel"))
@@ -251,12 +215,6 @@ class UpdateStates
                 so.init<nav_msgs::Odometry>(this->namespaces.at(pp) + "/"+ odomVelTopic, 1, boost::bind(&UpdateStates::setVelCallBack, this, _1, this->namespaces.at(pp) + "/"+ odomVelTopic) );
                 this->v_subs.push_back( this->rosnode->subscribe(so) );
                 this->v_isSubscribed.at(pp) = true;
-
-                // geometry_msgs::Point pose;
-                // pose.x = 442.0;
-                // geometry_msgs::Quaternion orientation;
-                // geometry_msgs::Twist twist;
-                // this->states.emplace(this->namespaces.at(pp) + "/"+ odomVelTopic, std::make_tuple(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28) );
             }
         }
 
@@ -287,40 +245,6 @@ class UpdateStates
             
             this->rosnode->param(this->nodename +"/"+"enablePos", this->enablePos, true);
             this->rosnode->param(this->nodename +"/"+"enableTwist", this->enableTwist, false);
-            
-            // for(int yy  = 0; yy < this->namespaces.size(); ++yy)
-            // {
-            //     std::tuple<bool, double, double, double, double, double, double, double, double, double, double, double, double, double, int> state_entry = this->states.at(this->namespaces.at(yy) + "/"+ this->odomVelTopic);
-            //     if( std::get<0>(state_entry) )
-            //     {
-            //         n_states++;
-            //         gazebo_msgs::ModelState t_modelstate;
-            //         t_modelstate.model_name = this->namespaces.at(yy);
-            //         if (this->enablePos)
-            //         {
-            //             t_modelstate.pose.position.x = std::get<1>(state_entry);
-            //             t_modelstate.pose.position.y = std::get<2>(state_entry);
-            //             t_modelstate.pose.position.z = std::get<3>(state_entry);
-            //             t_modelstate.pose.orientation.x = std::get<4>(state_entry);
-            //             t_modelstate.pose.orientation.y = std::get<5>(state_entry);
-            //             t_modelstate.pose.orientation.z = std::get<6>(state_entry);
-            //             t_modelstate.pose.orientation.w = std::get<7>(state_entry);
-            //         }
-            //         if(this->enableTwist)
-            //         {
-            //             t_modelstate.twist.linear.x = std::get<8>(state_entry);
-            //             t_modelstate.twist.linear.y = std::get<9>(state_entry);
-            //             t_modelstate.twist.linear.z = std::get<10>(state_entry);
-            //             t_modelstate.twist.angular.x = std::get<11>(state_entry);
-            //             t_modelstate.twist.angular.y = std::get<12>(state_entry);
-            //             t_modelstate.twist.angular.z = std::get<13>(state_entry);
-                        
-            //         }
-            //         t_modelstate.reference_frame = "world";
-            //         modelStates.push_back(t_modelstate);
-
-            //     }
-            // }
             
             for(int yy  = 0; yy < this->namespaces.size(); ++yy)
             {
@@ -364,21 +288,60 @@ class UpdateStates
             5. For receipt confirmation, change publisher to rosservice call back. Question: if Gazebo is paused, then will rosservice call send receipt.
             6. Metric Assessment
             */
+
+            int n_successful_states = 0; // flag to store how many vehicle states were changed successfully
             if(n_states == this->namespaces.size())
             {
-                for(int yy  = 0; yy<this->namespaces.size(); ++yy)
+                //Pause the Gazebo
+                if(this->pauseGazebo.call(this->emptySrv))
                 {
-                    ROS_INFO_STREAM("Published................................................................................");
-                    this->pub.publish(modelStates.at(yy));
-                    // this->states.emplace(this->namespaces.at(yy) + "/"+ this->odomVelTopic, std::make_tuple(false, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 34) );
+                    ROS_INFO_STREAM("Paused");
+                    for(int yy  = 0; yy<this->namespaces.size(); ++yy)
+                    {
+           //             ROS_INFO_STREAM("Published................................................................................");
+                        this->setmodelstate.request.model_state = modelStates.at(yy);
+                        bool callstatus = this->stateClient.call(this->setmodelstate);
+                        int trial_counter= 1;
+                        while(!callstatus && trial_counter < 10)
+                        {
+                            callstatus = this->stateClient.call(this->setmodelstate);
+                            trial_counter = trial_counter + 1;
+                        }
+                        if(!callstatus)
+                        {
+                            ROS_ERROR_STREAM("Model position for "<< this->namespaces.at(yy) << " failed to set after "<< trial_counter <<" attempts.");
+                        }
+                        else
+                        {
+                            ROS_INFO_STREAM("Model set successful in "<< trial_counter <<" attempt");
+                            n_successful_states = n_successful_states + 1;
+                        }
+                        
+                        //this->pub.publish(modelStates.at(yy));
+                    }
                 }
+                else
+                {
+                    ROS_ERROR_STREAM("Gazeo puased failed");
+                }
+                //
             }
-            
             else
             {
                 ROS_INFO_STREAM("Not gonna publish");
             }
 
+            if(n_successful_states >= this->namespaces.size())
+            {
+                if(this->unpauseGazebo.call(this->emptySrv))
+                {
+                    ROS_INFO_STREAM("UnPaused");
+                }
+                else
+                {
+                    ROS_ERROR_STREAM("Failed to unpause");
+                }
+            }
             //Reset
 
 
