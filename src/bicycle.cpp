@@ -94,11 +94,8 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
     lastUpdate = current_time;
     double dT = duration.toSec() + (duration.toNSec()*1e-9);
     
-    //ROS_INFO_STREAM("ns: " << ns <<", dT: "<<dT<<endl);
     u2 = (AngularZ - str_old)/dT;
 
-    //ROS_INFO_STREAM("NS: "<<ns<<", LinearX: "<<LinearX<<", AngularZ " << AngularZ<<endl);
-    //ROS_INFO_STREAM("NS: "<<ns<<", STR OLD: "<<str_old<<", YAW OLD: "<<yaw_old<<endl);
     xdot = LinearX*cos(str_old)*cos(yaw_old);
     ydot = LinearX*cos(str_old)*sin(yaw_old);
     x = x_old + dT*xdot;
@@ -126,8 +123,6 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
         yaw = yaw - 2*M_PI;
     }
 
-    //ROS_INFO_STREAM("NS: "<<ns<<", xdot: "<<xdot<<", ydot: " <<ydot <<", yaw: "<<yaw<<endl);
-
     newVel.linear.x = xdot;
     newVel.linear.y = ydot;
     newVel.angular.z = 0.0;
@@ -144,18 +139,11 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
         
 
     newOdom.pose.pose.orientation = rpyToQuaternion(0.0,0.0,yaw);
-    //newOdom.pose.pose.orientation.x = 0.0;
-   // newOdom.pose.pose.orientation.y = 0.0;
-    //newOdom.pose.pose.orientation.z = yaw;
-    //newOdom.pose.pose.orientation.w = 0.0;
-
     newOdom.twist.twist.linear.x = xdot;
     newOdom.twist.twist.linear.y = ydot;
     newOdom.twist.twist.linear.z = 0.0;
-
     
     newMessage = true;
-
 
     lastUpdate = current_time;
     x_old = x;
@@ -172,7 +160,6 @@ int main(int argc, char** argv)
     ROS_INFO_STREAM(" ######## Last Update Time is "<<lastUpdate.toSec());
     
     double updateRate;
-    //map<string, bool>::iterator it;
 
     n.param("x_init", x_init, 0.0);
     n.param("y_init", y_init, 0.0);
@@ -185,10 +172,6 @@ int main(int argc, char** argv)
     y_old = y_init;
     yaw_old = psi_init;
     str_old = str_init;
-
-
-    //n.getParam("/director", director_params);
-    
     
     ns = ros::this_node::getNamespace();
     ROS_INFO_STREAM("Node namespace is " << ns );
@@ -199,7 +182,6 @@ int main(int argc, char** argv)
 
     // we also want to subscribe to the signaller
     ros::Subscriber sub = n.subscribe("cmd_vel", 1, &velcallback);
-
 
     ros::Rate loop_rate(100);
     newMessage = false;
@@ -219,42 +201,12 @@ int main(int argc, char** argv)
             duration = newTime - previousTime;
             dT = duration.toSec() + (duration.toNSec()*1e-9);
            
-            //n.setParam("/director" + ns, true);            
-            //n.getParam("/director", director_params);
-            //int n_vehicles = director_params.size();
-            //int sum = 0;
-            //for ( it = director_params.begin(); it != director_params.end(); it++ )
-            //{
-            //    sum = sum + it->second;
-            //}
-
-        
             if(dT >= 1.0/updateRate)
             {
-                //if (sum == n_vehicles)
-                //{
-                //n.setParam("/director" + ns, true);
-
-                /*while(1)
-                {
-                    n.getParam("/director", director_params);
-                    int n_vehicles = director_params.size();
-                    int sum = 0;
-                    for ( it = director_params.begin(); it != director_params.end(); it++ )
-                    {
-                        sum = sum + it->second;
-                    }
-                    if(sum == n_vehicles)
-                        break;
-
-                }*/
-                //ROS_INFO_STREAM("Published state to "<<ns << " at time "<< ros::Time::now());
                 setvel_pub.publish(newOdom);
                 vel_pub.publish(newVel);
                 previousTime = newTime;
-                //}
             }
-            //n.setParam("/director" + ns, false);
             newMessage = false;
         }
         
@@ -263,6 +215,4 @@ int main(int argc, char** argv)
     }
     
     return EXIT_SUCCESS;
-
-
 }

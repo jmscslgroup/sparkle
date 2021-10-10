@@ -354,8 +354,6 @@ namespace gazebo
 				this->angle_publisher = this->rosnode->advertise<std_msgs::Float64>(this->angle_topic, 1);
 				this->relvel_publisher = this->rosnode->advertise<geometry_msgs::Twist>(this->relvel_topic, 1);
 
-				//this->new_laserscan_connection = this->parent_sensor->LaserShape()->ConnectNewLaserScans(boost::bind(&distance::OnNewScan, this));
-
 				// Subscribe Gazebo-topic and work on laser data and produce minimum of all distances.
 				this->laser_scan_sub = this->gazebo_node->Subscribe(this->parent_sensor->Topic(), &distance::OnNewScan, this);
 				ROS_INFO_STREAM("SENSOR PLUGIN LOADED");

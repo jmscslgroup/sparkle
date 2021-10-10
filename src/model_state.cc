@@ -99,20 +99,12 @@ class SetModelPose
             this->pose.x = _msg->pose.pose.position.x;
             this->pose.y = _msg->pose.pose.position.y;
             this->pose.z = _msg->pose.pose.position.z;
-            //ROS_INFO_STREAM("New pos is = x: "<<this->pose.x << " y: "<< this->pose.y);
-            
-            /*
-            this->orientation = rpyToQuaternion(_msg->pose.pose.orientation.x,
-                                                        _msg->pose.pose.orientation.y,
-                                                        _msg->pose.pose.orientation.z);    
-            */
             this->orientation = _msg->pose.pose.orientation;
             this->newMessage = true;
 
             this->twist = _msg->twist.twist;
             
 
-            //ROS_INFO_STREAM("New vel is = linear.x: "<<this->twist.linear.x);
             this->modelState.model_name = this->ns;
             
             this->rosnode->param(this->nodename +"/"+"enablePos", this->enablePos, true);
