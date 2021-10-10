@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   controller_manager
   gazebo_ros_control
   geometry_msgs
+  gazebo_msgs
   position_controllers
   roscpp
   rospy
@@ -146,6 +147,9 @@ target_link_libraries( model_state ${catkin_LIBRARIES} )
 
 add_executable( states_wnode src/states_wnode.cpp )
 target_link_libraries( states_wnode ${catkin_LIBRARIES} )
+
+add_executable( pause src/pause.cpp )
+target_link_libraries( pause ${catkin_LIBRARIES} )
 
 add_executable( bicycle src/bicycle.cpp )
 target_link_libraries( bicycle ${catkin_LIBRARIES} )
