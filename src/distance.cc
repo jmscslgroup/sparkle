@@ -108,7 +108,7 @@ namespace gazebo
 
 				    )
 			{
-				if(rv_length < N_POINTS)
+				if(rv_length+1 < N_POINTS)
 				{
 					return;
 				}
@@ -169,8 +169,7 @@ namespace gazebo
 
 			void OnNewScan(ConstLaserScanStampedPtr &_msg)
 			{
-				ROS_INFO_STREAM("New Scan called");
-				sleep(3);
+			//	ROS_INFO_STREAM("ON NEW SCAN");
 				vector<double> allranges;
 				this->parent_sensor->Ranges(allranges);
 
@@ -184,26 +183,29 @@ namespace gazebo
 				double angle_tmp = min_angle;
 				double angle_incr = this->parent_sensor->AngleResolution();
 
-				double temp_val = 180.0;
+
+				double temp_val = 100.0;
 				for(vector<double>::const_iterator it = allranges.begin(); it != allranges.end(); it++, angle_tmp += angle_incr)
 				{
-				        if(!isinf(*it))
-					{
-						temp_val = *it;
-					}
-					else
-					{
-						temp_val = 180;
-					}
+					if(isinf(*it))
+                                        {
+                                                temp_val = 100.0;
+                                        }
+                                        else
+                                        {
+                                                temp_val = *it;
+                                        }
+
+
 					if(min_dist > temp_val && temp_val > range_min && angle_tmp > this->angle_min && angle_tmp < this->angle_max)
 					{
 						min_dist = temp_val;
 						min_angle = angle_tmp;
 					}
 				}
+			//	ROS_INFO_STREAM("MIN DIST: "<< min_dist);
 
 				this->minimum_distance.data = min_dist;
-				ROS_INFO_STREAM("min dist "<<min_dist);
 				this->angle_of_min_distance.data = min_angle;
 
 				ros::Time nowtime = ros::Time::now();
@@ -213,7 +215,7 @@ namespace gazebo
 				elapsedTime = elapsedTime + nanoSecs;
 				lastUpdate = nowtime;
 
-						ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
+			//			ROS_INFO_STREAM(" Scan freq " << 1.0/elapsedTime);
 
 				
 				// Check if the old time is same as new time.
@@ -223,18 +225,21 @@ namespace gazebo
 				/* Store the data point old_relvel array */
 				if (oldtimedata != nowtime.toSec())
 				{
-					for (int i = 1; i <= old_relvel.size() -1; ++i)
+					for (int i = 1; i <= rv_length; ++i)
 					{
+			//			ROS_INFO_STREAM("old distance " << i <<": "<<old_distance.at(i));
+			//			ROS_INFO_STREAM("old relvel " << i <<": "<<old_relvel.at(i));
+			//			ROS_INFO_STREAM("old time " << i <<": "<<old_time.at(i));
 						old_distance.at(i-1) = old_distance.at(i);
 						old_relvel.at(i-1) = old_relvel.at(i);
 						old_time.at(i-1) = old_time.at(i);
 					}
-					old_distance.at(old_relvel.size() - 1) = min_dist;
-					old_relvel.at(old_relvel.size() -1) = (min_dist - this->old_dist.data)/elapsedTime;
-					old_time.at(old_relvel.size() -1) = nowtime.toSec();
+					old_distance.at(rv_length) = min_dist;
+					old_relvel.at(rv_length) = (min_dist - this->old_dist.data)/elapsedTime;
+					old_time.at(rv_length) = nowtime.toSec();
 				}
 
-				if(rv_length < N_POINTS)
+				if(rv_length < N_POINTS-1)
 				{
 					rv_length = rv_length + 1;
 				}
@@ -242,12 +247,12 @@ namespace gazebo
 				
 				if (rv_length > 2)
 				{
-					double acceleration = (old_relvel.at(rv_length -1) - old_relvel.at(rv_length -2) )/elapsedTime;
-
+					double acceleration = (old_relvel.at(rv_length) - old_relvel.at(rv_length -1) )/(elapsedTime*0.5);
+			//		ROS_INFO_STREAM("accel = " <<acceleration);
 					// cap the relative acceleration to be within +- 3.0 m/s^2
 					if(abs(acceleration) > 3.0)
 					{
-						old_relvel.at(old_relvel.size() -1) = old_relvel.at(old_relvel.size() -2) + copysign(3.0*elapsedTime, acceleration);
+						old_relvel.at(rv_length) = old_relvel.at(rv_length -1) + copysign(3.0*elapsedTime, acceleration);
 					}
 				}
 				/* Store ends */
@@ -259,8 +264,9 @@ namespace gazebo
 				
 				double vfitted = 0.0;
 				double dfitted = 0.0;
-
-				if(rv_length >= N_POINTS)
+				
+			//	ROS_INFO_STREAM("rv length: "<<rv_length);
+				if(rv_length >= N_POINTS-1)
 				{
 					polyfit(old_time, old_relvel, coeff, 3);	
 					polyfit(old_time, old_distance, dist_coeff, 3);	
@@ -270,27 +276,33 @@ namespace gazebo
 					{
 						double vfitted = coeff[0] + coeff[1]*(old_time.at(p)-old_time.at(0))  + coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) + coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
 						double dfitted = dist_coeff[0] + dist_coeff[1]*(old_time.at(p)-old_time.at(0)) + dist_coeff[2]*(pow(old_time.at(p) -old_time.at(0) , 2)) + dist_coeff[3]*(pow(old_time.at(p) - old_time.at(0), 3)) ;
-						//std::cout << "Old = "<< old_relvel.at(p) <<", new ="<<vfitted<<std::endl;
+				//		std::cout << "Old = "<< old_relvel.at(p) <<", new ="<<vfitted<<std::endl;
 						old_relvel.at(p) = vfitted;
 						old_distance.at(p) = dfitted;
 					}
 
 				}
 				
-				if(rv_length >= N_POINTS)
+				if(rv_length >= N_POINTS-1)
 				{
 					vfitted = coeff[0] + coeff[1]*(old_time.at( rv_length -1 )-old_time.at(0)) + coeff[2]*(pow(old_time.at( rv_length -1) -old_time.at(0) , 2)) + coeff[3]*(pow(old_time.at( rv_length -1 ) - old_time.at(0), 3)) ;
 					dfitted = dist_coeff[0] + dist_coeff[1]*(old_time.at( rv_length -1 )-old_time.at(0)) + dist_coeff[2]*(pow(old_time.at( rv_length -1) -old_time.at(0) , 2)) + dist_coeff[3]*(pow(old_time.at( rv_length -1 ) - old_time.at(0), 3)) ;
 				}
 						
-				//this->relvel_data.linear.z = vfitted; // old_relvel.at( rv_length -1 ) ;
-				this->relvel_data.linear.z = old_relvel.at( rv_length -1 ) ;
+				//this->relvel_data.linear.z = vfitted; // old_relvel.at( rv_length) ;
+				this->relvel_data.linear.z = old_relvel.at( rv_length) ;
+				//ROS_INFO_STREAM("this->relvel.linear.z: "<<this->relvel_data.linear.z);
 				//this->minimum_distance.data = dfitted;	
-				this->minimum_distance.data = old_distance.at( rv_length -1 ) ;;	
+				this->minimum_distance.data = old_distance.at( rv_length) ;
+				//ROS_INFO_STREAM("this->minimum_distance.data: "<<this->minimum_distance.data);	
 				this->distance_publisher.publish(this->minimum_distance);
+				//ROS_INFO_STREAM("distance published");
 				this->angle_publisher.publish(this->angle_of_min_distance);	
+				//ROS_INFO_STREAM("angle published");
 				this->relvel_publisher.publish(this->relvel_data);
+				//ROS_INFO_STREAM("relvel published");
 				this->old_dist.data = min_dist;
+				//ROS_INFO_STREAM("last value saved:"<< min_dist);
 			}
 
 			void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
