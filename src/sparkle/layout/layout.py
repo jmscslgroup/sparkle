@@ -165,7 +165,8 @@ class layout:
             "physics_engine": False,
             "rviz": False,
             "control": False,
-            "spawn": False
+            "spawn": False,
+            "director": False
         }
         self.rviz_process = None
         self.gzstats = None
@@ -178,6 +179,7 @@ class layout:
         self.gzclient_pid = None
 
         self.launchcontrol_obj = []
+        self.directorobj = None
 
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
@@ -581,6 +583,10 @@ class layout:
         time.sleep(5)
         _LOGGER.info('SIGINT: Destroying the physics world and terminating the simulation.')
         _LOGGER.info('Terminating spawn launches')
+
+        if self.callflag["director"]:
+            self.directorobj.shutdown()
+            
         for n in range(0, self.n_vehicles):
             if self.callflag["control"]:
                 self.launchcontrol_obj[n].shutdown()
@@ -910,9 +916,12 @@ class layout:
             if control_method[n] == "uniform":
                 rosparamset = subprocess.Popen(["rosparam set /" +"sparkle_{:03d}".format(n)+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
-        
+
+        self.directorobj = launch(launchfile=self.package_path+'/launch/director.launch', rate=self.update_rate)
+        self.directorobj.start()
         call(["rosparam", "set", "/execute", "true"])
         self.callflag["control"] = True
+        self.callflag["director"] = True
 
     def analyze(self):
         """
