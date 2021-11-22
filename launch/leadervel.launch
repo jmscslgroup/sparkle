@@ -7,12 +7,11 @@
                 <node pkg="rosbag" type="play" name="player" output="screen" args="$(find transfer_pkg)/launch/$(arg bagfile) --topics /ghost/vel">
                         <remap from="/ghost/vel" to="cmd_vel"/>
                 </node>
+                 <!--node pkg="synthetic_data" type="synthetic_data_node" name="synthetic_data_$(arg leader)" output="screen">
+                    <remap from="vel" to="cmd_vel"/>
+                </node-->
+
         </group>
-
-	
-	
-
-
-
+    
 
 </launch>
