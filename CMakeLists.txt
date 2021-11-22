@@ -148,6 +148,9 @@ target_link_libraries( model_state ${catkin_LIBRARIES} )
 add_executable( states_wnode src/states_wnode.cpp )
 target_link_libraries( states_wnode ${catkin_LIBRARIES} )
 
+add_executable( sclock src/sclock.cpp )
+target_link_libraries( sclock ${catkin_LIBRARIES} )
+
 add_executable( pause src/pause.cpp )
 target_link_libraries( pause ${catkin_LIBRARIES} )
 

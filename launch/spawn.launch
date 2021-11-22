@@ -14,6 +14,7 @@
     <arg name="yaw" default="0.0"/>
     <arg name="updateRate" default="20.0"/>
     <arg name="standalone" default="false"/>
+    <arg name="enable_gui" default="true"/>
 
     <param name="/$(arg robot)/windx" value="0.0"/>
     <param name="/$(arg robot)/windy" value="0.0"/>
@@ -26,14 +27,13 @@
     <!-- push robot_description to factor:wspawn robot in gazebo -->
  
     <group ns="$(arg robot)">
-        <param name="tf_prefix" value="$(arg robot)"/>
-        <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
-        <node name="urdf_spawner_$(arg robot)" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-x $(arg X) -y $(arg Y) -z $(arg Z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -unpause -urdf -model $(arg robot) -param robot_description" output="screen" />
+        <param name="tf_prefix" value="$(arg robot)" if="$(arg enable_gui)"/>
+        <param name="robot_description" command="$(find xacro)/xacro $(arg model)" if="$(arg enable_gui)" />
+        <node name="urdf_spawner_$(arg robot)" pkg="gazebo_ros" type="spawn_model" respawn="false" args="-x $(arg X) -y $(arg Y) -z $(arg Z) -R $(arg roll) -P $(arg pitch) -Y $(arg yaw) -unpause -urdf -model $(arg robot) -param robot_description" output="screen" if="$(arg enable_gui)"/>
         <!-- establish this vehicle's place in the global frame for tf transforms -->
-        <node pkg="tf" type="static_transform_publisher" name="global_frame_tf_$(arg robot)" 
-    args="0 0 0 0 0 0 /world $(arg robot)/odom 100"/>
+        <node pkg="tf" type="static_transform_publisher" name="global_frame_tf_$(arg robot)" args="0 0 0 0 0 0 /world $(arg robot)/odom 100" if="$(arg enable_gui)"/>
     
-        <node pkg="sparkle" type="transform_sparkle" name="transform_sparkle_$(arg robot)" output="screen"/>
+        <node pkg="sparkle" type="transform_sparkle" name="transform_sparkle_$(arg robot)" output="screen" if="$(arg enable_gui)"/>
 
         <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen">
         </node>
@@ -46,7 +46,7 @@
         <!--node pkg="sparklev2" type="sparklev2_node" name="sparklev2_node_$(arg robot)"  output="screen" required="true"/-->
         
 
-        <node name="odom2path_$(arg robot)" pkg="sparkle" type="odom2path.py" respawn="true" output="screen"/>
+        <node name="odom2path_$(arg robot)" pkg="sparkle" type="odom2path.py" respawn="true" output="screen"  if="$(arg enable_gui)"/>
 		<!--node name="yawplot_$(arg robot)" pkg="sparkle" type="yawplot.py" respawn="true" output="screen"/-->
 
 	

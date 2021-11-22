@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  
+<launch>
+	
+        <arg name="factor" default="1.0"/>
+        <arg name="rate" default="100"/>
+        <arg name="use_sim_time" default="true"/>
+        <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+        <node pkg="sparkle" type="sclock" name="sclock_sparkle" output="screen">
+                <param name="factor" value="$(arg factor)"/>
+                <param name="rate" value="$(arg rate)"/>
+        </node>
+	
+</launch>	

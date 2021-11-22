@@ -25,24 +25,24 @@ from gazebo_msgs.srv import SetPhysicsProperties
 from ..launch import launch
 class layout:
     """
-     
-     `layout`: Base class for Simulation for Connected-and-Inteligent-Vehicle CPS. 
+
+     `layout`: Base class for Simulation for Connected-and-Inteligent-Vehicle CPS.
     Creates simulation layout for simulating vehicles and control.
 
     Parameters
     -------------
     X: `list`, `double`
         x-coordinate of vehicles's position in the world frame of reference
-    
+
     Y: `list`, `double`
         y-coordinate of vehicles's position in the world frame of reference
-    
+
     Yaw: `list`, `double`
         yaw of all the vehicles in the world frame of reference
-    
+
     n_vehicles: `integer`
         Number of vehicles to spawn in the simulation
-    
+
     max_update_rate: `double`
         Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator
 
@@ -50,17 +50,17 @@ class layout:
 
     time_step: `double`
         Time Step size taken by time-step solver during simulation
-        
+
         Default Value: 0.01 seconds
 
     update_rate: `double`
         Update Rate to publish new state information by decoupled vehicle model
-        
+
         Default Value: 20 Hz
 
     log_time: `double`
         Amount of time in seconds to capture data while running the simulation
-        
+
         Default Value: 60.0 seconds
 
     description: `string`
@@ -74,53 +74,53 @@ class layout:
 
     Y: `list`, `double`
         y-coordinate of vehicles's position in the world frame of reference
-    
+
     Yaw: `list`, `double`
-    
+
     n_vehicles: `double`
         Number of vehicles to spawn in the simulation
-    
+
     max_update_rate: `double`
-        Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator. 
+        Maximum Update Rate for Physics Engine (e.g. Gazebo) Simulator.
         Default Value: 100 Hz
-    
+
     time_step: `double`
         Time Step size taken by time-step solver during simulation
         Default Value: 0.01 seconds
-    
+
     update_rate: `double`
         Update Rate to publish new state information by decoupled vehicle model
         Default Value: 20 Hz
-    
+
     log_time: `double`
         Amount of time in seconds to capture data while running the simulation
         Default Value: 60.0 seconds
-    
+
     description: `string`
         A descriptive text about the current simulation run
         Default Value: "Sparkle simulation"
-    
+
     package_path: `string`
         Saved the ROS package path for the Sparkle Package
-    
+
     name: `list`, `string`
         A list of mnemonics to name vehicle
-    
+
     callflag:`dictionary`
         Dictionary to keep track of executation sequence of different class function
-    
+
     uuid:
         A universally unique identifier (UUID)  for roslaunch
-    
+
     bagdir: `string`
         Path where ROSBags is saved
 
     gzstatsfile: `string`
-        Filepath of simulation statistics file.    
-        
+        Filepath of simulation statistics file.
+
     bagfile: `string`
         Filepath of the rosbag saved at the end of the simulation.
-        
+
     """
     def __init__(self, n_vehicles=1, X=0, Y=0, Yaw=0.0, **kwargs):
 
@@ -132,7 +132,7 @@ class layout:
         call(["pkill", "record"])
         time.sleep(1)
 
-        
+
         _LOGGER.info("Creating simulation layout ...")
         # Define attributes for layout class
         self.n_vehicles = n_vehicles
@@ -166,7 +166,8 @@ class layout:
             "rviz": False,
             "control": False,
             "spawn": False,
-            "director": False
+            "director": False,
+            "clocklaunch": False
         }
         self.rviz_process = None
         self.gzstats = None
@@ -181,11 +182,13 @@ class layout:
         self.launchcontrol_obj = []
         self.directorobj = None
 
+        self.enable_gui = kwargs.get("enable_gui", True)
+
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
         self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',  'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
                 'metis', 'himalia', 'kalyke', 'carpo', 'arche', 'aitne','thyone', 'enceladus','mimas', 'tethys', 'lapetus', 'dione', 'phoebe',
-                'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos', 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina', 'sirius', 
+                'epimetheus', 'hyperion', 'rhea', 'telesto', 'deimos', 'phobos', 'triton', 'proteus', 'nereid', 'larissa','galatea', 'despina', 'sirius',
                 'rigel', 'vega', 'altair', 'capella', 'alcor','whirlpool', 'andromeda', 'milkyway',  'cygnus']
 
 
@@ -280,7 +283,7 @@ class layout:
 
 
         """
-        
+
         # It looks at some place else, log level is being reset, so I am just reinstantiating here
         _LOGGER = configure_logworker()
 
@@ -341,7 +344,7 @@ class layout:
         bagconverted = False
         if len(list_of_files) != 0:
             latest_file = max(list_of_files, key=os.path.getctime)
-            
+
             if "bag.active" in latest_file[-10:]:
                     try:
                         filesize = os.path.getsize(latest_file)
@@ -434,6 +437,9 @@ class layout:
         Sets the `layout.callflag["physics_engine"]` to `True`.
 
         """
+        if not self.enable_gui:
+            return
+
         initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
         initial_launch = launch(launchfile=initial_world)
         initial_launch.start()
@@ -448,6 +454,11 @@ class layout:
         Sets the `layout.callflag["rviz"]` to `True`.
 
         """
+
+        if not self.enable_gui:
+            return
+
+        
         # It looks at some place else, log level is being reset, so I am just reinstantiating here
         _LOGGER = configure_logworker()
 
@@ -489,45 +500,62 @@ class layout:
         # Create a new ROS Node
         rospy.init_node('sparkle_layout', anonymous=True)
         roslaunch.configure_logging(self.uuid)
-
         print(self.callflag)
-        if not self.callflag["physics_engine"]:
-            time.sleep(3)
-            initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
-            self.physicsengine(initial_world= initial_world)
 
-        self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
-        self.gzclient_pid = self.gzclient.pid
+        if self.enable_gui:
+            if not self.callflag["physics_engine"]:
+                time.sleep(3)
+                initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
+                self.physicsengine(initial_world= initial_world)
 
-        ## Now we will set the desired physics properties in Gazebo based on what is there in  **kwargs
-        # ## using rosservice call
+            self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
+            self.gzclient_pid = self.gzclient.pid
 
-        rospy.wait_for_service('gazebo/get_physics_properties')
-        rospy.wait_for_service('gazebo/set_physics_properties')
+            ## Now we will set the desired physics properties in Gazebo based on what is there in  **kwargs
+            # ## using rosservice call
 
-        get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
-        physics_properties = get_physics_properties_prox()
+            rospy.wait_for_service('gazebo/get_physics_properties')
+            rospy.wait_for_service('gazebo/set_physics_properties')
+
+            get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+            physics_properties = get_physics_properties_prox()
 
         time.sleep(4)
 
-        while(physics_properties.max_update_rate != self.max_update_rate):
-            print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
-            physics_properties.max_update_rate = self.max_update_rate
-            physics_properties.time_step = self.time_step
+        newclock = kwargs.get("newclock", False)
 
-            set_physics_properties_prox = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
-            set_physics_properties_prox(physics_properties.time_step,
-                                        physics_properties.max_update_rate,
-                                        physics_properties.gravity,
-                                        physics_properties.ode_config)
+        if (newclock):
+            clock_factor = kwargs.get("clock_factor", 0.5)
+            clock_rate = kwargs.get("clock_rate", 0.5)
+            self.clocklaunch = launch(launchfile=self.package_path+'/launch/sclock.launch',
+                        factor = clock_factor,
+                        rate = clock_rate
+                    )
+            self.clocklaunch.start()
+            _LOGGER.info("Clock launched.")
+            self.callflag["clocklaunch"] = True
+            time.sleep(5)
 
-        get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
-        physics_properties = get_physics_properties_prox()
-        print("New  max_update_rate is {}".format( physics_properties.max_update_rate))
 
-        if physics_properties.max_update_rate != self.max_update_rate:
-            print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
-            sys.exit()
+        if self.enable_gui:
+            while(physics_properties.max_update_rate != self.max_update_rate):
+                print("Max Update Rate was not set properly, retrying....")
+                physics_properties.max_update_rate = self.max_update_rate
+                physics_properties.time_step = self.time_step
+
+                set_physics_properties_prox = rospy.ServiceProxy('gazebo/set_physics_properties', SetPhysicsProperties)
+                set_physics_properties_prox(physics_properties.time_step,
+                                            physics_properties.max_update_rate,
+                                            physics_properties.gravity,
+                                            physics_properties.ode_config)
+
+            get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
+            physics_properties = get_physics_properties_prox()
+            print("New  max_update_rate is {}".format( physics_properties.max_update_rate))
+
+            if physics_properties.max_update_rate != self.max_update_rate:
+                print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
+                sys.exit()
 
     def spawn(self, include_laser = "none"):
         '''
@@ -559,7 +587,7 @@ class layout:
         self.launch_obj = []
         for n in range(0, self.n_vehicles):
             launch_itr = launch(launchfile=self.package_path + '/launch/spawn.launch', X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
-            laser_sensor =laser_flag[n], updateRate = self.update_rate)
+            laser_sensor =laser_flag[n], updateRate = self.update_rate, enable_gui = self.enable_gui)
             self.launch_obj.append(launch_itr)
 
         for n in range(0, self.n_vehicles):
@@ -586,7 +614,7 @@ class layout:
 
         if self.callflag["director"]:
             self.directorobj.shutdown()
-            
+
         for n in range(0, self.n_vehicles):
             if self.callflag["control"]:
                 self.launchcontrol_obj[n].shutdown()
@@ -601,14 +629,17 @@ class layout:
 
         _LOGGER.info('Destroying physics world')
         #kill the roscore
-        self.gzclient.terminate()
-        #Wait to prevent the creation of zombie processes.
-        self.gzclient.wait()
-        call(["pkill", "gzserver"])
-        call(["pkill", "gzclient"])
+        if self.enable_gui:
+            self.gzclient.terminate()
+            #Wait to prevent the creation of zombie processes.
+            self.gzclient.wait()
+            call(["pkill", "gzserver"])
+            call(["pkill", "gzclient"])
 
         self.stoprecord()
         self.latesbag()
+        if  self.callflag["clocklaunch"]:
+            self.clocklaunch.shutdown()
         self.killroscore()
         _LOGGER.info("##### Simulation Terminated #####")
 
@@ -706,7 +737,7 @@ class layout:
         rlpolicy_model = kwargs.get("rlpolicy_model")
         rlvf_model = kwargs.get("rlvf_model")
         logdata = kwargs.get("logdata", False)
-        
+
         if logdata:
             logdir = kwargs.get("logdir", "./")
 
@@ -760,14 +791,14 @@ class layout:
             launchobj = launch(launchfile=self.package_path+'/launch/stepvel.launch',
                 constVel = 0.0, strAng = str_angle, robot ="sparkle_{:03d}".format(i))
             self.launchcontrol_obj.append(launchobj)
-        
+
         elif control_method[0].lower() == "launch":
             launchobj = launch(launchfile=self.package_path+'/launch/leadervel.launch',
                 leader ="sparkle_{:03d}".format(i))
             self.launchcontrol_obj.append(launchobj)
-        
+
         elif control_method[0].lower() == "ovftl":
-            
+
             if route == "circle":
                 print('self.name[self.n_vehicles - 1] : {}'.format(self.name[self.n_vehicles - 1]))
                 launchobj = launch(launchfile=self.package_path+'/launch/carfollowing.launch', this_name = "sparkle_{:03d}".format(0), \
@@ -775,9 +806,9 @@ class layout:
                          leader_x_init =self.X[self.n_vehicles-1], leader_y_init = self.Y[self.n_vehicles-1],  this_x_init =self.X[0], \
                               this_y_init =self.Y[0],  leader_odom_topic  = '/' + "sparkle_{:03d}".format(self.n_vehicles - 1) + '/setvel', \
                                   this_odom_topic = '/' + "sparkle_{:03d}".format(0) + '/setvel')
-                
+
                 self.launchcontrol_obj.append(launchobj)
-            
+
             elif route == "lane":
 
                 _LOGGER.error("With {} route, control method for leader vehicle in the platoon only works with uniform and injector control method. Ignore ovftl control method for leader and falling back to uniform ".format(route))
@@ -821,12 +852,14 @@ class layout:
                     self.launchcontrol_obj.append(launchobj)
 
                 elif control_method[0].lower() == "rl":
+                    use_lead_vel = kwargs.get("use_lead_vel", False)
+                    use_odom = kwargs.get("use_odom", False)
                     launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
-                        robot="sparkle_{:03d}".format(0),
+                        ego="sparkle_{:03d}".format(i),
                         leader = "sparkle_{:03d}".format(self.n_vehicles-1),
-                        policy_model = rlpolicy_model,
-                        vf_model = rlvf_model
-                        )
+                        use_lead_vel = use_lead_vel,
+                        use_odom = use_odom
+                    )
                     self.launchcontrol_obj.append(launchobj)
 
         # for vehicles other than lead vehicles
@@ -893,25 +926,29 @@ class layout:
                 self.launchcontrol_obj.append(launchobj)
 
             elif control_method[i].lower() == "rl":
+                use_lead_vel = kwargs.get("use_lead_vel", False)
+                use_odom = kwargs.get("use_odom", False)
                 launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
                     ego="sparkle_{:03d}".format(i),
-                    leader = "sparkle_{:03d}".format(i-1)
+                    leader = "sparkle_{:03d}".format(i-1),
+                    use_lead_vel = use_lead_vel,
+                    use_odom = use_odom
                     )
                 self.launchcontrol_obj.append(launchobj)
-            
 
-        
+
+
         print("Number of vehicles:{}".format(self.n_vehicles))
 
         print("Number of launch control objects: {}".format(len(self.launchcontrol_obj)))
         for n in range(1, self.n_vehicles):
             _LOGGER.info("Control node with index {} started".format(n))
             self.launchcontrol_obj[n].start()
-        
+
         _LOGGER.info("Control node with index {} started".format(0))
         self.launchcontrol_obj[0].start()
-        
-        
+
+
         for n in range(0, self.n_vehicles):
             if control_method[n] == "uniform":
                 rosparamset = subprocess.Popen(["rosparam set /" +"sparkle_{:03d}".format(n)+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
@@ -942,7 +979,7 @@ class layout:
             br.plot_vel(save_fig = True)
             br.plot_std(save_fig = True)
             br.plot_odometry(save_fig = True)
-        
+
 
 def main(argv):
 
