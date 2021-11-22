@@ -205,6 +205,10 @@ namespace gazebo
 				}
 			//	ROS_INFO_STREAM("MIN DIST: "<< min_dist);
 
+				if(isinf(min_dist))
+				{
+					ROS_ERROR_STREAM("Infinity Distance Detected. Setting to zero.");
+				}
 				this->minimum_distance.data = min_dist;
 				this->angle_of_min_distance.data = min_angle;
 
@@ -254,6 +258,10 @@ namespace gazebo
 					{
 						old_relvel.at(rv_length) = old_relvel.at(rv_length -1) + copysign(3.0*elapsedTime, acceleration);
 					}
+					if( isinf(old_relvel.at(rv_length) ))
+					{
+						ROS_ERROR_STREAM("Estimated relative velocity is set at infinity.");
+					}
 				}
 				/* Store ends */
 
@@ -271,6 +279,30 @@ namespace gazebo
 					polyfit(old_time, old_relvel, coeff, 3);	
 					polyfit(old_time, old_distance, dist_coeff, 3);	
 					
+					if(isinf(coeff[0]))
+					{
+						ROS_ERROR_STREAM("Coefficient 0 for relative veocity fitting is inf");
+					}
+					if(isinf(coeff[1]))
+					{
+						ROS_ERROR_STREAM("Coefficient 1 for relative veocity fitting is inf");
+					}
+					if(isinf(coeff[2]))
+					{
+						ROS_ERROR_STREAM("Coefficient 2 for relative veocity fitting is inf");
+					}
+					if(isinf(dist_coeff[0]))
+					{
+						ROS_ERROR_STREAM("Coefficient 1 for relative distance fitting is inf");
+					}
+					if(isinf(dist_coeff[1]))
+					{
+						ROS_ERROR_STREAM("Coefficient 2 for relative distance fitting is inf");
+					}
+					if(isinf(dist_coeff[2]))
+					{
+						ROS_ERROR_STREAM("Coefficient 0 for relative distance fitting is inf");
+					}
 			//		std::cout <<"Coefficients are "<< coeff[0] <<", "<<coeff[1] <<", "<<coeff[2] <<", "<<coeff[3]<<std::endl;   
 					for(int p = 0; p < old_time.size(); ++ p)
 					{
@@ -291,9 +323,19 @@ namespace gazebo
 						
 				//this->relvel_data.linear.z = vfitted; // old_relvel.at( rv_length) ;
 				this->relvel_data.linear.z = old_relvel.at( rv_length) ;
+				if( isinf(this->relvel_data.linear.z  ))
+				{
+					ROS_ERROR_STREAM("Estimated (filtered) relative velocity is set at infinity.");
+				}
+
 				//ROS_INFO_STREAM("this->relvel.linear.z: "<<this->relvel_data.linear.z);
 				//this->minimum_distance.data = dfitted;	
 				this->minimum_distance.data = old_distance.at( rv_length) ;
+				if( isinf(this->minimum_distance.data))
+				{
+					ROS_ERROR_STREAM("Estimated (filtered) relative distance is set at infinity.");
+				}
+
 				//ROS_INFO_STREAM("this->minimum_distance.data: "<<this->minimum_distance.data);	
 				this->distance_publisher.publish(this->minimum_distance);
 				//ROS_INFO_STREAM("distance published");
