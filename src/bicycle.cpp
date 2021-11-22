@@ -93,7 +93,13 @@ void velcallback( const geometry_msgs::Twist::ConstPtr& vel )
 
     lastUpdate = current_time;
     double dT = duration.toSec() + (duration.toNSec()*1e-9);
-    
+   
+    if(dT <= 0)
+    {
+        ROS_INFO_STREAM("Bicycle Node: Delta T <= 0 detected");
+        return;
+    }
+
     u2 = (AngularZ - str_old)/dT;
 
     xdot = LinearX*cos(str_old)*cos(yaw_old);
