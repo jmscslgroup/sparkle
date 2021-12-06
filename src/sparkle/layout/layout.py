@@ -148,6 +148,7 @@ class layout:
         self.package_name = kwargs.get("package_name", "sparkle")
         self.gzstatsfile = None
         self.bagfile = None
+        self.dynamics = 'bicycle'
 
         # get an instance of RosPack with the default search paths
         rospack = rospkg.RosPack()
@@ -298,11 +299,11 @@ class layout:
         command = None
         if self.enable_gui:
             # specify rosbag record command with different flags, etc.
-            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics +  ' --duration=' + str(self.log_time) + ' --rate' +  str(self.clock_factor) + ' __name:=bagrecorder']
 
         else:
             # specify rosbag record command with different flags, etc.
-            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_clock_rate_' + str(self.clock_rate) + '_clockfactor_' + str(self.clock_factor) + '_recordtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_clock_rate_' + str(self.clock_rate) + '_clockfactor_' + str(self.clock_factor) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics + ' --duration=' + str(self.log_time) + ' --rate' +  str(self.clock_factor) +  ' __name:=bagrecorder']
 
         _LOGGER.info("Starting rosbag record with the command: {}".format(command))
         self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
@@ -565,7 +566,9 @@ class layout:
                 print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
                 sys.exit()
 
-    def spawn(self, include_laser = "none"):
+            self.clock_factor = self.max_update_rate*self.time_step
+
+    def spawn(self, include_laser = "none", **kwargs):
         '''
         `layout.spawn()` spawns the simulated vehicles in the physics world.
 
@@ -580,6 +583,7 @@ class layout:
 
         '''
         # #Object to spawn cars in the empty world
+        _LOGGER = configure_logworker()
 
         laser_flag = [False]*self.n_vehicles
 
@@ -592,10 +596,14 @@ class layout:
                 if n in include_laser:
                     laser_flag[n] = True
 
+        self.dynamics  = kwargs.get("dynamics", self.dynamics) #already initialized in the constructor
+        _LOGGER.info("Dynamics select is {}".format(self.dynamics))
         self.launch_obj = []
         for n in range(0, self.n_vehicles):
-            launch_itr = launch(launchfile=self.package_path + '/launch/spawn.launch', X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
-            laser_sensor =laser_flag[n], updateRate = self.update_rate, enable_gui = self.enable_gui)
+            launch_itr = launch(launchfile=self.package_path + '/launch/spawn.launch', \
+                X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
+            laser_sensor =laser_flag[n], updateRate = self.update_rate, enable_gui = self.enable_gui, \
+                dynamics = self.dynamics)
             self.launch_obj.append(launch_itr)
 
         for n in range(0, self.n_vehicles):
@@ -886,6 +894,14 @@ class layout:
                     )
                     self.launchcontrol_obj.append(launchobj)
 
+                elif control_method[0].lower() == "macontroller":
+                    use_ground_truth = kwargs.get("use_ground_truth", False)
+                    launchobj = launch(launchfile=self.package_path+'/launch/macontroller.launch',
+                        ego="sparkle_{:03d}".format(i),
+                        leader = "sparkle_{:03d}".format(self.n_vehicles-1),
+                        use_ground_truth = use_ground_truth)
+                    self.launchcontrol_obj.append(launchobj)
+
         # for vehicles other than lead vehicles
         for i in range(1, self.n_vehicles):
             if control_method[i].lower() == "injector":
@@ -951,6 +967,15 @@ class layout:
                     use_ground_truth = use_ground_truth,
                     th1 = th1, th2 = th2, th3 = th3, w1 = w1, w2 = w2, w3 = w3
                     )
+                self.launchcontrol_obj.append(launchobj)
+
+            elif control_method[i].lower() == "macontroller":
+                use_ground_truth = kwargs.get("use_ground_truth", False)
+                
+                launchobj = launch(launchfile=self.package_path+'/launch/macontroller.launch',
+                    ego ="sparkle_{:03d}".format(i),
+                    leader = "sparkle_{:03d}".format(i-1),
+                    use_ground_truth = use_ground_truth)
                 self.launchcontrol_obj.append(launchobj)
 
             elif control_method[i].lower() == "rl":
