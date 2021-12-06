@@ -15,6 +15,7 @@
     <arg name="updateRate" default="20.0"/>
     <arg name="standalone" default="false"/>
     <arg name="enable_gui" default="true"/>
+    <arg name="dynamics" default="bicycle"/>
 
     <param name="/$(arg robot)/windx" value="0.0"/>
     <param name="/$(arg robot)/windy" value="0.0"/>
@@ -35,9 +36,13 @@
     
         <node pkg="sparkle" type="transform_sparkle" name="transform_sparkle_$(arg robot)" output="screen" if="$(arg enable_gui)"/>
 
-        <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen">
+        <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen"  if="$(eval arg('dynamics') == 'bicycle')">
         </node>
         
+        <node name="unit_dynamics_$(arg robot)" pkg="sparkle" type="unit_dynamics" output="screen"  if="$(eval arg('dynamics') == 'unit_dynamics')">
+        </node>
+        
+
         <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(arg standalone)">
             <param name="enableTwist" value="true"/>
             <param name="enablePos" value="true"/>
