@@ -183,6 +183,8 @@ class layout:
         self.directorobj = None
 
         self.enable_gui = kwargs.get("enable_gui", True)
+        self.clock_factor = None
+        self.clock_rate = None
 
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
@@ -293,8 +295,14 @@ class layout:
         if not os.path.exists(self.logdir):
             os.mkdir(self.logdir)
 
-        # specify rosbag record command with different flags, etc.
-        command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+        command = None
+        if self.enable_gui:
+            # specify rosbag record command with different flags, etc.
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
+
+        else:
+            # specify rosbag record command with different flags, etc.
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_clock_rate_' + str(self.clock_rate) + '_clockfactor_' + str(self.clock_factor) + '_recordtime_' + str(self.log_time) + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         _LOGGER.info("Starting rosbag record with the command: {}".format(command))
         self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
@@ -525,11 +533,11 @@ class layout:
         newclock = kwargs.get("newclock", False)
 
         if (newclock):
-            clock_factor = kwargs.get("clock_factor", 0.5)
-            clock_rate = kwargs.get("clock_rate", 0.5)
+            self.clock_factor = kwargs.get("clock_factor", 0.5)
+            self.clock_rate = kwargs.get("rate", 50.0)
             self.clocklaunch = launch(launchfile=self.package_path+'/launch/sclock.launch',
-                        factor = clock_factor,
-                        rate = clock_rate
+                        factor = self.clock_factor,
+                        rate = self.clock_rate
                     )
             self.clocklaunch.start()
             _LOGGER.info("Clock launched.")
@@ -710,7 +718,7 @@ class layout:
     def control(self, **kwargs):
         """
         Class methods specifies control algorithm for imparting velocity to the car.
-        The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper, IDM, or anything else.
+        The Control Algorithm can be either uniform, OVFTL (Optimal-Velocity Follow-The-Leader) Model, FollowerStopper, IDM, RL, Micromodel, or anything else.
 
 
         control_method: `str`
@@ -862,6 +870,22 @@ class layout:
                     )
                     self.launchcontrol_obj.append(launchobj)
 
+                elif control_method[0].lower() == "micromodel":
+                    use_ground_truth = kwargs.get("use_ground_truth", False)
+                    th1 = kwargs.get("th1", 0.4)
+                    th2 = kwargs.get("th2", 0.6)
+                    th3 = kwargs.get("th3", 0.8)
+                    w1 = kwargs.get("w1", 6.0)
+                    w2 = kwargs.get("w2", 7.5)
+                    w3 = kwargs.get("w3", 9.0)
+                    launchobj = launch(launchfile=self.package_path+'/launch/micromodel.launch',
+                        ego="sparkle_{:03d}".format(i),
+                        leader = "sparkle_{:03d}".format(self.n_vehicles-1),
+                        use_ground_truth = use_ground_truth,
+                        th1 = th1, th2 = th2, th3 = th3, w1 = w1, w2 = w2, w3 = w3
+                    )
+                    self.launchcontrol_obj.append(launchobj)
+
         # for vehicles other than lead vehicles
         for i in range(1, self.n_vehicles):
             if control_method[i].lower() == "injector":
@@ -913,15 +937,19 @@ class layout:
                 self.launchcontrol_obj.append(launchobj)
 
             elif control_method[i].lower() == "micromodel":
+                use_ground_truth = kwargs.get("use_ground_truth", False)
+                th1 = kwargs.get("th1", False)
+                th2 = kwargs.get("th2", False)
+                th3 = kwargs.get("th3", False)
+                w1 = kwargs.get("w1", False)
+                w2 = kwargs.get("w2", False)
+                w3 = kwargs.get("w3", False)
+                
                 launchobj = launch(launchfile=self.package_path+'/launch/micromodel.launch',
                     ego ="sparkle_{:03d}".format(i),
                     leader = "sparkle_{:03d}".format(i-1),
-                    str_angle = str_angle,
-                    initial_distance = initial_distance[i],
-                    leader_x_init = self.X[i-1],
-                    leader_y_init = self.Y[i-1],
-                    ego_x_init = self.X[i],
-                    ego_y_init = self.Y[i]
+                    use_ground_truth = use_ground_truth,
+                    th1 = th1, th2 = th2, th3 = th3, w1 = w1, w2 = w2, w3 = w3
                     )
                 self.launchcontrol_obj.append(launchobj)
 
