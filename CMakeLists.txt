@@ -157,6 +157,9 @@ target_link_libraries( pause ${catkin_LIBRARIES} )
 add_executable( bicycle src/bicycle.cpp )
 target_link_libraries( bicycle ${catkin_LIBRARIES} )
 
+add_executable( unit_dynamics src/unit_dynamics.cpp )
+target_link_libraries( unit_dynamics ${catkin_LIBRARIES} )
+
 add_executable( transform_sparkle src/transform.cpp )
 target_link_libraries( transform_sparkle ${catkin_LIBRARIES} )
 
