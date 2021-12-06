@@ -1,24 +1,53 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8"?>
   
-
 <launch>
 	
-	<arg name='ego' default='ego'/>
-	<arg name='leader' default='leader'/>
-	<arg name='leadervel_topic' default = '/$(arg leader)/vel'/> 
-	<arg name='relative_vel_topic' default = '/$(arg ego)/rel_vel'/> 
-	<arg name='headway_topic' default = '/$(arg leader)/lead_dist'/> 
-		
-	<param name='/$(arg ego)/leader_vel_topic' value='$(arg leadervel_topic)'/>
-	<param name='/$(arg ego)/ego_odom' value='/$(arg ego)/odom'/>
-	<param name='/$(arg ego)/leader_odom' value='/$(arg leader)/odom'/>
-	<param name='/$(arg ego)/publish_cmdvel' value='true'/>
-	<param name='/$(arg ego)/use_odom' value='false'/>
-	<param name='/$(arg ego)/use_leadervel' value='false'/>
+        <arg name="leader" default="leader"/>
+        <arg name="ego" default="ego"/>
+
+        <arg name="ego_veltopic" default="/$(arg ego)/vel"/>
+        <arg name="leader_veltopic" default="/$(arg leader)/vel"/>
+        <arg name="relative_veltopic" default="/$(arg ego)/rel_vel"/>
+        <arg name="headway_topic" default="/$(arg ego)/lead_dist"/>
+        <arg name="use_ground_truth" default="false"/>
+        <arg name="ego_odom_topic" default="/$(arg ego)/setvel"/>
+        <arg name="leader_odom_topic" default="/$(arg leader)/setvel"/>
+
+        <arg name="th1" default="0.4"/>
+        <arg name="th2" default="0.6"/>
+        <arg name="th3" default="0.8"/>
+        <arg name="w1" default="6.0"/>
+        <arg name="w3" default="7.5"/>
+        <arg name="w2" default="9.0"/>
+
+        <param name="ego_vel_topic" value="$(arg ego_veltopic)"/>
+        <param name="relative_vel_topic" value="$(arg relative_veltopic)"/>
+        <param name="headway_topic" value="$(arg headway_topic)"/>
+        <param name="ego_odom_topic" value="$(arg ego_odom_topic)"/>
+        <param name="use_ground_truth" value="$(arg use_ground_truth)"/>
+        <param name="leader_odom_topic" value="$(arg leader_odom_topic)"/>
+
+        <param name="/$(arg ego)/th1" value="$(arg th1)"/>
+        <param name="/$(arg ego)/th2" value="$(arg th2)"/>
+        <param name="/$(arg ego)/th3" value="$(arg th3)"/>
+        <param name="/$(arg ego)/w1" value="$(arg w1)"/>
+        <param name="/$(arg ego)/w2" value="$(arg w2)"/>
+        <param name="/$(arg ego)/w3" value="$(arg w3)"/>
+	
+	
+	
 	<group ns="$(arg ego)">
-		<node pkg="sparkle" type="micromodel" name="micromodel_controller" output="screen">
-			
-		</node>
+	 	<node pkg="micromodel" type="micromodel_node" name="micromodel_node_$(arg ego)" output="screen">
+        </node>
+
+	 	<node pkg="ground_truth" type="ground_truth_node" name="ground_truth_node_$(arg ego)" output="screen"  if="$(arg use_ground_truth)">
+            <remap from="/$(arg ego)/leader_vel" to="$(arg leader_veltopic)"/>
+            <remap from="/$(arg ego)/ego_vel" to="$(arg ego_veltopic)"/>
+            <remap from="/$(arg ego)/leader_odom" to="$(arg leader_odom_topic)"/>
+            <remap from="/$(arg ego)/ego_odom" to="$(arg ego_odom_topic)"/>
+        </node>
+
 	</group>
 
-</launch>
+	
+</launch>	
