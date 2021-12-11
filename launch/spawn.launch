@@ -43,7 +43,7 @@
         </node>
         
 
-        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(arg standalone)">
+        <node name="model_state_$(arg robot)" pkg="sparkle" type="model_state" output="screen" if="$(eval arg('standalone') == True and arg('enable_gui') == True)">
             <param name="enableTwist" value="true"/>
             <param name="enablePos" value="true"/>
         </node>
