@@ -143,7 +143,8 @@ class layout:
         self.time_step = kwargs.get("time_step", 0.01)
         self.update_rate = kwargs.get("update_rate", 20.0)
         self.log_time = kwargs.get("log_time", 60.0)
-        self.description = kwargs.get("description", "Sparkle simulation with {0} cars.".format(self.n_vehicles))
+        self.description = kwargs.get("description", "sparklesim_ncars_{}".format(self.n_vehicles))
+        self.description = self.description.replace(" ", "_")
         self.logdir = kwargs.get("logdir", "./")
         self.package_name = kwargs.get("package_name", "sparkle")
         self.gzstatsfile = None
@@ -269,7 +270,7 @@ class layout:
 
 
 
-    def logdata(self, prefix = "sparkle", **kwargs):
+    def logdata(self, **kwargs):
         """
         Performs rosbag record
 
@@ -297,13 +298,14 @@ class layout:
             os.mkdir(self.logdir)
 
         command = None
+        prefix = self.description
         if self.enable_gui:
             # specify rosbag record command with different flags, etc.
-            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics +  ' --duration=' + str(self.log_time) + ' --rate' +  str(self.clock_factor) + ' __name:=bagrecorder']
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix +  '_max_update_rate_' + str(self.max_update_rate) + '_time_step_' + str(self.time_step) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics +  ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         else:
             # specify rosbag record command with different flags, etc.
-            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix + "_n_" + str( self.n_vehicles) +  '_clock_rate_' + str(self.clock_rate) + '_clockfactor_' + str(self.clock_factor) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics + ' --duration=' + str(self.log_time) + ' --rate' +  str(self.clock_factor) +  ' __name:=bagrecorder']
+            command = ["rosbag "+ " record "+ "-a "+ " -o " + self.logdir + "/" + prefix  +  '_clock_rate_' + str(self.clock_rate) + '_clockfactor_' + str(self.clock_factor) + '_recordtime_' + str(self.log_time) + '_dynamics_' + self.dynamics + ' --duration=' + str(self.log_time) +  ' __name:=bagrecorder']
 
         _LOGGER.info("Starting rosbag record with the command: {}".format(command))
         self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
@@ -567,6 +569,7 @@ class layout:
                 sys.exit()
 
             self.clock_factor = self.max_update_rate*self.time_step
+            self.clock_rate = self.max_update_rate
 
     def spawn(self, include_laser = "none", **kwargs):
         '''
@@ -810,7 +813,9 @@ class layout:
 
         elif control_method[0].lower() == "launch":
             launchobj = launch(launchfile=self.package_path+'/launch/leadervel.launch',
-                leader ="sparkle_{:03d}".format(i))
+                leader ="sparkle_{:03d}".format(i),
+                factor = self.clock_factor
+                )
             self.launchcontrol_obj.append(launchobj)
 
         elif control_method[0].lower() == "ovftl":
@@ -1007,11 +1012,14 @@ class layout:
                 rosparamset = subprocess.Popen(["rosparam set /" +"sparkle_{:03d}".format(n)+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
 
-        self.directorobj = launch(launchfile=self.package_path+'/launch/director.launch', rate=self.update_rate)
-        self.directorobj.start()
+        if self.enable_gui:
+            self.directorobj = launch(launchfile=self.package_path+'/launch/director.launch', rate=self.update_rate)
+            self.directorobj.start()
+            self.callflag["director"] = True
+            
         call(["rosparam", "set", "/execute", "true"])
         self.callflag["control"] = True
-        self.callflag["director"] = True
+        
 
     def analyze(self):
         """
