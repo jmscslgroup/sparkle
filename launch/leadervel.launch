@@ -2,9 +2,9 @@
 <launch>
 	<arg name="bagfile" default="start_at_0mph.bag"/>
 	<arg name='leader' default='leader'/> 
-
+    <arg name="factor" default="1.0"/>
 	<group ns="$(arg leader)">
-                <node pkg="rosbag" type="play" name="player" output="screen" args="$(find transfer_pkg)/launch/$(arg bagfile) --topics /ghost/vel">
+                <node pkg="rosbag" type="play" name="player" output="screen" args="$(find transfer_pkg)/launch/$(arg bagfile) --topics /ghost/vel --rate $(arg factor)">
                         <remap from="/ghost/vel" to="cmd_vel"/>
                 </node>
                  <!--node pkg="synthetic_data" type="synthetic_data_node" name="synthetic_data_$(arg leader)" output="screen">
