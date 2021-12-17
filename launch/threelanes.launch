@@ -6,18 +6,41 @@
 
       <arg name="paused" default="false"/>
       <arg name="use_sim_time" default="true"/>
+      <arg name="use_clock_frequency" default="false"/>
       <arg name="gui" default="false"/>
       <arg name="headless" default="false"/>
       <arg name="debug" default="false"/>
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="pub_clock_frequency" default="100"/>
+      <arg name="enable_ros_network" default="true" />
+      <arg name="disable_gazebo_clock" default="true"/>
+
+      <param name="/use_sim_time" value="$(arg use_sim_time)"/>
+
+       <!-- start gazebo server-->
+    <group if="$(arg use_clock_frequency)">
+        <param name="gazebo/pub_clock_frequency" value="$(arg pub_clock_frequency)" />
+    </group>
+    
+    <group>
+        <param name="gazebo/enable_ros_network" value="$(arg enable_ros_network)" />
+    </group>
+
+    
+    <node name="gazebo" pkg="gazebo_ros" type="gzserver" respawn="false" output="screen" args="--verbose -e ode $(find steer)/worlds/threelane.world" required="false">
+        <remap from="/clock" to="/gazebo_clock"  if="$(arg disable_gazebo_clock)"/>
+    </node>
+
+
+  <!---include file="$(find gazebo_ros)/launch/empty_world.launch">
     <arg name="verbose" value="true"/>
     <arg name="world_name" value="$(find steer)/worlds/threelane.world"/>
     <arg name="debug" value="$(arg debug)" />
     <arg name="gui" value="$(arg gui)" />
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="use_clock_frequency" value="$(arg use_clock_frequency)"/>
     <arg name="headless" value="$(arg headless)"/>
 
-  </include>
+  </include-->
 
 </launch>
