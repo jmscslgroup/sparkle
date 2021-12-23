@@ -154,8 +154,6 @@ class UpdateStates
                 this->angulary_list.at(hh) = 0.0;
                 this->angularz_list.at(hh) = 0.0;
             }
-
-            //this->pub = this->rosnode->advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 1);
         }
         
         void setVelCallBack(const boost::shared_ptr<nav_msgs::Odometry const>& _msg, std::string topic_name)
@@ -178,7 +176,6 @@ class UpdateStates
             geometry_msgs::Twist twist;
             pose.x = _msg->pose.pose.position.x;
             pose.y = _msg->pose.pose.position.y;
-            //ROS_INFO_STREAM("Topic_name: "<<topic_name<<", x="<<pose.x<<" y="<<pose.y);
             pose.z = _msg->pose.pose.position.z;
             orientation = _msg->pose.pose.orientation;
 
@@ -232,7 +229,6 @@ class UpdateStates
             }
             else
             {
-                //ROS_INFO_STREAM("Number of subscribes are "<<n_subs <<" which is less than total number of robots.");
                 return false;
             }
 
@@ -279,7 +275,6 @@ class UpdateStates
                 }
             }
 
-            //ROS_INFO_STREAM("Number of vehicles = "<<n_states);
             /*
             1. Pause Gazebo
             2. Set static variable to the current size of the queue
@@ -295,10 +290,8 @@ class UpdateStates
                 //Pause the Gazebo
                 if(this->pauseGazebo.call(this->emptySrv))
                 {
-                    ROS_INFO_STREAM("Paused");
                     for(int yy  = 0; yy<this->namespaces.size(); ++yy)
                     {
-           //             ROS_INFO_STREAM("Published................................................................................");
                         this->setmodelstate.request.model_state = modelStates.at(yy);
                         bool callstatus = this->stateClient.call(this->setmodelstate);
                         int trial_counter= 1;
@@ -313,29 +306,25 @@ class UpdateStates
                         }
                         else
                         {
-                            ROS_INFO_STREAM("Model set successful in "<< trial_counter <<" attempt");
                             n_successful_states = n_successful_states + 1;
                         }
-                        
-                        //this->pub.publish(modelStates.at(yy));
                     }
                 }
                 else
                 {
                     ROS_ERROR_STREAM("Gazeo puased failed");
                 }
-                //
             }
             else
             {
-                ROS_INFO_STREAM("Not gonna publish");
+                //ROS_INFO_STREAM("Not gonna publish");
             }
 
             if(n_successful_states >= this->namespaces.size())
             {
                 if(this->unpauseGazebo.call(this->emptySrv))
                 {
-                    ROS_INFO_STREAM("UnPaused");
+                    //ROS_INFO_STREAM("UnPaused");
                 }
                 else
                 {
@@ -343,7 +332,6 @@ class UpdateStates
                 }
             }
             //Reset
-
 
             if(n_states == this->namespaces.size())
             {
