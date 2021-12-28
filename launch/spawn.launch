@@ -39,7 +39,10 @@
         <node name="bicycle_$(arg robot)" pkg="sparkle" type="bicycle" output="screen"  if="$(eval arg('dynamics') == 'bicycle')">
         </node>
         
-        <node name="unit_dynamics_$(arg robot)" pkg="sparkle" type="unit_dynamics" output="screen"  if="$(eval arg('dynamics') == 'unit_dynamics')">
+        <node name="bicycle_$(arg robot)" pkg="sparkle" type="unit_dynamics" output="screen"  if="$(eval arg('dynamics') == 'unit_dynamics')">
+        </node>
+        
+        <node name="bicycle_$(arg robot)" pkg="silly_dynamics" type="silly_dynamics_node" output="screen"  if="$(eval arg('dynamics') == 'silly_dynamics')">
         </node>
         
 
