@@ -156,6 +156,7 @@ class layout:
         self.package_path = ''
         try:
             self.package_path = rospack.get_path(self.package_name)
+            self.robot_pkg = self.package_path
         except rospkg.ResourceNotFound as s:
             print("Package "+ str(s.args[0])+ " Not Found")
             raise rospy.exceptions.ROSException()
@@ -185,9 +186,11 @@ class layout:
         self.directorobj = None
 
         self.enable_gui = kwargs.get("enable_gui", True)
-        self.clock_factor = None
-        self.clock_rate = None
+        
+        self.clock_factor = self.max_update_rate*self.time_step
+        self.clock_rate = self.max_update_rate
 
+        self.standalone = kwargs.get("standalone", "False")
 
         # defining the names of the car to be spawned. Currently maximum of 22 cars
         self.name = ['magna', 'nebula', 'calista', 'proxima', 'zel',  'zephyr', 'centauri', 'zenith', 'europa', 'elara', 'herse', 'thebe',
@@ -513,6 +516,23 @@ class layout:
         roslaunch.configure_logging(self.uuid)
         print(self.callflag)
 
+        newclock = kwargs.get("newclock", False)
+        
+        if (newclock):
+            self.clock_factor = kwargs.get("clock_factor", 0.5)
+            self.clock_rate = kwargs.get("rate", 50.0)
+            self.clocklaunch = launch(launchfile=self.package_path+'/launch/sclock.launch',
+                        factor = self.clock_factor,
+                        rate = self.clock_rate
+                    )
+            self.clocklaunch.start()
+            _LOGGER.info("Clock launched.")
+            self.callflag["clocklaunch"] = True
+            time.sleep(5/self.clock_factor)
+        else:
+            self.clock_factor = self.max_update_rate*self.time_step
+            self.clock_rate = self.max_update_rate
+
         if self.enable_gui:
             if not self.callflag["physics_engine"]:
                 time.sleep(3)
@@ -532,21 +552,6 @@ class layout:
             physics_properties = get_physics_properties_prox()
 
         time.sleep(4)
-
-        newclock = kwargs.get("newclock", False)
-
-        if (newclock):
-            self.clock_factor = kwargs.get("clock_factor", 0.5)
-            self.clock_rate = kwargs.get("rate", 50.0)
-            self.clocklaunch = launch(launchfile=self.package_path+'/launch/sclock.launch',
-                        factor = self.clock_factor,
-                        rate = self.clock_rate
-                    )
-            self.clocklaunch.start()
-            _LOGGER.info("Clock launched.")
-            self.callflag["clocklaunch"] = True
-            time.sleep(5)
-
 
         if self.enable_gui:
             while(physics_properties.max_update_rate != self.max_update_rate):
@@ -568,8 +573,6 @@ class layout:
                 print("Max Update Rate was not set properly, terminating simulation. Please restart the simulation.")
                 sys.exit()
 
-            self.clock_factor = self.max_update_rate*self.time_step
-            self.clock_rate = self.max_update_rate
 
     def spawn(self, include_laser = "none", **kwargs):
         '''
@@ -577,11 +580,12 @@ class layout:
 
         Parameters
         -------------
-        include_laser: Union["all", "lead", "none", `list`]
+        include_laser: Union["all", "lead", "none", "followers", `list`]
             specifies whether to include laser in each car.
             ALL means include laser in every car
             Lead means include laser only in first car
             None means do not include laser in any car
+            Followers means do not put laser in front most vehicle of the platoon
             `list` specifies indices for which to include laser
 
         '''
@@ -592,6 +596,9 @@ class layout:
 
         if include_laser.lower() == "all":
             laser_flag = [True]*self.n_vehicles
+        elif include_laser.lower() == "followers":
+            laser_flag = [True]*self.n_vehicles
+            laser_flag[0] = False
         elif  include_laser.lower() == "lead":
             laser_flag[0] = True
         elif isinstance(include_laser, list):
@@ -599,14 +606,16 @@ class layout:
                 if n in include_laser:
                     laser_flag[n] = True
 
+        self.robot_pkg = kwargs.get("robot_pkg", self.package_path)
+
         self.dynamics  = kwargs.get("dynamics", self.dynamics) #already initialized in the constructor
         _LOGGER.info("Dynamics select is {}".format(self.dynamics))
         self.launch_obj = []
         for n in range(0, self.n_vehicles):
-            launch_itr = launch(launchfile=self.package_path + '/launch/spawn.launch', \
+            launch_itr = launch(launchfile= self.robot_pkg + '/launch/spawn.launch', \
                 X  = self.X[n], Y=self.Y[n], yaw = self.Yaw[n], robot = "sparkle_{:03d}".format(n), \
             laser_sensor =laser_flag[n], updateRate = self.update_rate, enable_gui = self.enable_gui, \
-                dynamics = self.dynamics)
+                dynamics = self.dynamics, standalone = self.standalone)
             self.launch_obj.append(launch_itr)
 
         for n in range(0, self.n_vehicles):
@@ -1012,10 +1021,13 @@ class layout:
                 rosparamset = subprocess.Popen(["rosparam set /" +"sparkle_{:03d}".format(n)+"/constVel " + str(leader_vel)  ],   stdout=subprocess.PIPE, shell=True)
 
 
-        if self.enable_gui:
-            self.directorobj = launch(launchfile=self.package_path+'/launch/director.launch', rate=self.update_rate)
-            self.directorobj.start()
-            self.callflag["director"] = True
+        rospack = rospkg.RosPack()
+
+        if not self.standalone:
+            if self.enable_gui and (self.robot_pkg == rospack.get_path('sparkle')):
+                self.directorobj = launch(launchfile=self.package_path+'/launch/director.launch', rate=self.update_rate)
+                self.directorobj.start()
+                self.callflag["director"] = True
             
         call(["rosparam", "set", "/execute", "true"])
         self.callflag["control"] = True
@@ -1075,7 +1087,7 @@ def main(argv):
     cl.create()
     cl.spawn()
 
-    time.sleep(cl.log_time)
+    time.sleep(cl.log_time/cl.clock_factor)
 
     print('Time to terminate')
     cl.destroy(signal.SIGINT)
