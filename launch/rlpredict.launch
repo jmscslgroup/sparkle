@@ -15,6 +15,7 @@
         <arg name="use_odom" default="false"/>
         <arg name="ego_odom_topic" default="/$(arg ego)/setvel"/>
         <arg name="leader_odom_topic" default="/$(arg leader)/setvel"/>
+        <arg name='hoffman' default='false'/>
 
         <arg name="T" default="0.6"/>
         <arg name="th1" default="0.4"/>
@@ -49,11 +50,15 @@
         <param name="/w3" value="$(arg w3)"/>
 	
         <node pkg="onnx2ros" type="prompt_mode" name="$(arg ego)_rlcontroller" output="screen">
-                <remap from="v_des" to="/$(arg ego)/cmd_vel"/>
+                <remap from="v_des" to="/$(arg ego)/cmd_vel" unless="$(arg hoffman)"/>
+                <remap from="v_des" to="/$(arg ego)/cmd_control_vel" if="$(arg hoffman)"/>
                 <remap from="leader_vel" to="/$(arg leader)/vel"/>
         </node>
-	
-	
+
+        
+	<group ns="$(arg ego)">
+        <node pkg="hoffmansubsystem" type="hoffmansubsystem_node" name="hoffmansubsystem_$(arg leader)" output="screen" if="$(arg hoffman)"/>
+	</group>
 	<!--group ns="$(arg ego)">
 	 	<node pkg="followerstopperth4rl" type="followerstopperth4rl_node" name="followerstopperth4rl_node" output="screen">
         	</node>
