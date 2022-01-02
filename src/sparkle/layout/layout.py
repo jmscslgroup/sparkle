@@ -454,8 +454,9 @@ class layout:
         if not self.enable_gui:
             return
 
+        disable_gazebo_clock = kwargs.get("disable_gazebo_clock", False)
         initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
-        initial_launch = launch(launchfile=initial_world)
+        initial_launch = launch(launchfile=initial_world, disable_gazebo_clock = disable_gazebo_clock)
         initial_launch.start()
         _LOGGER.info("Physics world created.")
         self.callflag["physics_engine"] = True
@@ -533,11 +534,15 @@ class layout:
             self.clock_factor = self.max_update_rate*self.time_step
             self.clock_rate = self.max_update_rate
 
+        disable_gazebo_clock = False
+        if newclock:
+            disable_gazebo_clock = True
+
         if self.enable_gui:
             if not self.callflag["physics_engine"]:
                 time.sleep(3)
                 initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
-                self.physicsengine(initial_world= initial_world)
+                self.physicsengine(initial_world= initial_world, disable_gazebo_clock= disable_gazebo_clock)
 
             self.gzclient = subprocess.Popen(["gzclient"], stdout=subprocess.PIPE, shell=True)
             self.gzclient_pid = self.gzclient.pid
@@ -821,9 +826,11 @@ class layout:
             self.launchcontrol_obj.append(launchobj)
 
         elif control_method[0].lower() == "launch":
+            hoffman = kwargs.get("hoffman", False)
             launchobj = launch(launchfile=self.package_path+'/launch/leadervel.launch',
                 leader ="sparkle_{:03d}".format(i),
-                factor = self.clock_factor
+                factor = self.clock_factor,
+                hoffman = hoffman
                 )
             self.launchcontrol_obj.append(launchobj)
 
@@ -884,11 +891,13 @@ class layout:
                 elif control_method[0].lower() == "rl":
                     use_lead_vel = kwargs.get("use_lead_vel", False)
                     use_odom = kwargs.get("use_odom", False)
+                    hoffman = kwargs.get("hoffman", False)
                     launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
                         ego="sparkle_{:03d}".format(i),
                         leader = "sparkle_{:03d}".format(self.n_vehicles-1),
                         use_lead_vel = use_lead_vel,
-                        use_odom = use_odom
+                        use_odom = use_odom,
+                        hoffman = hoffman
                     )
                     self.launchcontrol_obj.append(launchobj)
 
@@ -995,11 +1004,13 @@ class layout:
             elif control_method[i].lower() == "rl":
                 use_lead_vel = kwargs.get("use_lead_vel", False)
                 use_odom = kwargs.get("use_odom", False)
+                hoffman = kwargs.get("hoffman", False)
                 launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
                     ego="sparkle_{:03d}".format(i),
                     leader = "sparkle_{:03d}".format(i-1),
                     use_lead_vel = use_lead_vel,
-                    use_odom = use_odom
+                    use_odom = use_odom,
+                    hoffman = hoffman
                     )
                 self.launchcontrol_obj.append(launchobj)
 
