@@ -146,7 +146,7 @@ add_executable( model_state src/model_state.cc )
 target_link_libraries( model_state ${catkin_LIBRARIES} )
 
 add_executable( states_wnode src/states_wnode.cpp )
-target_link_libraries( states_wnode ${catkin_LIBRARIES} )
+target_link_libraries( states_wnode ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable( sclock src/sclock.cpp )
 target_link_libraries( sclock ${catkin_LIBRARIES} )
