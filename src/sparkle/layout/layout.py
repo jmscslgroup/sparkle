@@ -604,8 +604,10 @@ class layout:
         elif include_laser.lower() == "followers":
             laser_flag = [True]*self.n_vehicles
             laser_flag[0] = False
-        elif  include_laser.lower() == "lead":
+        elif include_laser.lower() == "lead":
             laser_flag[0] = True
+        elif include_laser.lower() == "none":
+            laser_flag[0] = False
         elif isinstance(include_laser, list):
             for n in range(0, self.n_vehicles):
                 if n in include_laser:
@@ -807,7 +809,7 @@ class layout:
 
         injection_files = kwargs.get("injection_files", None)
         inj_timecols = kwargs.get("time_col", "Time")
-        inj_velcols = kwargs.get("vel_control", "Message")
+        inj_velcols = kwargs.get("vel_col", "Message")
 
         if len(control_method) < self.n_vehicles:
             _LOGGER.error("For list type control methods, number of methods should be at least same as number of vehicles spawned.")
