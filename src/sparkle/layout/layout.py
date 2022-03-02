@@ -313,7 +313,7 @@ class layout:
         _LOGGER.info("Starting rosbag record with the command: {}".format(command))
         self.rosbag_cmd = subprocess.Popen(command, shell=True, executable='/bin/bash')
         self.rosbag_pid = self.rosbag_cmd.pid
-        time.sleep(5/self.clock_factor)
+        rospy.sleep(5)
 
         # Write Gazebo stats
         dt_object = datetime.datetime.fromtimestamp(time.time())
@@ -325,7 +325,7 @@ class layout:
         self.callflag["logdata"] = True
 
         # sleep for 10 seconds plus 0.5 seconds for each vehicles
-        time.sleep((10 + self.n_vehicles/2)/self.clock_factor)
+        rospy.sleep(10 + self.n_vehicles/2)
 
     def stoprecord(self):
         """
@@ -351,7 +351,7 @@ class layout:
 
         # Changing directory to logdir directory
         # os.chdir(self.logdir)
-        time.sleep(10/self.clock_factor)
+        rospy.sleep(10)
         list_of_files1 = glob.glob(self.logdir + '*.bag')
         list_of_files2 = glob.glob(self.logdir + '*.bag.active')
         list_of_files = list_of_files1 + list_of_files2
@@ -368,7 +368,7 @@ class layout:
                     counter = 0
                     while True:
                         try:
-                            time.sleep(2/self.clock_factor)
+                            rospy.sleep(2)
                             newfilesize = os.path.getsize(latest_file)
                             byteswritten = newfilesize - filesize
                             if byteswritten == 0.0:
@@ -400,7 +400,7 @@ class layout:
         _LOGGER.info("Bag file {} saved successfully.")
         stdout = bagkiller.communicate()
         _LOGGER.info('rosnode kill: {}'.format(stdout))
-        time.sleep((5+self.n_vehicles)/self.clock_factor)
+        rospy.sleep(5+self.n_vehicles)
 
          #check if bag file has been killed:
         psaef = subprocess.Popen(["ps -aef | grep bagrecorder"], shell=True)
@@ -460,7 +460,7 @@ class layout:
         initial_launch.start()
         _LOGGER.info("Physics world created.")
         self.callflag["physics_engine"] = True
-        time.sleep(5)
+        rospy.sleep(5)
 
     def rviz(self, **kwargs):
         """
@@ -509,7 +509,7 @@ class layout:
         if not self.callflag["roscore"]:
             self.roscore(uri, port)
 
-        time.sleep(3)
+        rospy.sleep(3)
 
         self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
         # Create a new ROS Node
@@ -529,7 +529,7 @@ class layout:
             self.clocklaunch.start()
             _LOGGER.info("Clock launched.")
             self.callflag["clocklaunch"] = True
-            time.sleep(5/self.clock_factor)
+            rospy.sleep(5)
         else:
             self.clock_factor = self.max_update_rate*self.time_step
             self.clock_rate = self.max_update_rate
@@ -540,7 +540,7 @@ class layout:
 
         if self.enable_gui:
             if not self.callflag["physics_engine"]:
-                time.sleep(3/self.clock_factor)
+                rospy.sleep(3)
                 initial_world = kwargs.get("initial_world", self.package_path + "/launch/empty.launch")
                 self.physicsengine(initial_world= initial_world, disable_gazebo_clock= disable_gazebo_clock)
 
@@ -556,7 +556,7 @@ class layout:
             get_physics_properties_prox = rospy.ServiceProxy('gazebo/get_physics_properties', GetPhysicsProperties)
             physics_properties = get_physics_properties_prox()
 
-        time.sleep(4/self.clock_factor)
+        rospy.sleep(4)
 
         if self.enable_gui:
             while(physics_properties.max_update_rate != self.max_update_rate):
@@ -643,7 +643,7 @@ class layout:
         # It looks at some place else, log level is being reset, so I am just reinstantiating here
         _LOGGER = configure_logworker()
 
-        time.sleep(5/self.clock_factor)
+        rospy.sleep(5)
         _LOGGER.info('SIGINT: Destroying the physics world and terminating the simulation.')
         _LOGGER.info('Terminating spawn launches')
 
@@ -801,7 +801,7 @@ class layout:
         if isinstance(initial_distance, float):
             initial_distance = [initial_distance]*self.n_vehicles
 
-        available_control_method = ["uniform", "ovftl", "idm", "injector", "rl", "launch", "followerstopper", "micromodel"]
+        available_control_method = ["uniform", "ovftl", "idm", "injector", "rl", "launch", "followerstopper", "micromodel", "rl_FSMAX", "rl_FSTH"]
 
         if not all(item in available_control_method for item in control_method):
             _LOGGER.error("Unsupported vehicle control method specified. Exiting the simulation")
@@ -895,6 +895,19 @@ class layout:
                     use_odom = kwargs.get("use_odom", False)
                     hoffman = kwargs.get("hoffman", False)
                     launchobj = launch(launchfile=self.package_path+'/launch/rlpredict.launch',
+                        ego="sparkle_{:03d}".format(i),
+                        leader = "sparkle_{:03d}".format(self.n_vehicles-1),
+                        use_lead_vel = use_lead_vel,
+                        use_odom = use_odom,
+                        hoffman = hoffman
+                    )
+                    self.launchcontrol_obj.append(launchobj)
+                
+                elif control_method[0].lower() == "rl_FSMAX":
+                    use_lead_vel = kwargs.get("use_lead_vel", False)
+                    use_odom = kwargs.get("use_odom", False)
+                    hoffman = kwargs.get("hoffman", False)
+                    launchobj = launch(launchfile=self.package_path+'/launch/rl_FSMAX.launch',
                         ego="sparkle_{:03d}".format(i),
                         leader = "sparkle_{:03d}".format(self.n_vehicles-1),
                         use_lead_vel = use_lead_vel,
@@ -1015,6 +1028,18 @@ class layout:
                     hoffman = hoffman
                     )
                 self.launchcontrol_obj.append(launchobj)
+            elif control_method[i].lower() == "rl_FSMAX":
+                use_lead_vel = kwargs.get("use_lead_vel", False)
+                use_odom = kwargs.get("use_odom", False)
+                hoffman = kwargs.get("hoffman", False)
+                launchobj = launch(launchfile=self.package_path+'/launch/rl_FSMAX.launch',
+                    ego="sparkle_{:03d}".format(i),
+                    leader = "sparkle_{:03d}".format(i-1),
+                    use_lead_vel = use_lead_vel,
+                    use_odom = use_odom,
+                    hoffman = hoffman
+                    )
+                self.launchcontrol_obj.append(launchobj)
 
 
 
@@ -1100,7 +1125,7 @@ def main(argv):
     cl.create()
     cl.spawn()
 
-    time.sleep(cl.log_time/cl.clock_factor)
+    rospy.sleep(cl.log_time)
 
     print('Time to terminate')
     cl.destroy(signal.SIGINT)

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<launch>
+
+    <arg name="leader" default="leader"/>
+    <arg name="ego" default="ego"/>
+
+    <arg name="description" default="following_real_vehicle_rl0805v3_FSMAX"/>	
+    <arg name="SPEED_SCALE" default="1.0"/>	
+    <arg name="HEADWAY_SCALE" default="1.0"/>	
+    <arg name="ego_veltopic" default="$/(arg ego)/vel"/>
+    <arg name="relative_veltopic" default="/$(arg ego)/rel_vel"/>
+    <arg name="headway_topic" default="/$(arg ego)/lead_dist"/>
+    <arg name="use_accel_predict" default="true"/>
+    <arg name="use_lead_vel" default="false"/>
+    <arg name="use_odom" default="false"/>
+    <arg name="ego_odom_topic" default="/$(arg ego)/setvel"/>
+    <arg name="leader_odom_topic" default="/$(arg leader)/setvel"/>
+    <arg name='hoffman' default='false'/>
+
+    <arg name="T" default="0.6"/>
+    <arg name="th1" default="0.4"/>
+    <arg name="th2" default="0.6"/>
+    <arg name="th3" default="0.8"/>	
+    <arg name="w1" default="6.0"/>
+    <arg name="w2" default="7.5"/>
+    <arg name="w3" default="9.0"/>
+
+    <arg name='controllers' default='09_05_rll_ttc6p5scale1p8_maxacc0p75/super_resolution.onnx'/>
+
+    <param name="/$(arg ego)/model" type="string" value="$(find onnx2ros)/../controllers/$(arg controllers)"/>
+    <param name="/$(arg ego)/mode" type="string" value="prompt"/>
+    <param name="/$(arg ego)/SPEED_SCALE" value="$(arg SPEED_SCALE)"/>
+    <param name="/$(arg ego)/HEADWAY_SCALE" value="$(arg HEADWAY_SCALE)"/>
+    <param name="/$(arg ego)/ego_vel_topic" value="$(arg ego_veltopic)"/>
+    <param name="/$(arg ego)/relative_vel_topic" value="$(arg relative_veltopic)"/>
+    <param name="/$(arg ego)/headway_topic" value="$(arg headway_topic)"/>
+    <param name="/$(arg ego)/use_lead_vel" value="$(arg use_lead_vel)"/>
+    <param name="/$(arg ego)/use_accel_predict" value="$(arg use_accel_predict)"/>
+    <param name="/$(arg ego)/use_odom" value="$(arg use_odom)"/>
+    <param name="/$(arg ego)/ego_odom_topic" value="$(arg ego_odom_topic)"/>
+    <param name="/$(arg ego)/leader_odom_topic" value="$(arg leader_odom_topic)"/>
+    <param name="/$(arg ego)/use_setpoint" value="false"/>
+    <param name="/$(arg ego)/T" value="$(arg T)"/>
+
+    
+    <param name="/$(arg ego)/th1" value="$(arg th1)"/>
+    <param name="/$(arg ego)/th2" value="$(arg th2)"/>
+    <param name="/$(arg ego)/th3" value="$(arg th3)"/>
+    <param name="/$(arg ego)/w1" value="$(arg w1)"/>
+    <param name="/$(arg ego)/w2" value="$(arg w2)"/>
+    <param name="/$(arg ego)/w3" value="$(arg w3)"/>
+
+
+
+    <group ns="catvehicle">
+        <node pkg="onnx2ros" type="prompt_mode" name="controller" output="screen">
+            <remap from="v_des" to="$/(arg ego)/v_ref"/>
+        </node>
+        <node pkg="followerstoppermax4rl" type="followerstoppermax4rl_node" name="followerstoppermax4rl_node" output="screen">
+            <remap from="cmd_vel" to ="cmd_control_vel"  if="$(arg hoffman)"/> 
+        </node>	
+
+        <node pkg="hoffmansubsystem" type="hoffmansubsystem_node" name="hoffmansubsystem_ego" output="screen" if="$(arg hoffman)"/>
+    </group>
+
+
+
+</launch>
